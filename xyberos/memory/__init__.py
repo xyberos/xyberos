@@ -1,1 +1,5 @@
-"""Memory provider implementations for the Memory contract (future providers)."""
+"""Memory provider implementations for the Memory contract."""
+
+from .in_memory import InMemoryMemory
+
+__all__ = ["InMemoryMemory"]

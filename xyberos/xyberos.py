@@ -88,7 +88,8 @@ class Xyberos:
     def chat(self, prompt: str, *, metadata: Mapping[str, Any] | None = None) -> str:
         """Convenience API returning only the generated text."""
         response = self.run(prompt, metadata=metadata).response
-        assert response is not None
+        if response is None:
+            raise RuntimeError("the cognitive pipeline produced no response")
         return response
 
     def run_agents(

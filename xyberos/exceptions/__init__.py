@@ -1,6 +1,8 @@
 """Xyberos domain exceptions."""
 
 from .agent import AgentAlreadyRegisteredError, AgentError, AgentNotFoundError
+from .plugin import PluginAlreadyLoadedError, PluginError, PluginLoadError, PluginNotFoundError
+from .tool import ToolAlreadyRegisteredError, ToolError, ToolNotFoundError
 from .registry import (
     CircularDependencyError,
     DependencyResolutionError,
@@ -32,4 +34,7 @@ __all__ = [
     "RegistryError",
     "ServiceAlreadyRegisteredError",
     "ServiceNotFoundError",
+    "ToolAlreadyRegisteredError",
+    "ToolError",
+    "ToolNotFoundError",
 ]

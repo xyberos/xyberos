@@ -108,10 +108,14 @@ xyberos/
 ├── events/
 │   └── __init__.py
 │
-├── memory/       # placeholder - contract only
-├── knowledge/    # placeholder - contract only
-├── planner/      # placeholder - contract only
-├── tools/        # placeholder - contract only
+├── memory/
+│   └── in_memory.py
+├── knowledge/
+│   └── in_memory.py
+├── planner/
+│   └── sequential.py
+├── tools/
+│   └── registry.py
 │
 ├── exceptions/
 │   ├── __init__.py
@@ -352,10 +356,11 @@ planner/
 tools/
 ```
 
-The `kernel/`, `runtime/`, `brain/`, `contracts/`, `agents/`, `workflows/`, and
-`plugins/` subsystems are implemented. The `memory/`, `knowledge/`, `planner/`,
-and `tools/` packages are placeholders awaiting concrete providers; each
-provider implements the corresponding contract in `contracts/`.
+The `kernel/`, `runtime/`, `brain/`, `contracts/`, `agents/`, `workflows/`,
+`plugins/`, `memory/`, `knowledge/`, `planner/`, and `tools/` subsystems are
+implemented. The initial `memory/`, `knowledge/`, `planner/`, and `tools/`
+providers are minimal in-memory references; production backends can replace
+them while keeping the same `contracts/` interfaces.
 
 For example:
 
