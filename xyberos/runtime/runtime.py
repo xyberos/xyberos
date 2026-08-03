@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     try:  # Supports both ``import runtime`` and ``import Xyberos_v2.runtime``.
         from ..brain.brain import Brain
     except ImportError:  # pragma: no cover - depends on import style
-        from brain.brain import Brain
+        from xyberos_v2.brain.brain import Brain
 
 from .context import CognitiveContext
 

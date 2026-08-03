@@ -1,8 +1,20 @@
-"""Reserved contract for the v0.6 knowledge subsystem."""
+"""Knowledge extension contract defined by the v0.6 roadmap."""
 
-from typing import Protocol, runtime_checkable
+from abc import ABC, abstractmethod
+from typing import Any
 
 
-@runtime_checkable
-class KnowledgeProvider(Protocol):
-    """Marker contract for a future knowledge implementation."""
+class Knowledge(ABC):
+    """Queries a knowledge source using an execution context.
+
+    The returned shape is provider-defined so local documents, graph stores,
+    vector databases, and remote search services can share one stable contract.
+    """
+
+    @abstractmethod
+    def query(self, context: object) -> Any:
+        """Return knowledge relevant to the supplied execution context."""
+
+
+# Compatibility name for external provider implementations.
+KnowledgeProvider = Knowledge

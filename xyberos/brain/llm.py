@@ -2,9 +2,9 @@
 
 from collections.abc import Callable
 try:
-    from ..interfaces.llm import LLMProvider
+    from ..contracts.llm import LLMProvider
 except ImportError:  # pragma: no cover - depends on import style
-    from interfaces.llm import LLMProvider
+    from contracts.llm import LLMProvider
 
 
 class CallableLLM:

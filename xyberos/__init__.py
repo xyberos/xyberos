@@ -1,6 +1,5 @@
 """Xyberos package."""
 
-from .xyberos import Xyberos, chat, create_app
-from .version import __version__
+from .xyberos_v2.xyberos import Xyberos, chat, create_app
 
-__all__ = ["Xyberos", "__version__", "chat", "create_app"]
+__all__ = ["Xyberos", "chat", "create_app"]

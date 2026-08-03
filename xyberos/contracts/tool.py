@@ -1,8 +1,22 @@
-"""Reserved contract for the v0.4 tool subsystem."""
+"""Tool extension contract defined by the v0.4 roadmap."""
 
-from typing import Protocol, runtime_checkable
+from abc import ABC, abstractmethod
+from typing import Any
 
 
-@runtime_checkable
-class Tool(Protocol):
-    """Marker contract for a future tool implementation."""
+class Tool(ABC):
+    """A named capability that can act on an execution context.
+
+    This contract does not import Runtime or Context. Tool orchestration belongs
+    to a later Brain capability, while implementations remain free to support
+    the context type they need.
+    """
+
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        """A stable, unique name used to register and select the tool."""
+
+    @abstractmethod
+    def execute(self, context: object, **arguments: Any) -> Any:
+        """Execute the tool for a context and return its provider-specific result."""

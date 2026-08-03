@@ -1,9 +1,25 @@
 """Stable subsystem contracts shared across Xyberos."""
 
-from .knowledge import KnowledgeProvider
+from .agent import Agent
+from .knowledge import Knowledge, KnowledgeProvider
 from .llm import LLMProvider
-from .memory import MemoryProvider
+from .memory import Memory, MemoryProvider
 from .planner import Planner
+from .plugin import Plugin
+from .service import Service
 from .tool import Tool
+from .workflow import Workflow
 
-__all__ = ["KnowledgeProvider", "LLMProvider", "MemoryProvider", "Planner", "Tool"]
+__all__ = [
+    "Agent",
+    "KnowledgeProvider",
+    "Knowledge",
+    "LLMProvider",
+    "Memory",
+    "MemoryProvider",
+    "Planner",
+    "Plugin",
+    "Service",
+    "Tool",
+    "Workflow",
+]

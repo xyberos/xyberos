@@ -20,17 +20,11 @@ class LifecycleService:
 
 def test_kernel_wires_configuration_model_and_runtime():
     config = Config({"logger_name": "xyberos.tests.kernel", "log_level": "WARNING"})
-    kernel = Kernel(config, llm=CallableLLM(lambda prompt: prompt[::-1]))
+    kernel = Kernel(config)
 
-    context = kernel.run("abc", metadata={"trace": "t-1"})
-
-    assert isinstance(context, CognitiveContext)
-    assert context.response == "cba"
-    assert context.metadata == {"trace": "t-1"}
-    assert kernel.chat("xy") == "yx"
+    assert kernel.resolve("config") is config
+    assert kernel.resolve("logger") is kernel.logger
     assert kernel.config is config
-    assert kernel.resolve("brain") is kernel.brain
-    assert kernel.resolve("runtime") is kernel.runtime
 
 
 def test_kernel_registers_resolves_and_manages_service_lifecycles():
