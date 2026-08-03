@@ -1,15 +1,10 @@
 """Small, provider-agnostic language-model interfaces."""
 
 from collections.abc import Callable
-from typing import Protocol, runtime_checkable
-
-
-@runtime_checkable
-class LLMProvider(Protocol):
-    """Provider contract defined by RFC-0006."""
-
-    def generate(self, prompt: str) -> str:
-        """Return a response for ``prompt``."""
+try:
+    from ..interfaces.llm import LLMProvider
+except ImportError:  # pragma: no cover - depends on import style
+    from interfaces.llm import LLMProvider
 
 
 class CallableLLM:

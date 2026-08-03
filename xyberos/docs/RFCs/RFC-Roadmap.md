@@ -1,30 +1,30 @@
 v0.1
-✓ Core
+[x] Core
 
 v0.2
-□ Service Registry
-□ Dependency Injection
+[x] Service Registry
+[x] Dependency Injection
 
 v0.3
-□ Memory Interface
+[ ] Memory Interface
 
 v0.4
-□ Tool Interface
+[ ] Tool Interface
 
 v0.5
-□ Planner
+[ ] Planner
 
 v0.6
-□ Knowledge
+[ ] Knowledge
 
 v0.7
-□ Workflow
+[ ] Workflow
 
 v0.8
-□ Plugin System
+[ ] Plugin System
 
 v0.9
-□ Multi-Agent Runtime
+[ ] Multi-Agent Runtime
 
 v1.0
-□ Stable Architecture
+[ ] Stable Architecture

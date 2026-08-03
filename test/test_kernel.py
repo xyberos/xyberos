@@ -29,6 +29,8 @@ def test_kernel_wires_configuration_model_and_runtime():
     assert context.metadata == {"trace": "t-1"}
     assert kernel.chat("xy") == "yx"
     assert kernel.config is config
+    assert kernel.resolve("brain") is kernel.brain
+    assert kernel.resolve("runtime") is kernel.runtime
 
 
 def test_kernel_registers_resolves_and_manages_service_lifecycles():
@@ -75,3 +77,11 @@ def test_kernel_lifecycle_is_idempotent_and_starts_late_services():
     kernel.stop()
 
     assert events == ["start:late", "start:late", "stop:late"]
+
+
+def test_kernel_rejects_factory_registration_after_starting():
+    kernel = Kernel({"logger_name": "xyberos.tests.factory-lifecycle"})
+    kernel.start()
+
+    with pytest.raises(RuntimeError, match="before starting"):
+        kernel.register_factory("late_factory", lambda: object())
