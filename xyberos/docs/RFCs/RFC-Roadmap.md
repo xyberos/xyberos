@@ -1,35 +1,30 @@
-0001  Core Architecture
-0002  Kernel
-0003  Runtime
-0004  Brain
-0005  Context
-0006  LLM Provider
+v0.1
+✓ Core
 
-0010  Memory
-0011  Knowledge Base
-0012  Planner
-0013  Reasoner
-0014  Reflection
-0015  Attention
+v0.2
+□ Service Registry
+□ Dependency Injection
 
-0020  Tool System
-0021  Action System
-0022  Workflow Engine
-0023  Plugin API
-0024  Event Bus
+v0.3
+□ Memory Interface
 
-0030  Multi-Agent System
-0031  Agent Communication
-0032  Shared Memory
-0033  Agent Lifecycle
+v0.4
+□ Tool Interface
 
-0040  Learning
-0041  Vector Store
-0042  Persistence
+v0.5
+□ Planner
 
-0050  API Specification
-0051  Python SDK
-0052  REST API
-0053  CLI
+v0.6
+□ Knowledge
 
-0100  Stable 1.0 Architecture
+v0.7
+□ Workflow
+
+v0.8
+□ Plugin System
+
+v0.9
+□ Multi-Agent Runtime
+
+v1.0
+□ Stable Architecture
