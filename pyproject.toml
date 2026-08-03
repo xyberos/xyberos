@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xyberos"
+description = "An experimental cognitive framework for building AI systems."
+readme = "README.md"
+requires-python = ">=3.10"
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+]
+
+[tool.setuptools.packages.find]
+include = ["xyberos*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "xyberos.version.__version__"}

@@ -2,14 +2,9 @@
 
 from collections.abc import Iterable
 
-try:
-    from ..contracts.agent import Agent
-    from ..exceptions.agent import AgentAlreadyRegisteredError, AgentNotFoundError
-    from ..runtime.context import CognitiveContext
-except ImportError:  # pragma: no cover - depends on import style
-    from contracts.agent import Agent
-    from exceptions.agent import AgentAlreadyRegisteredError, AgentNotFoundError
-    from runtime.context import CognitiveContext
+from ..contracts.agent import Agent
+from ..exceptions.agent import AgentAlreadyRegisteredError, AgentNotFoundError
+from ..runtime.context import CognitiveContext
 
 
 class MultiAgentRuntime:

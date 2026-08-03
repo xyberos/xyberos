@@ -1,6 +1,6 @@
 from unittest.mock import Mock
 
-from kernel.logger import Logger
+from xyberos.kernel.logger import Logger
 
 
 def test_logger_delegates_each_log_level_to_standard_logger():

@@ -1,7 +1,7 @@
 import pytest
 
-from contracts import Knowledge, KnowledgeProvider
-from runtime.context import CognitiveContext
+from xyberos.contracts import Knowledge, KnowledgeProvider
+from xyberos.runtime.context import CognitiveContext
 
 
 class StaticKnowledge(Knowledge):

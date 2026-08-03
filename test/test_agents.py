@@ -1,10 +1,10 @@
 import pytest
 
-from agents import MultiAgentRuntime, RuntimeAgent
-from contracts import Agent
-from exceptions import AgentAlreadyRegisteredError, AgentNotFoundError
-from runtime.context import CognitiveContext
 from xyberos import create_app
+from xyberos.agents import MultiAgentRuntime, RuntimeAgent
+from xyberos.contracts import Agent
+from xyberos.exceptions import AgentAlreadyRegisteredError, AgentNotFoundError
+from xyberos.runtime.context import CognitiveContext
 
 
 class AnnotationAgent(Agent):

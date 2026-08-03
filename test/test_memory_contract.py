@@ -1,7 +1,7 @@
 import pytest
 
-from contracts import Memory, MemoryProvider
-from runtime.context import CognitiveContext
+from xyberos.contracts import Memory, MemoryProvider
+from xyberos.runtime.context import CognitiveContext
 
 
 class RecordingMemory(Memory):

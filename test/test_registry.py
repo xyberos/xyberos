@@ -1,7 +1,7 @@
 import pytest
 
-from exceptions import CircularDependencyError, DependencyResolutionError, ServiceNotFoundError
-from kernel.registry import ServiceRegistry
+from xyberos.exceptions import CircularDependencyError, DependencyResolutionError, ServiceNotFoundError
+from xyberos.kernel.registry import ServiceRegistry
 
 
 class Database:

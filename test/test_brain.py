@@ -1,8 +1,8 @@
 import pytest
 
-from brain.brain import Brain
-from brain.llm import CallableLLM
-from runtime.context import CognitiveContext
+from xyberos.brain.brain import Brain
+from xyberos.brain.llm import CallableLLM
+from xyberos.runtime.context import CognitiveContext
 
 
 class RecordingLogger:

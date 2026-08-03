@@ -3,9 +3,9 @@ from types import ModuleType
 
 import pytest
 
-from contracts import Plugin
-from exceptions import PluginAlreadyLoadedError, PluginLoadError, PluginNotFoundError
 from xyberos import create_app
+from xyberos.contracts import Plugin
+from xyberos.exceptions import PluginAlreadyLoadedError, PluginLoadError, PluginNotFoundError
 
 
 class GreetingPlugin(Plugin):

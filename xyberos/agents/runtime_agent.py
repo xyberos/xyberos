@@ -2,18 +2,11 @@
 
 from typing import TYPE_CHECKING
 
-try:
-    from ..contracts.agent import Agent
-    from ..runtime.context import CognitiveContext
-except ImportError:  # pragma: no cover - depends on import style
-    from contracts.agent import Agent
-    from runtime.context import CognitiveContext
+from ..contracts.agent import Agent
+from ..runtime.context import CognitiveContext
 
 if TYPE_CHECKING:
-    try:
-        from ..runtime.runtime import Runtime
-    except ImportError:  # pragma: no cover - depends on import style
-        from runtime.runtime import Runtime
+    from ..runtime.runtime import Runtime
 
 
 class RuntimeAgent(Agent):

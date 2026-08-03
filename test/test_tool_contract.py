@@ -1,7 +1,7 @@
 import pytest
 
-from contracts import Tool
-from runtime.context import CognitiveContext
+from xyberos.contracts import Tool
+from xyberos.runtime.context import CognitiveContext
 
 
 class UppercaseTool(Tool):

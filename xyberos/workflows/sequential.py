@@ -2,12 +2,8 @@
 
 from collections.abc import Callable, Iterable
 
-try:
-    from ..contracts.workflow import Workflow
-    from ..runtime.context import CognitiveContext
-except ImportError:  # pragma: no cover - depends on import style
-    from contracts.workflow import Workflow
-    from runtime.context import CognitiveContext
+from ..contracts.workflow import Workflow
+from ..runtime.context import CognitiveContext
 
 
 WorkflowStep = Callable[[CognitiveContext], CognitiveContext | None]

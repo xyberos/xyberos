@@ -1,9 +1,9 @@
 import pytest
 
-from brain.llm import CallableLLM
-from kernel.config import Config
-from kernel.kernel import Kernel
-from runtime.context import CognitiveContext
+from xyberos.brain.llm import CallableLLM
+from xyberos.kernel.config import Config
+from xyberos.kernel.kernel import Kernel
+from xyberos.runtime.context import CognitiveContext
 
 
 class LifecycleService:

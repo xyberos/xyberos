@@ -23,4 +23,4 @@ import pytest
     ],
 )
 def test_public_subsystem_namespace_is_importable(subsystem):
-    assert importlib.import_module(subsystem)
+    assert importlib.import_module(f"xyberos.{subsystem}")

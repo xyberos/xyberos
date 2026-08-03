@@ -1,7 +1,7 @@
 """End-to-end smoke test for the complete Xyberos pipeline."""
 
-from brain.llm import CallableLLM
 from xyberos import create_app
+from xyberos.brain.llm import CallableLLM
 
 
 def test_all_core_components_run_together():

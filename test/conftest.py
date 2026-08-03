@@ -1,8 +1,6 @@
-"""Make the application source directory importable during pytest collection."""
+"""Shared pytest fixtures for the Xyberos test suite.
 
-import sys
-from pathlib import Path
-
-
-SOURCE_ROOT = Path(__file__).resolve().parents[1] / "xyberos"
-sys.path.insert(0, str(SOURCE_ROOT))
+The ``xyberos`` package is importable because the project root is placed on
+``sys.path`` via the ``pythonpath`` option in ``pytest.ini``, and the package
+itself is pip-installable via ``pyproject.toml``.
+"""

@@ -1,7 +1,7 @@
 import pytest
 
-from runtime.context import CognitiveContext
-from runtime.runtime import Runtime
+from xyberos.runtime.context import CognitiveContext
+from xyberos.runtime.runtime import Runtime
 
 
 class SuccessfulBrain:

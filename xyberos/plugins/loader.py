@@ -5,18 +5,11 @@ from __future__ import annotations
 from importlib import import_module
 from typing import TYPE_CHECKING
 
-try:
-    from ..contracts.plugin import Plugin
-    from ..exceptions.plugin import PluginAlreadyLoadedError, PluginLoadError, PluginNotFoundError
-except ImportError:  # pragma: no cover - depends on import style
-    from contracts.plugin import Plugin
-    from exceptions.plugin import PluginAlreadyLoadedError, PluginLoadError, PluginNotFoundError
+from ..contracts.plugin import Plugin
+from ..exceptions.plugin import PluginAlreadyLoadedError, PluginLoadError, PluginNotFoundError
 
 if TYPE_CHECKING:
-    try:
-        from ..kernel.kernel import Kernel
-    except ImportError:  # pragma: no cover - depends on import style
-        from kernel.kernel import Kernel
+    from ..kernel.kernel import Kernel
 
 
 class PluginLoader:

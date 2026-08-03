@@ -1,7 +1,7 @@
 import pytest
 
-from contracts import Planner
-from runtime.context import CognitiveContext
+from xyberos.contracts import Planner
+from xyberos.runtime.context import CognitiveContext
 
 
 class StaticPlanner(Planner):

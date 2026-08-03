@@ -1,6 +1,6 @@
 import pytest
 
-from runtime.context import CognitiveContext
+from xyberos.runtime.context import CognitiveContext
 
 
 def test_context_tracks_success_and_has_independent_metadata():

@@ -1,5 +1,5 @@
-from brain.llm import CallableLLM
 from xyberos import Xyberos, chat, create_app
+from xyberos.brain.llm import CallableLLM
 
 
 def test_public_api_creates_app_and_supports_one_shot_chat():

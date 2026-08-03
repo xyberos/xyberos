@@ -1,6 +1,6 @@
 import pytest
 
-from kernel.config import Config
+from xyberos.kernel.config import Config
 
 
 def test_config_reads_mutates_and_copies_values():

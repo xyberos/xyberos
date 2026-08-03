@@ -1,8 +1,8 @@
 import pytest
 
-from contracts import Workflow
-from runtime.context import CognitiveContext
-from workflows import SequentialWorkflow
+from xyberos.contracts import Workflow
+from xyberos.runtime.context import CognitiveContext
+from xyberos.workflows import SequentialWorkflow
 
 
 def test_workflow_contract_requires_run():

@@ -7,22 +7,13 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
-try:
-    from ..exceptions.registry import (
-        CircularDependencyError,
-        DependencyResolutionError,
-        InvalidServiceNameError,
-        ServiceAlreadyRegisteredError,
-        ServiceNotFoundError,
-    )
-except ImportError:  # pragma: no cover - depends on import style
-    from exceptions.registry import (
-        CircularDependencyError,
-        DependencyResolutionError,
-        InvalidServiceNameError,
-        ServiceAlreadyRegisteredError,
-        ServiceNotFoundError,
-    )
+from ..exceptions.registry import (
+    CircularDependencyError,
+    DependencyResolutionError,
+    InvalidServiceNameError,
+    ServiceAlreadyRegisteredError,
+    ServiceNotFoundError,
+)
 
 
 _UNSET = object()
