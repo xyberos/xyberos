@@ -38,34 +38,16 @@ For **v0.3**, I would focus on making Xyberos **extensible** rather than adding 
 ```text
 Xyberos_v2/
 │
-├── rfcs/
-│   ├── README.md
-│   ├── RFC-0001-architecture.md
-│   ├── RFC-0002-kernel.md
-│   ├── RFC-0003-runtime.md
-│   ├── RFC-0004-brain.md
-│   ├── RFC-0005-context.md
-│   ├── RFC-0006-llm-provider.md
-│   ├── RFC-0007-service-registry.md
-│   ├── RFC-0008-service-resolution.md
-│   └── RFC-0009-contracts.md
-│
 ├── docs/
-│
-├── examples/
-│   ├── minimal_chat.py
-│   ├── custom_llm.py
-│   └── registry_usage.py
 │
 ├── test/
 │
 ├── xyberos/
 │
 ├── README.md
-├── ROADMAP.md
 ├── pyproject.toml
 ├── pytest.ini
-└── LICENSE
+└── .gitignore
 ```
 
 The repository root contains project documentation, RFCs, examples, tests, and the Python package.
@@ -100,19 +82,45 @@ xyberos/
 │
 ├── contracts/
 │   ├── __init__.py
+│   ├── agent.py
+│   ├── knowledge.py
 │   ├── llm.py
 │   ├── memory.py
 │   ├── planner.py
+│   ├── plugin.py
+│   ├── service.py
 │   ├── tool.py
-│   ├── knowledge.py
-│   └── service.py
+│   └── workflow.py
+│
+├── agents/
+│   ├── __init__.py
+│   ├── multi_runtime.py
+│   └── runtime_agent.py
+│
+├── workflows/
+│   ├── __init__.py
+│   └── sequential.py
+│
+├── plugins/
+│   ├── __init__.py
+│   └── loader.py
+│
+├── events/
+│   └── __init__.py
+│
+├── memory/       # placeholder - contract only
+├── knowledge/    # placeholder - contract only
+├── planner/      # placeholder - contract only
+├── tools/        # placeholder - contract only
 │
 ├── exceptions/
 │   ├── __init__.py
+│   ├── agent.py
 │   ├── kernel.py
+│   ├── plugin.py
+│   ├── provider.py
 │   ├── registry.py
-│   ├── runtime.py
-│   └── provider.py
+│   └── runtime.py
 │
 └── utils/
     ├── __init__.py
@@ -187,12 +195,15 @@ This becomes the most important package in v0.3.
 ```text
 contracts/
 
+Agent
+Knowledge
 LLMProvider
 Memory
 Planner
-Tool
-Knowledge
+Plugin
 Service
+Tool
+Workflow
 ```
 
 Every future implementation depends on these contracts.
@@ -251,6 +262,28 @@ If a helper only serves one package, keep it in that package instead.
 
 ---
 
+## `agents/`
+
+Multi-agent coordination. `MultiAgentRuntime` runs named agents sequentially
+against one canonical `CognitiveContext`; `RuntimeAgent` adapts an existing
+`Runtime` into an `Agent`.
+
+## `workflows/`
+
+Composable execution. `SequentialWorkflow` applies ordered steps to a context,
+where each step may mutate the context in place or return a replacement.
+
+## `plugins/`
+
+Discovery and lifecycle. `PluginLoader` imports plugins and gives them
+controlled access to the platform kernel through `register`/`unregister`.
+
+## `events/`
+
+Reserved for a future event bus and event-handler infrastructure.
+
+---
+
 # Dependency Rules
 
 One of the most valuable additions in v0.3 is documenting allowed dependencies.
@@ -305,22 +338,24 @@ The structure scales cleanly without reorganizing the project.
 xyberos/
 
 kernel/
-
 runtime/
-
 brain/
-
 contracts/
+agents/
+workflows/
+plugins/
+events/
 
 memory/
 knowledge/
 planner/
 tools/
-events/
-plugins/
 ```
 
-Each new capability becomes its own package implementing the corresponding contract.
+The `kernel/`, `runtime/`, `brain/`, `contracts/`, `agents/`, `workflows/`, and
+`plugins/` subsystems are implemented. The `memory/`, `knowledge/`, `planner/`,
+and `tools/` packages are placeholders awaiting concrete providers; each
+provider implements the corresponding contract in `contracts/`.
 
 For example:
 
