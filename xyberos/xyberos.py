@@ -134,7 +134,12 @@ class Xyberos:
 
     def load_entry_points(self, group: str = "xyberos.plugins") -> tuple[Plugin, ...]:
         """Auto-discover and load every installed plugin declared as an entry point."""
-        return self.plugins.load_entry_points(group)
+        loaded = self.plugins.load_entry_points(group)
+        # Propagate any LLM replacement to the brain (plugins register via
+        # kernel.register("llm", ..., replace=True), but brain.llm was already
+        # captured during __init__).
+        self.brain.llm = cast(LLMProvider, self.resolve("llm"))
+        return loaded
 
     def load_plugins_from(self, package: str) -> tuple[Plugin, ...]:
         """Auto-discover and load every Plugin subclass found in ``package``."""
