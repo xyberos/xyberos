@@ -1,5 +1,5 @@
 from xyberos import Xyberos, chat, create_app
-from xyberos.brain.llm import CallableLLM
+from xyberos.llm import CallableLLM
 
 
 def test_public_api_creates_app_and_supports_one_shot_chat():
@@ -19,6 +19,13 @@ def test_public_app_delegates_kernel_services_dependency_injection_and_lifecycle
     assert app.config is app.kernel.config
     assert app.logger is app.kernel.logger
     assert app.registry is app.kernel.registry
+    assert app.llm is app.resolve("llm")
+    assert app.memory is app.resolve("memory")
+    assert app.knowledge is app.resolve("knowledge")
+    assert app.tools is app.resolve("tools")
+    assert app.tool_runner is app.resolve("tool_runner")
+    assert app.planner is app.resolve("planner")
+    assert app.workflow is app.resolve("workflow")
     assert app.register("custom", service) is service
     assert app.resolve("custom") is service
     assert app.register_factory("injected_logger", lambda logger: logger) is not None

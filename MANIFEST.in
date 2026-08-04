@@ -1,0 +1,8 @@
+include README.md
+include LICENSE
+graft docs
+graft examples
+prune examples/chat_app/.venv
+global-exclude __pycache__
+global-exclude *.pyc
+global-exclude .DS_Store

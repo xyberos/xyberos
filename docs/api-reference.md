@@ -1,0 +1,302 @@
+# API Reference
+
+A short reference to Xyberos' primary public objects. For each main class it
+lists what the class is, **what it owns**, and **when to use it**.
+
+## At a Glance
+
+| Class | Owns | When to use it |
+|-------|------|----------------|
+| `Xyberos` | kernel, brain, runtime, agents | default entry point to compose an app |
+| `Kernel` | config, logger, registry, plugins | platform/lifecycle; service registration and DI |
+| `ServiceRegistry` | named services and factories | manual registration, resolution, and injection |
+| `Config` | configuration values | reading and writing settings |
+| `CognitiveContext` | prompt, response, metadata, error | passing state through the pipeline |
+| `Runtime` | a brain | executing a context through the pipeline |
+| `Brain` | an LLM and optional tool runner | validating input and generating text |
+| `RuntimeAgent` | one runtime | exposing a runtime as an agent |
+| `MultiAgentRuntime` | named agents | running several agents in sequence |
+| `SequentialWorkflow` | ordered steps | composing pipeline steps |
+| `SequentialPlanner` | ordered plan steps | producing a plan for a context |
+| `InMemoryMemory` | stored contexts | dev/test memory provider |
+| `InMemoryKnowledge` | keyword facts | dev/test knowledge provider |
+| `ToolRegistry` | named tools | registering and executing tools |
+| `ToolRunner` | a tool registry | selecting and dispatching tools |
+| `PluginLoader` | loaded plugins, entry-point discovery, convention scan | loading, unloading, and auto-discovering extensions |
+| `LLMProvider` | a model backend | providing text generation |
+
+## Package Root
+
+Import the facade helpers from the package root:
+
+```python
+from xyberos import Xyberos, chat, create_app
+```
+
+### `Xyberos`
+
+- **What it is:** the application facade that composes the core layers.
+- **What it owns:** a `Kernel`, a `Brain`, a `Runtime`, a default `RuntimeAgent`,
+  and a `MultiAgentRuntime`. It also exposes the core services through typed
+  properties: `config`, `logger`, `registry`, `plugins`, `llm`, `memory`,
+  `knowledge`, `tools`, `tool_runner`, `planner`, `workflow`, `brain`, `runtime`,
+  and `agents`.
+- **When to use it:** when you want a ready-to-run application with service
+  registration, dependency injection, plugin management, agent management, and
+  request execution. Prefer `create_app()` unless you need to keep a reference
+  around.
+
+### `create_app(config=None, llm=None)`
+
+Convenience constructor for a ready-to-use `Xyberos` application.
+
+### `chat(prompt, config=None, llm=None)`
+
+One-shot helper for the common case where you only need a response string.
+
+## Core Classes
+
+### `xyberos.kernel`
+
+#### `Kernel`
+
+- **What it owns:** configuration (`Config`), logging (`Logger`), the service
+  registry (`ServiceRegistry`), plugin loading (`PluginLoader`), and the
+  start/stop lifecycle.
+- **When to use it:** rarely directly — `Xyberos` builds one for you. Reach for
+  it when you need platform-level service registration or lifecycle control.
+
+#### `Config`
+
+- **What it owns:** a mutable key/value mapping.
+- **When to use it:** reading and writing application settings, typically via
+  `app.config`.
+
+#### `ServiceRegistry`
+
+- **What it owns:** named services and lazy factories, plus constructor
+  dependency injection (`inject`).
+- **When to use it:** manual service registration and resolution, or when you
+  need DI beyond the facade.
+
+#### `Logger`
+
+- **What it owns:** level-aware log output.
+- **When to use it:** logging from your own code, usually via `app.logger`.
+
+### `xyberos.runtime`
+
+#### `CognitiveContext`
+
+- **What it owns:** a single request's `prompt`, `response`, `metadata`, and
+  `error`, plus the `succeeded` flag.
+- **When to use it:** the state object passed through the whole pipeline; build
+  one to run a request manually.
+
+#### `Runtime`
+
+- **What it owns:** a configured `Brain`.
+- **When to use it:** executing a `CognitiveContext` through the pipeline and
+  returning the completed context.
+
+### `xyberos.brain`
+
+#### `Brain`
+
+- **What it owns:** an `LLMProvider` and an optional `ToolRunner`.
+- **When to use it:** validating input and generating a response; pass a
+  `tool_runner` to add tool orchestration before text generation.
+
+### `xyberos.llm`
+
+#### `LLMProvider`
+
+- **What it owns:** the model backend contract (`generate`).
+- **When to use it:** implementing a custom model backend for Xyberos.
+
+#### `EchoLLM`
+
+- **What it owns:** nothing; it echoes the prompt back.
+- **When to use it:** the default no-op model, useful for smoke tests.
+
+#### `CallableLLM`
+
+- **What it owns:** a wrapped plain callable.
+- **When to use it:** turning a simple `prompt -> response` function into an
+  `LLMProvider`.
+
+### `xyberos.agents`
+
+#### `RuntimeAgent`
+
+- **What it owns:** a single `Runtime`.
+- **When to use it:** exposing an existing runtime as a named agent in a
+  multi-agent pipeline.
+
+#### `MultiAgentRuntime`
+
+- **What it owns:** named `Agent` instances.
+- **When to use it:** running multiple agents sequentially over one shared
+  context.
+
+### `xyberos.workflows`
+
+#### `SequentialWorkflow`
+
+- **What it owns:** an ordered list of steps.
+- **When to use it:** composing pipeline operations that each receive and return
+  the context.
+
+#### `WorkflowStep`
+
+- **What it owns:** a callable type alias, `(CognitiveContext) -> CognitiveContext | None`.
+- **When to use it:** typing your workflow step functions.
+
+### `xyberos.planner`
+
+#### `SequentialPlanner`
+
+- **What it owns:** an ordered set of plan step names.
+- **When to use it:** producing a simple ordered plan for a context.
+
+### `xyberos.memory` / `xyberos.knowledge`
+
+#### `InMemoryMemory` / `InMemoryKnowledge`
+
+- **What they own:** in-process context storage / keyword-keyed facts.
+- **When to use them:** development and tests, or as a template for a real
+  database or vector-store provider.
+
+### `xyberos.tools`
+
+#### `ToolRegistry`
+
+- **What it owns:** named `Tool` instances.
+- **When to use it:** registering, looking up, and executing tools.
+
+#### `ToolRunner`
+
+- **What it owns:** a `ToolRegistry`.
+- **When to use it:** choosing a tool by name heuristic and dispatching it
+  against a `CognitiveContext`.
+
+### `xyberos.plugins`
+
+#### `PluginLoader`
+
+- **What it owns:** loaded `Plugin` instances, a reference to the platform
+  kernel, and auto-discovery machinery (`importlib.metadata.entry_points`).
+- **When to use it:** loading, unloading, and auto-discovering plugins.
+
+##### Methods
+
+- `load(plugin)` — register and retain one plugin instance.
+- `load_from_module(module_name, attribute="plugin")` — import a module and
+  load its plugin export.
+- `load_entry_points(group="xyberos.plugins")` — auto-discover every plugin
+  declared under the given entry-point group via `importlib.metadata`. Entry
+  point values are `module:attribute` (or a bare module whose `plugin` export
+  is used).
+
+### App creation with custom providers
+
+```python
+from xyberos import create_app
+from xyberos.llm import CallableLLM
+from xyberos.knowledge import InMemoryKnowledge
+
+app = create_app(
+    llm=CallableLLM(lambda prompt: f"answer: {prompt}"),
+    knowledge=InMemoryKnowledge({"hours": "9am-6pm"}),
+)
+print(app.chat("What are your hours?"))
+```
+
+### Service registration and dependency injection
+
+```python
+app = create_app(config={"env": "production"})
+app.register("cache", {})
+app.register_factory("adapter", lambda config, cache: (config, cache))
+adapter = app.resolve("adapter")
+```
+
+### Auto-discovering plugins
+
+Two styles — no manual wiring required.
+
+**Convention scan** (drop a module in a folder):
+
+```python
+app = create_app()
+app.load_plugins_from("app.plugins")   # every Plugin subclass in app/plugins is loaded
+```
+
+**Entry points** (declared in package metadata):
+
+```python
+app = create_app()
+app.load_entry_points()   # every installed "xyberos.plugins" entry point is loaded
+```
+
+### Custom LLM provider
+
+```python
+from xyberos.contracts.llm import LLMProvider
+
+class MyLLM(LLMProvider):
+    def generate(self, prompt: str) -> str:
+        return f"response to: {prompt}"
+
+app = create_app(llm=MyLLM())
+```
+- `load_from_package(package)` — convention-based auto-discovery: walk a
+  package and load every concrete (non-abstract) `Plugin` subclass found.
+- `get(name)` / `unload(name)` — retrieve / unregister by name.
+
+`load_entry_points` and `load_from_package` are idempotent when called with
+`skip_existing=True` (the default) — re-running discovery never double-registers
+a plugin.
+
+These are also exposed on the facade:
+
+- `app.load_entry_points(group="xyberos.plugins")`
+- `app.load_plugins_from("app.plugins")`
+
+### `xyberos.diagnostics`
+
+- `doctor()` - build a developer-focused runtime report
+- `DiagnosticReport` - structured diagnostics payload
+
+**When to use it:** debugging an app or inspecting its runtime state.
+
+## Common Patterns
+
+### Build the app
+
+```python
+from xyberos import create_app
+
+app = create_app()
+```
+
+### Inject dependencies
+
+```python
+result = app.inject(lambda logger, config: (logger, config))
+```
+
+### Register services
+
+```python
+app.register("answer", 42)
+app.register_factory("dynamic", lambda answer: f"answer={answer}")
+```
+
+### Run the pipeline
+
+```python
+context = app.run("hello")
+text = app.chat("hello")
+```
+

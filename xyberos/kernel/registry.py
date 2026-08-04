@@ -5,7 +5,7 @@ from __future__ import annotations
 import inspect
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any
+from typing import TypeVar
 
 from ..exceptions.registry import (
     CircularDependencyError,
@@ -17,6 +17,8 @@ from ..exceptions.registry import (
 
 
 _UNSET = object()
+
+T = TypeVar("T")
 
 
 @dataclass
@@ -39,8 +41,8 @@ class ServiceRegistry:
         self._resolving: list[str] = []
         self._registrations["registry"] = _Registration(instance=self)
 
-    def register(self, name: str, service: object, *, replace: bool = False) -> object:
-        """Register an already-created service instance."""
+    def register(self, name: str, service: T, *, replace: bool = False) -> T:
+        """Register an already-created service instance and return it unchanged."""
         self._validate_name(name)
         self._add(name, _Registration(instance=service), replace=replace)
         return service
@@ -48,11 +50,11 @@ class ServiceRegistry:
     def register_factory(
         self,
         name: str,
-        factory: Callable[..., object],
+        factory: Callable[..., T],
         *,
         singleton: bool = True,
         replace: bool = False,
-    ) -> Callable[..., object]:
+    ) -> Callable[..., T]:
         """Register a lazy factory whose parameters are dependency-injected."""
         self._validate_name(name)
         if not callable(factory):
@@ -84,7 +86,7 @@ class ServiceRegistry:
         finally:
             self._resolving.pop()
 
-    def inject(self, target: Callable[..., object], /, **overrides: object) -> object:
+    def inject(self, target: Callable[..., T], /, **overrides: object) -> T:
         """Call ``target`` with registered services injected by parameter name."""
         if not callable(target):
             raise TypeError("target must be callable")

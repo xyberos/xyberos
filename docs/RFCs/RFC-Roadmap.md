@@ -279,8 +279,11 @@ where each step may mutate the context in place or return a replacement.
 
 ## `plugins/`
 
-Discovery and lifecycle. `PluginLoader` imports plugins and gives them
-controlled access to the platform kernel through `register`/`unregister`.
+Discovery and lifecycle. `PluginLoader` imports, auto-discovers, and manages
+plugins — both via `load_entry_points()` (Python entry-point groups, the same
+mechanism pytest uses) and `load_from_package()` (convention-based package
+scanning for `Plugin` subclasses). Plugins are given controlled access to the
+platform kernel through `register`/`unregister`.
 
 ## `events/`
 

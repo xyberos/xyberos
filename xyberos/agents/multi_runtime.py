@@ -43,9 +43,10 @@ class MultiAgentRuntime:
         self.get(name)
         return self._agents.pop(name)
 
-    def run(self, context: object, *, agent_names: Iterable[str] | None = None) -> CognitiveContext:
+    def run(self, context: CognitiveContext, *, agent_names: Iterable[str] | None = None) -> CognitiveContext:
         """Run all or selected agents in order and return the final context."""
-        if not isinstance(context, CognitiveContext):
+        # Runtime guard for untyped callers; type checkers treat it as redundant.
+        if not isinstance(context, CognitiveContext):  # type: ignore[unnecessary-isinstance]
             raise TypeError("context must be a CognitiveContext")
 
         current = context

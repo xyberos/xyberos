@@ -1,6 +1,6 @@
 import pytest
 
-from xyberos.brain.llm import CallableLLM, EchoLLM, LLMProvider
+from xyberos.llm import CallableLLM, EchoLLM, LLMProvider
 
 
 def test_echo_llm_and_callable_llm_generate_text():

@@ -1,12 +1,15 @@
 """Composition root for a Xyberos instance."""
 
 from collections.abc import Callable, Mapping
-from typing import Any
+from typing import Any, TypeVar
 
 from .config import Config
 from .logger import Logger
 from .registry import ServiceRegistry
 from ..plugins.loader import PluginLoader
+
+
+T = TypeVar("T")
 
 
 class Kernel:
@@ -30,7 +33,7 @@ class Kernel:
         """Whether the kernel lifecycle is currently active."""
         return self._started
 
-    def register(self, name: str, service: object, *, replace: bool = False) -> object:
+    def register(self, name: str, service: T, *, replace: bool = False) -> T:
         """Register a shared service and return it.
 
         Registered services with a ``start`` or ``stop`` method participate in
@@ -45,8 +48,8 @@ class Kernel:
         return registered
 
     def register_factory(
-        self, name: str, factory: Callable[..., object], *, singleton: bool = True, replace: bool = False
-    ) -> Callable[..., object]:
+        self, name: str, factory: Callable[..., T], *, singleton: bool = True, replace: bool = False
+    ) -> Callable[..., T]:
         """Register a dependency-injected service factory."""
         if self._started:
             raise RuntimeError("register factories before starting the kernel")
@@ -56,7 +59,7 @@ class Kernel:
         """Retrieve a registered shared service by name."""
         return self.registry.resolve(name)
 
-    def inject(self, target: Callable[..., object], /, **overrides: object) -> object:
+    def inject(self, target: Callable[..., T], /, **overrides: object) -> T:
         """Construct or invoke a callable with registered dependencies."""
         return self.registry.inject(target, **overrides)
 

@@ -1,0 +1,9 @@
+# Runtime deps for the chat app example. Install in an isolated venv:
+#   python -m venv .venv
+#   .venv\Scripts\activate          (Windows)  |  source .venv/bin/activate (macOS/Linux)
+#   pip install -r requirements.txt
+#   pip install -e ../..            (the xyberos package, in editable mode)
+fastapi>=0.110
+uvicorn[standard]>=0.29
+sqlalchemy>=2.0
+pydantic>=2.5

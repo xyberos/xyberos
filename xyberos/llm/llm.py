@@ -1,4 +1,4 @@
-"""Small, provider-agnostic language-model interfaces."""
+"""Language model service implementations."""
 
 from collections.abc import Callable
 
@@ -27,5 +27,5 @@ class EchoLLM:
         return prompt
 
 
-# Compatibility alias for applications written against the original scaffold.
+# Compatibility alias for older provider naming.
 ChatModel = LLMProvider

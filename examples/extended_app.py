@@ -3,12 +3,15 @@
 Run:  python examples/extended_app.py
 """
 
+from typing import Any
+
 from xyberos import create_app
-from xyberos.brain.llm import CallableLLM
 from xyberos.contracts import Agent, Plugin, Tool
+from xyberos.kernel.kernel import Kernel
 from xyberos.knowledge import InMemoryKnowledge
 from xyberos.memory import InMemoryMemory
 from xyberos.planner import SequentialPlanner
+from xyberos.llm import CallableLLM
 from xyberos.runtime.context import CognitiveContext
 from xyberos.tools import ToolRegistry
 from xyberos.workflows import SequentialWorkflow
@@ -19,10 +22,14 @@ class GreetingPlugin(Plugin):
     def name(self) -> str:
         return "greeting"
 
-    def register(self, kernel) -> None:
+    def register(self, kernel: object) -> None:
+        if not isinstance(kernel, Kernel):
+            return
         kernel.register("greeting", "hello")
 
-    def unregister(self, kernel) -> None:
+    def unregister(self, kernel: object) -> None:
+        if not isinstance(kernel, Kernel):
+            return
         kernel.registry.unregister("greeting")
 
 
@@ -31,7 +38,9 @@ class UppercaseTool(Tool):
     def name(self) -> str:
         return "uppercase"
 
-    def execute(self, context, **arguments):
+    def execute(self, context: object, **arguments: Any):
+        if not isinstance(context, CognitiveContext):
+            return ""
         return context.prompt.upper()
 
 
@@ -40,12 +49,14 @@ class AuditAgent(Agent):
     def name(self) -> str:
         return "audit"
 
-    def run(self, context):
+    def run(self, context: object) -> object:
+        if not isinstance(context, CognitiveContext):
+            return context
         context.metadata.setdefault("agents", []).append("audited")
         return context
 
 
-def step_validate(context) -> None:
+def step_validate(context: CognitiveContext) -> None:
     context.metadata.setdefault("steps", []).append("validated")
 
 
