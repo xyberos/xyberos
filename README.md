@@ -16,11 +16,12 @@ Implemented:
 
 - Kernel, service registry, dependency injection, and lifecycle management
 - Runtime and cognitive context
-- Brain and LLM abstraction
+- Brain and LLM abstraction, with an automated cognitive pipeline that wires
+  memory, knowledge, planner, workflow, and tools into every request
 - Contracts for agent, tool, memory, planner, knowledge, workflow, plugin, and service
 - Sequential workflow engine
 - Multi-agent runtime with a runtime adapter
-- Plugin loading and unloading
+- Plugin loading and unloading, with entry-point auto-discovery
 - Typed exception hierarchy
 
 The repository test suite is the best indicator of current behavior. At the time of this docs pass, the project test suite passes locally.
@@ -67,13 +68,15 @@ Import the main facade from the package root:
 from xyberos import Xyberos, chat, create_app
 ```
 
-### `create_app(config=None, llm=None)`
+### `create_app(config=None, llm=None, memory=None, knowledge=None, tools=None, planner=None, workflow=None, tool_runner=None)`
 
-Builds a ready-to-use `Xyberos` application.
+Builds a ready-to-use `Xyberos` application. Any provider you omit is filled in
+with an in-memory default.
 
-### `chat(prompt, config=None, llm=None)`
+### `chat(prompt, config=None, llm=None, ...)`
 
 Convenience helper that creates an app and returns the generated response text.
+It accepts the same provider arguments as `create_app`.
 
 ### `Xyberos`
 
@@ -119,7 +122,18 @@ The `Runtime` executes a `CognitiveContext` by delegating to the configured `Bra
 
 ### Brain
 
-The `Brain` validates the context and asks the configured `LLMProvider` to generate text.
+The `Brain` is the cognitive orchestration layer. For every request it runs an
+automated pipeline across the pluggable subsystems:
+
+1. **Workflow** — run configured steps first; a step that sets the response is honored.
+2. **Memory** — retrieve past turns and inject them into the prompt as history.
+3. **Knowledge** — query relevant facts and inject them into the prompt.
+4. **Planner** — run the planner and record its plan on `context.plan`.
+5. **Tools** — dispatch a matching tool through the `ToolRunner`.
+6. **LLM** — generate the response.
+7. **Memory** — store the completed turn so future requests can recall it.
+
+Every subsystem is optional; a bare `Brain` behaves like a plain LLM wrapper.
 Concrete LLM services live under `xyberos.llm`.
 
 ### Cognitive Context
@@ -130,6 +144,7 @@ Concrete LLM services live under `xyberos.llm`.
 - `response`
 - `metadata`
 - `error`
+- `plan` — the plan produced by the planner during processing
 
 It is the canonical object passed through the runtime pipeline.
 
@@ -263,6 +278,14 @@ Run with coverage:
 ```bash
 pytest --cov=xyberos
 ```
+
+## Future Enhancements
+
+The current implementation is a working foundation with a fully automated
+cognitive pipeline. The enhancement backlog — events and observability,
+persistent memory and knowledge backends, branching workflows, streaming,
+multi-agent collaboration, and production hardening — is tracked in the
+[Roadmap](docs/RFCs/RFC-Roadmap.md).
 
 ## Notes
 

@@ -29,7 +29,7 @@ The RFCs describe the current architecture and the reasoning behind the core lay
 - `RFC-0004-brain.md` - brain orchestration
 - `RFC-0005-context.md` - cognitive context model
 - `RFC-0006-llm-provider.md` - language model provider interface
-- `RFC-Roadmap.md` - roadmap and design direction
+- `RFC-Roadmap.md` - roadmap, current status, and future enhancement backlog
 
 ## Public API Map
 

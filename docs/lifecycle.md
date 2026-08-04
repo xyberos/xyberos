@@ -111,6 +111,11 @@ Plugins can also be loaded automatically without manual wiring:
 Both are idempotent — re-running them never double-registers a plugin. Call them
 before `app.start()` so discovered services participate in the lifecycle.
 
+After `load_entry_points()`, the facade re-syncs the brain's provider references
+(`llm`, `memory`, `knowledge`, `planner`, `workflow`, `tool_runner`) from the
+kernel, so plugins that replace a provider with `replace=True` take effect
+immediately.
+
 ## Best Practices
 
 - register foundational services early

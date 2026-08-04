@@ -62,7 +62,9 @@ class CounterService:
 
 Tools are named capabilities that can act on a context.
 
-The codebase includes a registry for tools, but it does not yet include a higher-level orchestrator that automatically selects tools for the brain. You register and execute tools directly.
+The `Brain` dispatches tools automatically through the `ToolRunner` when one is
+configured — the default heuristic selects a tool whose name appears in the
+prompt. You can also register and execute tools directly.
 
 ```python
 from xyberos.tools import ToolRegistry
@@ -120,6 +122,9 @@ knowledge.add("runtime", "request execution")
 - you want to attach domain facts to a prompt
 - you plan to swap the backend later, such as a document store or vector database
 
+The `Brain` queries the configured knowledge provider automatically and injects
+matching facts into the model prompt as relevant context.
+
 ## 4. Memory
 
 Memory providers store and retrieve context history.
@@ -140,6 +145,9 @@ print(memory.retrieve(first))
 - you want to accumulate past contexts
 - you need a simple persisted history interface
 - you want to replace the backend without changing callers
+
+The `Brain` uses the configured memory provider automatically: it retrieves past
+turns before generating and stores each completed turn afterward.
 
 ## 5. Planners
 
@@ -309,8 +317,14 @@ print(app.chat("hello"))
 
 ## 10. Important Limits
 
-- `ToolRegistry` exists, but there is no automatic tool-calling orchestration layer yet.
-- `Knowledge` and `Memory` are contracts plus reference implementations, not a full retrieval system.
+- Tool selection uses a simple prompt-name heuristic; there is no LLM-driven
+  tool-calling or tool-choice learning yet.
+- `Knowledge` and `Memory` ship as in-memory reference implementations; there are
+  no persistent or vector-store backends bundled yet.
+- Workflows are sequential only; there is no branching, state graph, or
+  human-in-the-loop support yet.
+- The `events/` package is reserved but empty — no event bus or observability
+  hooks exist yet.
 - `PluginLoader` manages plugin lifecycle and discovery (entry points + package
   scan), not package installation.
 - `skills` are not a core code concept in this repository.

@@ -63,13 +63,21 @@ def build_llm(config):
 app = create_app(config={"llm_provider": "openai"})
 app.register_factory("llm", build_llm, replace=True)
 
-print(app.chat("hello"))  # prints: [openai] hello
+# resolve() picks up the factory-built provider
+llm = app.resolve("llm")
+print(llm.generate("hi"))  # prints: [openai] hi
 
 # Change config at runtime — resolve picks up the new value
 app.config.set("llm_provider", "claude")
 llm = app.resolve("llm")
 print(llm.generate("hi"))  # prints: [claude] hi
 ```
+
+> Note: `app.chat()` uses the `Brain`, which captures its provider references at
+> construction time. Replacing a provider via `register` / `register_factory`
+> affects future `resolve()` calls but not the already-built brain.
+> `app.load_entry_points()` re-syncs the brain's providers after plugin
+> discovery; otherwise, build a fresh app.
 
 ### Dependency injection by parameter name
 

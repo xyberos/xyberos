@@ -2,6 +2,12 @@
 
 from __future__ import annotations
 
+from typing import Any
+
+from ..contracts.knowledge import KnowledgeProvider
+from ..contracts.memory import MemoryProvider
+from ..contracts.planner import Planner
+from ..contracts.workflow import Workflow
 from ..kernel.logger import Logger
 from ..llm import EchoLLM, LLMProvider
 from ..runtime.context import CognitiveContext
@@ -9,17 +15,41 @@ from ..tools import ToolRunner
 
 
 class Brain:
-    """Validate requests, optionally orchestrate tools, and generate responses."""
+    """Validate requests, optionally orchestrate tools, and generate responses.
+
+    The built-in single-pass pipeline runs each configured subsystem in order:
+
+    1. Run a :class:`~contracts.workflow.Workflow` first; if it produces a
+       response the brain honors it, otherwise processing continues.
+    2. Retrieve conversation history from :class:`~contracts.memory.Memory`
+       and inject it into the prompt.
+    3. Query :class:`~contracts.knowledge.Knowledge` and inject any facts.
+    4. Run the :class:`~contracts.planner.Planner` and record its plan on the
+       context (the plan is not forced into the model prompt).
+    5. Dispatch a matching tool if a :class:`~tools.ToolRunner` is configured.
+    6. Ask the LLM, then persist the completed turn back to memory.
+
+    Every subsystem is optional; omitting one leaves its step inactive, so a
+    bare ``Brain`` behaves like a plain LLM wrapper.
+    """
 
     def __init__(
         self,
         llm: LLMProvider | None = None,
         logger: Logger | None = None,
         tool_runner: ToolRunner | None = None,
+        memory: MemoryProvider | None = None,
+        knowledge: KnowledgeProvider | None = None,
+        planner: Planner | None = None,
+        workflow: Workflow | None = None,
     ) -> None:
         self.llm = llm or EchoLLM()
         self.logger = logger
         self.tool_runner = tool_runner
+        self.memory = memory
+        self.knowledge = knowledge
+        self.planner = planner
+        self.workflow = workflow
 
     def chat(self, context: CognitiveContext) -> str:
         prompt = getattr(context, "prompt", None)
@@ -29,6 +59,20 @@ class Brain:
         if self.logger is not None:
             self.logger.debug("Generating response")
 
+        # A configured workflow gets first crack at producing the response.
+        # A step-less workflow passes the context through unchanged, so the
+        # built-in pipeline below still runs.
+        if self.workflow is not None:
+            result = self.workflow.run(context)
+            if not isinstance(result, CognitiveContext):
+                raise TypeError("workflow must return a CognitiveContext")
+            if result.response is not None:
+                self._remember(result, result.response)
+                return result.response
+            context = result
+
+        enriched = self._enrich_prompt(context, prompt)
+
         if self.tool_runner is not None:
             try:
                 tool_result = self.tool_runner.dispatch(context)
@@ -36,9 +80,54 @@ class Brain:
                 tool_result = None
             else:
                 if tool_result is not None:
-                    return tool_result if isinstance(tool_result, str) else str(tool_result)
+                    response = tool_result if isinstance(tool_result, str) else str(tool_result)
+                    self._remember(context, response)
+                    return response
 
-        response = self.llm.generate(prompt)
+        response = self.llm.generate(enriched)
         if not isinstance(response, str):
             raise TypeError("LLM must return a string")
+        self._remember(context, response)
         return response
+
+    def _enrich_prompt(self, context: CognitiveContext, prompt: str) -> str:
+        """Compose memory and knowledge context around the original prompt."""
+        sections = [prompt]
+
+        if self.memory is not None:
+            history = self._format_history(self.memory.retrieve(context))
+            if history:
+                sections.append(f"Conversation history:\n{history}")
+
+        if self.knowledge is not None:
+            facts = self.knowledge.query(context)
+            if facts:
+                sections.append(f"Relevant knowledge:\n{facts}")
+
+        if self.planner is not None:
+            context.plan = self.planner.plan(context)
+
+        return "\n\n".join(sections)
+
+    def _remember(self, context: CognitiveContext, response: str) -> None:
+        """Persist a completed turn so future requests can recall it."""
+        if self.memory is None:
+            return
+        context.response = response
+        self.memory.store(context)
+
+    @staticmethod
+    def _format_history(entries: Any) -> str:
+        """Render stored entries as a readable user/assistant transcript."""
+        lines = []
+        for entry in entries or []:
+            user = getattr(entry, "prompt", None)
+            assistant = getattr(entry, "response", None)
+            if user is None and assistant is None:
+                lines.append(str(entry))
+                continue
+            line = f"user: {user}" if user is not None else ""
+            if assistant is not None:
+                line = f"{line}\nassistant: {assistant}" if line else f"assistant: {assistant}"
+            lines.append(line)
+        return "\n\n".join(lines)

@@ -9,13 +9,15 @@ class CognitiveContext:
     """A single request and its eventual response.
 
     ``metadata`` is deliberately open-ended so callers can attach request IDs,
-    user information, or tracing data without changing the core API.
+    user information, or tracing data without changing the core API. ``plan``
+    holds a provider-defined plan produced by the planner during processing.
     """
 
     prompt: str
     response: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
     error: Exception | None = None
+    plan: Any | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.prompt, str):

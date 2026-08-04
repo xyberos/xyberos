@@ -11,9 +11,9 @@ lists what the class is, **what it owns**, and **when to use it**.
 | `Kernel` | config, logger, registry, plugins | platform/lifecycle; service registration and DI |
 | `ServiceRegistry` | named services and factories | manual registration, resolution, and injection |
 | `Config` | configuration values | reading and writing settings |
-| `CognitiveContext` | prompt, response, metadata, error | passing state through the pipeline |
+| `CognitiveContext` | prompt, response, metadata, error, plan | passing state through the pipeline |
 | `Runtime` | a brain | executing a context through the pipeline |
-| `Brain` | an LLM and optional tool runner | validating input and generating text |
+| `Brain` | LLM, optional tool runner, memory, knowledge, planner, workflow | orchestrating the automated cognitive pipeline |
 | `RuntimeAgent` | one runtime | exposing a runtime as an agent |
 | `MultiAgentRuntime` | named agents | running several agents in sequence |
 | `SequentialWorkflow` | ordered steps | composing pipeline steps |
@@ -46,13 +46,15 @@ from xyberos import Xyberos, chat, create_app
   request execution. Prefer `create_app()` unless you need to keep a reference
   around.
 
-### `create_app(config=None, llm=None)`
+### `create_app(config=None, llm=None, memory=None, knowledge=None, tools=None, planner=None, workflow=None, tool_runner=None)`
 
-Convenience constructor for a ready-to-use `Xyberos` application.
+Convenience constructor for a ready-to-use `Xyberos` application. Any provider
+you omit is filled in with an in-memory default.
 
-### `chat(prompt, config=None, llm=None)`
+### `chat(prompt, config=None, llm=None, ...)`
 
-One-shot helper for the common case where you only need a response string.
+One-shot helper for the common case where you only need a response string. It
+accepts the same provider arguments as `create_app`.
 
 ## Core Classes
 
@@ -88,8 +90,9 @@ One-shot helper for the common case where you only need a response string.
 
 #### `CognitiveContext`
 
-- **What it owns:** a single request's `prompt`, `response`, `metadata`, and
-  `error`, plus the `succeeded` flag.
+- **What it owns:** a single request's `prompt`, `response`, `metadata`, `error`,
+  and `plan` (the plan produced by the planner during processing), plus the
+  `succeeded` flag.
 - **When to use it:** the state object passed through the whole pipeline; build
   one to run a request manually.
 
@@ -103,9 +106,27 @@ One-shot helper for the common case where you only need a response string.
 
 #### `Brain`
 
-- **What it owns:** an `LLMProvider` and an optional `ToolRunner`.
-- **When to use it:** validating input and generating a response; pass a
-  `tool_runner` to add tool orchestration before text generation.
+- **What it owns:** an `LLMProvider`, and optional `ToolRunner`, memory,
+  knowledge, planner, and workflow providers.
+- **When to use it:** validating input and generating a response; the brain
+  orchestrates the automated pipeline. See [The cognitive pipeline](#the-cognitive-pipeline)
+  below for the exact order.
+
+##### The cognitive pipeline
+
+For each request, `Brain.chat()` runs the configured subsystems in order:
+
+1. **Workflow** — if configured, its steps run first; a step that sets the
+   response short-circuits the pipeline.
+2. **Memory** — past turns are retrieved and injected into the prompt.
+3. **Knowledge** — matching facts are queried and injected into the prompt.
+4. **Planner** — the plan is computed and recorded on `context.plan`.
+5. **Tools** — a matching tool is dispatched via the `ToolRunner`.
+6. **LLM** — the enriched prompt is sent to the model.
+7. **Memory** — the completed turn is stored for future requests.
+
+Every step is optional. A bare `Brain` behaves like a plain LLM wrapper, and
+`create_app()` wires all of the in-memory defaults automatically.
 
 ### `xyberos.llm`
 

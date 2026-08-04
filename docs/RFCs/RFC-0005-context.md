@@ -4,20 +4,25 @@ Defines the Context object.
 
 Context represents the complete state of one execution.
 
-Version 1 fields:
+Implemented fields:
 
 prompt
 response
+metadata
+error
+plan
+
+- `plan` holds the provider-defined plan produced by the Brain's planner step.
+- The Brain stores completed contexts through the Memory contract after each
+  request and retrieves them before the next, so conversation history is
+  available to future executions via the configured memory provider.
 
 Future versions may add:
 
 history
-memory
-knowledge
 thoughts
 actions
 tool_results
-metadata
 cost
 timing
 

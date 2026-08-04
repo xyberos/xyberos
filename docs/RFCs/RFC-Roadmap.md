@@ -29,6 +29,100 @@ v0.9
 v1.0
 [ ] Stable Architecture
 
+---
+
+# Current Implementation Status (v0.9.0)
+
+All subsystems from v0.1–v0.9 are implemented. The `Brain` orchestrates them
+through an automated pipeline for every request:
+
+```text
+Workflow (optional)
+  ↓
+Memory (retrieve)
+  ↓
+Knowledge (query)
+  ↓
+Planner (record plan)
+  ↓
+Tools (dispatch)
+  ↓
+LLM (generate)
+  ↓
+Memory (store)
+```
+
+The default `create_app()` wires in-memory providers for every subsystem, so a
+default app remembers conversations, grounds prompts in knowledge, records a
+plan on the context, and dispatches tools automatically. The repository test
+suite (84 tests, 98% coverage) is the authoritative description of current
+behavior.
+
+---
+
+# Enhancement Backlog
+
+The framework is a working foundation, not yet a production orchestrator. The
+following enhancements are planned, roughly in priority order. None of them
+change the `Runtime` request/response interface.
+
+## 1. Events and observability (`events/`)
+
+- Implement the event bus and event-handler infrastructure in the empty `events/` package.
+- Emit lifecycle, pipeline, and tool events (request started, memory stored,
+  tool dispatched, response produced, errors).
+- Add optional tracing/hooks so applications can log and monitor execution.
+
+## 2. Persistent memory and knowledge backends
+
+- Add `sqlite.py`, `redis.py`, and `vector.py` providers under `memory/` and `knowledge/`.
+- Keep the existing `contracts/memory.py` and `contracts/knowledge.py` interfaces unchanged.
+- Configure providers via `create_app(memory=..., knowledge=...)` or plugin registration.
+
+## 3. Branching workflows and state graphs
+
+- Extend `contracts/workflow.py` (or add a new contract) to support branches,
+  loops, and conditional steps.
+- Add a state-graph workflow that can pause/resume, mirroring LangGraph-style control flow.
+- Support human-in-the-loop checkpoints.
+
+## 4. Streaming and async
+
+- Add async variants (`achat`, `arun`) and streaming callbacks for LLM output.
+- Keep the synchronous API as the default; add async as an opt-in.
+
+## 5. Multi-agent collaboration
+
+- Add inter-agent messaging, handoffs, and role-based coordination on top of `MultiAgentRuntime`.
+- Define an agent-to-agent message contract.
+
+## 6. LLM-driven planning
+
+- Replace or complement `SequentialPlanner` with a planner that asks the LLM to
+  derive steps from the prompt.
+- Optionally inject the plan into the model prompt behind a config flag.
+
+## 7. Structured outputs and typed tool results
+
+- Add typed tool signatures and structured LLM output parsing (e.g., JSON schema).
+- Expose parse failures as typed exceptions.
+
+## 8. Production hardening
+
+- Retries, rate limiting, and timeouts around LLM and tool calls.
+- Checkpointing for long-running workflows.
+- Config-driven tuning through the existing `Config` object.
+
+## 9. Model adapter catalog
+
+- Publish adapters for common providers (OpenAI, Anthropic, Ollama, Gemini,
+  local models) as `LLMProvider` implementations.
+
+## v1.0 — Stable Architecture
+
+- Freeze the public API and contracts.
+- Stabilize the enhancement backlog items that prove out in real usage.
+
 
 
 For **v0.3**, I would focus on making Xyberos **extensible** rather than adding AI capabilities. The directory structure should reflect that philosophy.
@@ -174,21 +268,47 @@ The Runtime should remain largely unchanged as the framework grows.
 
 Owns cognition.
 
-Today:
+Today (v0.9):
 
 ```text
 Prompt
 
 ↓
 
-LLM
+Workflow (optional)
+
+↓
+
+Memory (retrieve)
+
+↓
+
+Knowledge (query)
+
+↓
+
+Planner (record plan)
+
+↓
+
+Tools (dispatch)
+
+↓
+
+LLM (generate)
+
+↓
+
+Memory (store)
 
 ↓
 
 Response
 ```
 
-Future versions may add reasoning, planning, and tool orchestration internally without changing the Runtime interface.
+Every subsystem is optional, so a bare Brain is still a plain LLM wrapper.
+Future versions may add LLM-driven planning, reflection, streaming, and
+structured outputs internally without changing the Runtime interface.
 
 ---
 

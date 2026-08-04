@@ -81,7 +81,12 @@ app = Xyberos(llm=CallableLLM(lambda prompt: f"handled: {prompt}"))
 
 ### Important note
 
-If you replace the registered `"llm"` service after the app has already built its brain, the existing `Brain` instance will still hold the old LLM object. If you need a different model after initialization, create a fresh app or rebuild the brain and runtime yourself.
+The `Brain` captures its providers when the app is constructed. If you replace a
+registered provider afterwards (for example
+`kernel.register("llm", ..., replace=True)`), the existing `Brain` instance
+keeps its original reference. `app.load_entry_points()` re-syncs the brain from
+the kernel after plugin discovery, but for a direct replacement either create a
+fresh app or reassign the provider on the brain yourself.
 
 ## 4. Use the runtime
 
@@ -122,17 +127,25 @@ memory.store(second)
 print(memory.retrieve(first))
 ```
 
-This repository does not automatically connect memory into the runtime, so you usually register it as a service and use it from your own orchestration layer.
+The `Brain` wires memory automatically: it retrieves stored turns before
+generating and stores each completed turn afterward. `create_app()` already
+registers an `InMemoryMemory` as the default, so a default app remembers
+conversations across calls.
 
 ```python
 from xyberos import create_app
-from xyberos.memory import InMemoryMemory
 
 app = create_app()
-app.register("memory", InMemoryMemory())
+app.chat("first message")
+app.chat("what did I just say?")   # the first turn is part of the history
+
+for entry in app.memory.retrieve(None):
+    print(entry.prompt, "->", entry.response)
 ```
 
-The tool runner is available as `app.tool_runner` and can choose and execute a tool for a context.
+Swap in your own backend by passing `memory=` to `create_app()`, or by
+registering a replacement service. The tool runner is available as
+`app.tool_runner` and can choose and execute a tool for a context.
 
 ## 6. Add knowledge
 
@@ -157,15 +170,27 @@ You can extend it at runtime:
 knowledge.add("runtime", "request execution")
 ```
 
-Like memory, knowledge is a contract plus provider, not an automatic pipeline component. Register it as a service if you want the app to resolve it later.
+The `Brain` queries knowledge automatically: facts matching the prompt are
+injected into the model input as relevant context. `create_app()` registers an
+`InMemoryKnowledge` by default; pass `knowledge=` to supply your own.
 
 ```python
 from xyberos import create_app
+from xyberos.llm import CallableLLM
 from xyberos.knowledge import InMemoryKnowledge
 
-app = create_app()
-app.register("knowledge", InMemoryKnowledge())
+app = create_app(
+    llm=CallableLLM(lambda prompt: prompt),   # echo the enriched prompt
+    knowledge=InMemoryKnowledge({"hours": "9am-6pm"}),
+)
+print(app.chat("What are your hours?"))
+# What are your hours?
+#
+# Relevant knowledge:
+# {'hours': '9am-6pm'}
 ```
+
+You can extend the provider at runtime with `knowledge.add(key, value)`.
 
 ## 7. Use tools
 
@@ -320,117 +345,16 @@ app.register_factory("message", build_message)
 print(app.resolve("message"))
 ```
 
-## 8. Use tools
-
-Tools are named capabilities. The registry lets you register and execute them directly.
-
-```python
-from xyberos.contracts import Tool
-from xyberos.runtime.context import CognitiveContext
-from xyberos.tools import ToolRegistry
-
-
-class UppercaseTool(Tool):
-    @property
-    def name(self):
-        return "uppercase"
-
-    def execute(self, context, **arguments):
-        suffix = arguments.get("suffix", "")
-        return f"{context.prompt.upper()}{suffix}"
-
-
-registry = ToolRegistry([UppercaseTool()])
-result = registry.execute("uppercase", CognitiveContext("hello"), suffix="!")
-print(result)  # HELLO!
-```
-
-This is useful when you want a clear, named operation such as formatting, search, lookup, or transformation.
-
-## 9. Build a workflow
-
-Workflows are sequential transformations over one context.
-
-```python
-from xyberos.runtime.context import CognitiveContext
-from xyberos.workflows import SequentialWorkflow
-
-
-def annotate(context):
-    context.metadata["tutorial"] = True
-
-
-def answer(context):
-    context.response = f"processed: {context.prompt}"
-    return context
-
-
-workflow = SequentialWorkflow([annotate, answer])
-result = workflow.run(CognitiveContext("hello"))
-print(result.response)
-```
-
-Use workflows when you want deterministic step-by-step processing.
-
-## 10. Add agents
-
-Agents are named participants that process the same context in order.
-
-```python
-from xyberos import create_app
-from xyberos.agents import RuntimeAgent
-
-app = create_app()
-app.register_agent(RuntimeAgent("default", app.runtime))
-
-result = app.run_agents("hello")
-print(result.response)
-```
-
-Agents are useful when you want multiple passes over a context, or when you want to adapt a runtime into a named participant.
-
-## 11. Load plugins
-
-Plugins extend the kernel by registering and unregistering services.
-
-```python
-from xyberos import create_app
-from xyberos.contracts import Plugin
-
-
-class DemoPlugin(Plugin):
-    @property
-    def name(self):
-        return "demo"
-
-    def register(self, kernel):
-        kernel.register("demo_value", 123, replace=True)
-
-    def unregister(self, kernel):
-        kernel.registry.unregister("demo_value")
-
-
-app = create_app()
-app.load_plugin(DemoPlugin())
-print(app.resolve("demo_value"))
-```
-
-You can also load a plugin from a module that exports `plugin`.
-
-```python
-app.plugins.load_from_module("my_package.my_plugin")
-```
-
 ## 12. Put everything together
 
-Here is a small end-to-end example.
+Here is a small end-to-end example that exercises every subsystem through the
+automated brain pipeline.
 
 ```python
 from xyberos import create_app
 from xyberos.llm import CallableLLM
 from xyberos.contracts import Tool
 from xyberos.knowledge import InMemoryKnowledge
-from xyberos.memory import InMemoryMemory
 from xyberos.runtime.context import CognitiveContext
 from xyberos.tools import ToolRegistry
 
@@ -444,27 +368,57 @@ class ReverseTool(Tool):
         return context.prompt[::-1]
 
 
-app = create_app(llm=CallableLLM(lambda prompt: f"model:{prompt}"))
-app.register("memory", InMemoryMemory())
-app.register("knowledge", InMemoryKnowledge({"hello": "a greeting"}))
-app.register("tools", ToolRegistry([ReverseTool()]))
+app = create_app(
+    llm=CallableLLM(lambda prompt: f"model:{prompt}"),
+    knowledge=InMemoryKnowledge({"hello": "a greeting"}),
+)
 
 context = app.run("hello")
-memory = app.resolve("memory")
-knowledge = app.resolve("knowledge")
-tools = app.resolve("tools")
+print(context.plan)                    # the planner's recorded plan
+print(app.resolve("knowledge").query(context))
+print(app.chat("hello"))               # the model sees the injected knowledge
 
-memory.store(context)
-print(knowledge.query(context))
-print(tools.execute("reverse", CognitiveContext("abc")))
-print(app.chat("hello"))
+# The brain dispatches tools when they are registered with the app; you can
+# also execute a tool directly.
+tools = ToolRegistry([ReverseTool()])
+print(tools.execute("reverse", CognitiveContext("abc")))  # cba
 ```
 
-## 13. Practical guidance
+> Note: because the brain is wired to every subsystem, the memory, knowledge,
+> and tool steps also happen automatically inside `app.run()` / `app.chat()`
+> without manual orchestration. The explicit calls above let you observe them.
+
+## 13. The automated pipeline
+
+Since the brain is wired to every subsystem, a single `app.chat(prompt)` runs:
+
+1. **Workflow** — any configured steps run first; a step that sets the response short-circuits.
+2. **Memory** — past turns are retrieved and added to the prompt as conversation history.
+3. **Knowledge** — matching facts are retrieved and added to the prompt.
+4. **Planner** — the plan is computed and recorded on `context.plan`.
+5. **Tools** — a matching tool may handle the request before the model is called.
+6. **LLM** — the (possibly enriched) prompt is sent to the model.
+7. **Memory** — the completed turn is stored so the next request can recall it.
+
+You can observe the memory behavior directly:
+
+```python
+from xyberos import create_app
+
+app = create_app()
+app.chat("hello")
+app.chat("what did I just say?")
+
+for entry in app.memory.retrieve(None):
+    print(entry.prompt, "->", entry.response)
+```
+
+## 14. Practical guidance
 
 - Use `create_app()` for the simplest setup.
 - Pass `llm=` during creation when you want to override the model.
-- Register memory and knowledge as services when your own orchestration code needs to access them later.
+- Provide `memory=`, `knowledge=`, `planner=`, `workflow=`, or `tools=` when you
+  want custom backends — the brain uses them automatically.
 - Use tools for named operations and workflows for ordered steps.
 - Use `tool_runner` when you want a simple orchestration layer that chooses and executes tools.
 - Use agents when you want multiple participants to process one context.
