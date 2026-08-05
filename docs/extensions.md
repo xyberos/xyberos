@@ -323,8 +323,8 @@ print(app.chat("hello"))
   no persistent or vector-store backends bundled yet.
 - Workflows are sequential only; there is no branching, state graph, or
   human-in-the-loop support yet.
-- The `events/` package is reserved but empty — no event bus or observability
-  hooks exist yet.
+- Observability is limited to the in-process `EventBus`; there is no event
+  persistence, distributed tracing, or metrics export yet.
 - `PluginLoader` manages plugin lifecycle and discovery (entry points + package
   scan), not package installation.
 - `skills` are not a core code concept in this repository.

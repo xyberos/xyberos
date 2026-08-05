@@ -8,6 +8,17 @@ from ..contracts.knowledge import KnowledgeProvider
 from ..contracts.memory import MemoryProvider
 from ..contracts.planner import Planner
 from ..contracts.workflow import Workflow
+from ..events import EventBus
+from ..events.names import (
+    BRAIN_ERROR,
+    KNOWLEDGE_QUERIED,
+    MEMORY_RETRIEVED,
+    MEMORY_STORED,
+    PLAN_CREATED,
+    RESPONSE_PRODUCED,
+    TOOL_DISPATCHED,
+    WORKFLOW_RUN,
+)
 from ..kernel.logger import Logger
 from ..llm import EchoLLM, LLMProvider
 from ..runtime.context import CognitiveContext
@@ -42,6 +53,7 @@ class Brain:
         knowledge: KnowledgeProvider | None = None,
         planner: Planner | None = None,
         workflow: Workflow | None = None,
+        events: EventBus | None = None,
     ) -> None:
         self.llm = llm or EchoLLM()
         self.logger = logger
@@ -50,6 +62,7 @@ class Brain:
         self.knowledge = knowledge
         self.planner = planner
         self.workflow = workflow
+        self.events = events
 
     def chat(self, context: CognitiveContext) -> str:
         prompt = getattr(context, "prompt", None)
@@ -59,11 +72,20 @@ class Brain:
         if self.logger is not None:
             self.logger.debug("Generating response")
 
+        try:
+            return self._chat(context, prompt)
+        except Exception:
+            self._emit(BRAIN_ERROR, context=context)
+            raise
+
+    def _chat(self, context: CognitiveContext, prompt: str) -> str:
+        """Run the configured pipeline and return the generated response."""
         # A configured workflow gets first crack at producing the response.
         # A step-less workflow passes the context through unchanged, so the
         # built-in pipeline below still runs.
         if self.workflow is not None:
             result = self.workflow.run(context)
+            self._emit(WORKFLOW_RUN, context=context)
             if not isinstance(result, CognitiveContext):
                 raise TypeError("workflow must return a CognitiveContext")
             if result.response is not None:
@@ -81,12 +103,14 @@ class Brain:
             else:
                 if tool_result is not None:
                     response = tool_result if isinstance(tool_result, str) else str(tool_result)
+                    self._emit(TOOL_DISPATCHED, context=context)
                     self._remember(context, response)
                     return response
 
         response = self.llm.generate(enriched)
         if not isinstance(response, str):
             raise TypeError("LLM must return a string")
+        self._emit(RESPONSE_PRODUCED, context=context, response=response)
         self._remember(context, response)
         return response
 
@@ -95,17 +119,22 @@ class Brain:
         sections = [prompt]
 
         if self.memory is not None:
-            history = self._format_history(self.memory.retrieve(context))
+            entries = self.memory.retrieve(context)
+            self._emit(MEMORY_RETRIEVED, context=context, count=_size(entries))
+            history = self._format_history(entries)
             if history:
                 sections.append(f"Conversation history:\n{history}")
 
         if self.knowledge is not None:
             facts = self.knowledge.query(context)
+            self._emit(KNOWLEDGE_QUERIED, context=context)
             if facts:
                 sections.append(f"Relevant knowledge:\n{facts}")
 
         if self.planner is not None:
-            context.plan = self.planner.plan(context)
+            plan = self.planner.plan(context)
+            context.plan = plan
+            self._emit(PLAN_CREATED, context=context)
 
         return "\n\n".join(sections)
 
@@ -115,6 +144,12 @@ class Brain:
             return
         context.response = response
         self.memory.store(context)
+        self._emit(MEMORY_STORED, context=context)
+
+    def _emit(self, name: str, *, context: object | None = None, **data: Any) -> None:
+        """Publish ``name`` on the event bus when one is configured."""
+        if self.events is not None:
+            self.events.emit(name, context=context, **data)
 
     @staticmethod
     def _format_history(entries: Any) -> str:
@@ -131,3 +166,13 @@ class Brain:
                 line = f"{line}\nassistant: {assistant}" if line else f"assistant: {assistant}"
             lines.append(line)
         return "\n\n".join(lines)
+
+
+def _size(value: Any) -> int | None:
+    """Best-effort length for provider-defined retrieval results."""
+    if hasattr(value, "__len__"):
+        try:
+            return len(value)
+        except TypeError:
+            return None
+    return None

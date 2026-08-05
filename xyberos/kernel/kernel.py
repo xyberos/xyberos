@@ -6,6 +6,8 @@ from typing import Any, TypeVar
 from .config import Config
 from .logger import Logger
 from .registry import ServiceRegistry
+from ..events import EventBus
+from ..events.names import KERNEL_STARTED, KERNEL_STOPPED
 from ..plugins.loader import PluginLoader
 
 
@@ -23,8 +25,10 @@ class Kernel:
             name=self.config.get("logger_name", "xyberos"),
             level=self.config.get("log_level", "INFO"),
         )
+        self.events = EventBus(logger=self.logger)
         self.register("config", self.config)
         self.register("logger", self.logger)
+        self.register("events", self.events)
         self.plugins = PluginLoader(self)
         self.register("plugins", self.plugins)
 
@@ -72,6 +76,7 @@ class Kernel:
             if callable(start):
                 start()
         self._started = True
+        self.events.emit(KERNEL_STARTED)
 
     def stop(self) -> None:
         """Stop registered lifecycle-aware services in reverse order."""
@@ -84,3 +89,4 @@ class Kernel:
                     stop()
         finally:
             self._started = False
+            self.events.emit(KERNEL_STOPPED)

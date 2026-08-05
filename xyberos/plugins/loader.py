@@ -10,6 +10,7 @@ from types import ModuleType
 from typing import TYPE_CHECKING
 
 from ..contracts.plugin import Plugin
+from ..events.names import PLUGIN_LOADED, PLUGIN_UNLOADED
 from ..exceptions.plugin import PluginAlreadyLoadedError, PluginLoadError, PluginNotFoundError
 
 if TYPE_CHECKING:
@@ -46,6 +47,7 @@ class PluginLoader:
 
         plugin.register(self._kernel)
         self._plugins[plugin.name] = plugin
+        self._kernel.events.emit(PLUGIN_LOADED, context=plugin)
         return plugin
 
     def load_from_module(self, module_name: str, attribute: str = "plugin") -> Plugin:
@@ -164,4 +166,5 @@ class PluginLoader:
         plugin = self.get(name)
         plugin.unregister(self._kernel)
         del self._plugins[name]
+        self._kernel.events.emit(PLUGIN_UNLOADED, context=plugin)
         return plugin

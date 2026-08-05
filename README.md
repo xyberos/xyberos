@@ -21,6 +21,7 @@ Implemented:
 - Contracts for agent, tool, memory, planner, knowledge, workflow, plugin, and service
 - Sequential workflow engine
 - Multi-agent runtime with a runtime adapter
+- Event bus and pipeline observability (kernel, plugin, runtime, and brain events)
 - Plugin loading and unloading, with entry-point auto-discovery
 - Typed exception hierarchy
 
@@ -86,6 +87,7 @@ The application facade exposes the key runtime services:
 - `logger`
 - `registry`
 - `plugins`
+- `events`
 - `llm`
 - `memory`
 - `knowledge`
@@ -181,6 +183,43 @@ styles so modules/services register themselves without manual wiring:
 - **Convention scan** (`app.load_plugins_from("package")`): walks a package and loads every concrete `Plugin` subclass it finds. Drop a module in the folder and it is wired up.
 
 Both are idempotent — re-running discovery never double-registers a plugin.
+
+### Events and Observability
+
+The kernel exposes an `EventBus` (also registered as the `events` service, and
+reachable as `app.events`). The kernel, plugin loader, runtime, and brain
+publish canonical lifecycle and pipeline events:
+
+```python
+from xyberos import create_app
+from xyberos.events import RESPONSE_PRODUCED
+
+app = create_app()
+app.events.subscribe(RESPONSE_PRODUCED, lambda event: print(event.data["response"]))
+```
+
+Events cover `kernel.started/stopped`, `plugin.loaded/unloaded`,
+`runtime.request_started/completed/failed`, and the brain pipeline steps
+(`brain.workflow_run`, `brain.memory_retrieved/stored`,
+`brain.knowledge_queried`, `brain.plan_created`, `brain.tool_dispatched`,
+`brain.response_produced`, `brain.error`). A listener that raises is logged and
+isolated — it never breaks the pipeline.
+
+For analysis, attach an `EventRecorder` to capture every event with bounded
+history and per-name counts, and forward them to exporters:
+
+```python
+from xyberos import create_app
+from xyberos.events import EventRecorder, LoggingExporter
+
+app = create_app()
+recorder = EventRecorder(limit=1000).subscribe_to(app.events)
+recorder.add_exporter(LoggingExporter(app.logger))
+print(recorder.counts())  # events per name for dashboards
+```
+
+Any callable `event -> None` is an exporter, so integrating a metrics or
+tracing backend is just a function.
 
 ## Examples
 

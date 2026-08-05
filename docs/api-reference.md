@@ -24,6 +24,7 @@ lists what the class is, **what it owns**, and **when to use it**.
 | `ToolRunner` | a tool registry | selecting and dispatching tools |
 | `PluginLoader` | loaded plugins, entry-point discovery, convention scan | loading, unloading, and auto-discovering extensions |
 | `LLMProvider` | a model backend | providing text generation |
+| `EventBus` | subscribers and published events | observing and extending the pipeline |
 
 ## Package Root
 
@@ -283,6 +284,50 @@ These are also exposed on the facade:
 
 - `app.load_entry_points(group="xyberos.plugins")`
 - `app.load_plugins_from("app.plugins")`
+
+### `xyberos.events`
+
+#### `EventBus`
+
+- **What it owns:** named listeners, wildcard listeners, and the publish/emit loop.
+- **When to use it:** subscribing to pipeline and lifecycle events for
+  observability, tracing, or automation; reachable as `app.events`.
+- **Useful methods:** `subscribe(event, listener)`, `subscribe_any(listener)`,
+  `unsubscribe(event, listener)`, `emit(name, context=None, **data)`,
+  `publish(event)`, `has_listeners(event)`.
+
+#### `Event`
+
+- **What it owns:** an immutable `name`, optional `context`, and a `data` mapping.
+- **When to use it:** the payload delivered to every listener.
+
+Canonical event names are exported from `xyberos.events` (e.g. `REQUEST_STARTED`,
+`RESPONSE_PRODUCED`, `BRAIN_ERROR`); see `xyberos/events/names.py` for the full list.
+
+```python
+from xyberos import create_app
+from xyberos.events import BRAIN_ERROR, RESPONSE_PRODUCED
+
+app = create_app()
+app.events.subscribe(RESPONSE_PRODUCED, lambda e: print(e.data["response"]))
+app.events.subscribe(BRAIN_ERROR, lambda e: print("request failed"))
+```
+
+A listener that raises is logged and isolated — it never breaks the pipeline.
+
+#### `EventRecorder`
+
+- **What it owns:** a bounded event history, per-name counts, and attached exporters.
+- **When to use it:** recording every event for inspection, dashboards, or
+  forwarding to metrics/tracing backends. Attach with `subscribe_to(app.events)`.
+
+#### `LoggingExporter`
+
+- **What it owns:** a logger and the export logic.
+- **When to use it:** writing one structured log line per event.
+
+Any callable `event -> None` can be an `Exporter`, so integrating a metrics or
+tracing backend is just a function.
 
 ### `xyberos.diagnostics`
 

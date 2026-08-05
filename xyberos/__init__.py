@@ -1,7 +1,17 @@
 """Xyberos package."""
 
 from .diagnostics import DiagnosticReport, doctor
+from .events import Event, EventBus
 from .xyberos import Xyberos, chat, create_app
 from .version import __version__
 
-__all__ = ["DiagnosticReport", "Xyberos", "__version__", "chat", "create_app", "doctor"]
+__all__ = [
+    "DiagnosticReport",
+    "Event",
+    "EventBus",
+    "Xyberos",
+    "__version__",
+    "chat",
+    "create_app",
+    "doctor",
+]

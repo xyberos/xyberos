@@ -11,6 +11,7 @@ from .contracts.memory import MemoryProvider
 from .contracts.planner import Planner
 from .contracts.plugin import Plugin
 from .contracts.workflow import Workflow
+from .events import EventBus
 from .kernel.config import Config
 from .kernel.kernel import Kernel
 from .kernel.logger import Logger
@@ -75,6 +76,10 @@ class Xyberos:
     @property
     def plugins(self) -> PluginLoader:
         return self.kernel.plugins
+
+    @property
+    def events(self) -> EventBus:
+        return cast(EventBus, self.resolve("events"))
 
     @property
     def llm(self) -> LLMProvider:

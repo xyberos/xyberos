@@ -55,7 +55,7 @@ Memory (store)
 The default `create_app()` wires in-memory providers for every subsystem, so a
 default app remembers conversations, grounds prompts in knowledge, records a
 plan on the context, and dispatches tools automatically. The repository test
-suite (84 tests, 98% coverage) is the authoritative description of current
+suite (105 tests, 98% coverage) is the authoritative description of current
 behavior.
 
 ---
@@ -68,10 +68,21 @@ change the `Runtime` request/response interface.
 
 ## 1. Events and observability (`events/`)
 
-- Implement the event bus and event-handler infrastructure in the empty `events/` package.
-- Emit lifecycle, pipeline, and tool events (request started, memory stored,
-  tool dispatched, response produced, errors).
-- Add optional tracing/hooks so applications can log and monitor execution.
+Status: core implemented in v0.9.0.
+
+- [x] Event bus and listener infrastructure in `xyberos/events/` — `EventBus`,
+      `Event`, and canonical event names in `events/names.py`.
+- [x] Lifecycle events: `kernel.started`, `kernel.stopped`, `plugin.loaded`, `plugin.unloaded`.
+- [x] Pipeline events: `runtime.request_started/completed/failed`,
+      `brain.workflow_run`, `brain.memory_retrieved/stored`,
+      `brain.knowledge_queried`, `brain.plan_created`, `brain.tool_dispatched`,
+      `brain.response_produced`, `brain.error`.
+- [x] Listener isolation — a failing listener is logged and never breaks the pipeline.
+- [x] Tracing hooks: `EventRecorder` (bounded history + per-name counts) and
+      `LoggingExporter` (structured event log lines); arbitrary `Exporter`
+      callables can be attached to forward events to metrics/tracing backends.
+- [ ] Optional: bundled adapters for concrete backends (e.g. OpenTelemetry,
+      Prometheus, JSON-lines files).
 
 ## 2. Persistent memory and knowledge backends
 
@@ -407,7 +418,10 @@ platform kernel through `register`/`unregister`.
 
 ## `events/`
 
-Reserved for a future event bus and event-handler infrastructure.
+Observability. `EventBus` publishes lifecycle and pipeline events (kernel,
+plugin, runtime, and brain); applications subscribe to canonical names in
+`events/names.py`. Listeners are isolated so a failing hook never breaks the
+pipeline.
 
 ---
 

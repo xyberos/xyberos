@@ -48,6 +48,7 @@ Useful supporting modules:
 - `xyberos.workflows` - sequential workflow engine
 - `xyberos.plugins` - plugin loading and auto-discovery (entry points + convention scan)
 - `xyberos.contracts` - extension contracts
+- `xyberos.events` - event bus and pipeline observability
 - `xyberos.exceptions` - typed domain exceptions
 
 ## Reading Order
