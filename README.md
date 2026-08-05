@@ -20,10 +20,11 @@ Implemented:
   memory, knowledge, planner, workflow, and tools into every request
 - Contracts for agent, tool, memory, planner, knowledge, workflow, plugin, and service
 - Sequential workflow engine
-- Multi-agent runtime with a runtime adapter
+- Multi-agent runtime with messaging, handoffs, and role-based coordination
 - Event bus and pipeline observability (kernel, plugin, runtime, and brain events)
 - Persistent SQLite memory and knowledge providers (stdlib, no dependencies)
 - Async `achat`/`arun` and streaming LLM output (token events)
+- LLM-driven planning and config-gated plan injection
 - Plugin loading and unloading, with entry-point auto-discovery
 - Typed exception hierarchy
 
@@ -158,8 +159,28 @@ It is the canonical object passed through the runtime pipeline.
 
 ### Multi-Agent Runtime
 
-`MultiAgentRuntime` runs registered agents sequentially against one context.
-`RuntimeAgent` adapts an existing runtime into the agent contract.
+`MultiAgentRuntime` runs registered agents against one context, with inter-agent
+messaging, handoffs, and role-based coordination:
+
+```python
+from xyberos.agents import Message, RoleAgent, handoff, post
+
+def ask(context):
+    post(context, handoff("worker", sender="boss"))
+    return context
+
+boss = RoleAgent("boss", "supervisor", run=ask)
+worker = RoleAgent("worker", "performer", run=work_step, receive=on_message)
+app.register_agent(boss)
+app.register_agent(worker)
+```
+
+`Message` carries `sender`/`recipient`/`content`; `recipient="*"` broadcasts,
+and a `handoff` message runs the recipient next. Agents that implement
+`receive(message)` get inbound messages, and `runtime.messages` records the
+whole exchange. `RoleAgent` bundles a name, role, run handler, and optional
+message handler. `RuntimeAgent` adapts an existing runtime into the agent
+contract.
 
 ### Workflow Engine
 
@@ -183,8 +204,21 @@ while run.status == "paused":
 
 ### Planner
 
-`SequentialPlanner` is a simple ordered planning implementation.
-It is intentionally small and can be replaced with a more sophisticated planner later.
+`SequentialPlanner` produces a fixed ordered plan; `LLMPlanner` asks the
+configured LLM to derive steps from the request. Set
+`config={"brain.inject_plan": True}` to have the Brain append the plan to the
+model prompt (off by default, so default output is unchanged):
+
+```python
+from xyberos import create_app
+from xyberos.planner import LLMPlanner
+from xyberos.llm import CallableLLM
+
+app = create_app(
+    config={"brain.inject_plan": True},
+    planner=LLMPlanner(CallableLLM(lambda prompt: "research\ndraft\nreview")),
+)
+```
 
 ### Memory and Knowledge
 

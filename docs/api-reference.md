@@ -15,10 +15,13 @@ lists what the class is, **what it owns**, and **when to use it**.
 | `Runtime` | a brain | executing a context through the pipeline |
 | `Brain` | LLM, optional tool runner, memory, knowledge, planner, workflow | orchestrating the automated cognitive pipeline |
 | `RuntimeAgent` | one runtime | exposing a runtime as an agent |
-| `MultiAgentRuntime` | named agents | running several agents in sequence |
+| `MultiAgentRuntime` | named agents, message board | coordinated runs with messaging and handoffs |
+| `Message` | sender, recipient, content | agent-to-agent communication |
+| `RoleAgent` | name, role, handlers | role-based collaborative agents |
 | `SequentialWorkflow` | ordered steps | composing pipeline steps |
 | `GraphWorkflow` | named nodes, edges, routes | branching, looping, and pausing workflows |
 | `SequentialPlanner` | ordered plan steps | producing a plan for a context |
+| `LLMPlanner` | an LLM and optional parser | deriving plan steps from the request |
 | `InMemoryMemory` | stored contexts | dev/test memory provider |
 | `SqliteMemory` | persistent context rows | durable memory provider |
 | `InMemoryKnowledge` | keyword facts | dev/test knowledge provider |
@@ -176,9 +179,25 @@ Every step is optional. A bare `Brain` behaves like a plain LLM wrapper, and
 
 #### `MultiAgentRuntime`
 
-- **What it owns:** named `Agent` instances.
-- **When to use it:** running multiple agents sequentially over one shared
-  context.
+- **What it owns:** named `Agent` instances and a running message board.
+- **When to use it:** running agents over one shared context with inter-agent
+  messaging, handoffs, and roles. Each agent runs at most once per `run()` call;
+  a `handoff` message runs its recipient next.
+- **Useful members:** `names`, `messages`, `register`, `get`, `remove`, `role`,
+  `send(message)`, `run(context, agent_names=None)`.
+
+#### `Message`
+
+- **What it owns:** an immutable `sender`, `recipient`, `content`, `kind`, and `metadata`.
+- **When to use it:** agent-to-agent communication. `recipient="*"` broadcasts;
+  `kind == "handoff"` transfers control to the recipient.
+- **Helpers:** `post(context, message)` queues a message for the runtime;
+  `handoff(target, content=None, sender="")` builds a handoff.
+
+#### `RoleAgent`
+
+- **What it owns:** a `name`, `role`, optional `run` handler, and optional `receive` handler.
+- **When to use it:** building role-based collaborative agents without subclassing.
 
 ### `xyberos.workflows`
 
@@ -225,6 +244,14 @@ while run.status == "paused":
 
 - **What it owns:** an ordered set of plan step names.
 - **When to use it:** producing a simple ordered plan for a context.
+
+#### `LLMPlanner`
+
+- **What it owns:** an `LLMProvider` and an optional `parse` callable.
+- **When to use it:** deriving plan steps by asking the LLM to break down the
+  request (one step per line by default; pass `parse` for JSON or other shapes).
+- **Note:** combine with `config={"brain.inject_plan": True}` to have the Brain
+  append the plan to the model prompt.
 
 ### `xyberos.memory` / `xyberos.knowledge`
 

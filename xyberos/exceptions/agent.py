@@ -11,3 +11,7 @@ class AgentAlreadyRegisteredError(AgentError, KeyError):
 
 class AgentNotFoundError(AgentError, KeyError):
     """Raised when an unknown agent is requested or removed."""
+
+
+class HandoffLoopError(AgentError):
+    """Raised when agent handoffs exceed the configured limit."""

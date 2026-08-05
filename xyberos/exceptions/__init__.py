@@ -1,6 +1,11 @@
 """Xyberos domain exceptions."""
 
-from .agent import AgentAlreadyRegisteredError, AgentError, AgentNotFoundError
+from .agent import (
+    AgentAlreadyRegisteredError,
+    AgentError,
+    AgentNotFoundError,
+    HandoffLoopError,
+)
 from .plugin import PluginAlreadyLoadedError, PluginError, PluginLoadError, PluginNotFoundError
 from .tool import ToolAlreadyRegisteredError, ToolError, ToolNotFoundError
 from .registry import (
@@ -24,6 +29,7 @@ __all__ = [
     "CognitiveRuntimeError",
     "ContextExecutionError",
     "DependencyResolutionError",
+    "HandoffLoopError",
     "InvalidServiceNameError",
     "KernelError",
     "ProviderError",

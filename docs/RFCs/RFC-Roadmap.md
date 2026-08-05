@@ -137,14 +137,36 @@ Status: implemented in v0.9.0.
 
 ## 5. Multi-agent collaboration
 
-- Add inter-agent messaging, handoffs, and role-based coordination on top of `MultiAgentRuntime`.
-- Define an agent-to-agent message contract.
+Status: implemented in v0.9.0.
+
+- [x] Agent-to-agent message contract — `Message` (sender, recipient, content,
+      kind, metadata) in `xyberos/agents/messages.py`, with `post(context, msg)`
+      and `handoff(target)` helpers.
+- [x] Inter-agent messaging — `MultiAgentRuntime` records every message
+      (`runtime.messages`), delivers them to recipients that implement
+      `receive(message)`, supports `"*"` broadcast, and isolates delivery
+      failures. `send(message)` posts directly from application code.
+- [x] Handoffs — a `handoff` message runs the recipient next (chained, up to
+      `max_handoffs`); each agent runs at most once per `run()` call, and
+      `HandoffLoopError` bounds runaway chains.
+- [x] Role-based coordination — `RoleAgent(name, role, run, receive)` and
+      `runtime.role(name)`.
+- [x] Works through the facade (`app.agents`, `app.run_agents`).
+- [ ] Optional: async agent collaboration, agent-to-agent conversation state,
+      and a dedicated supervisor/re-planning loop.
 
 ## 6. LLM-driven planning
 
-- Replace or complement `SequentialPlanner` with a planner that asks the LLM to
-  derive steps from the prompt.
-- Optionally inject the plan into the model prompt behind a config flag.
+Status: implemented in v0.9.0.
+
+- [x] `LLMPlanner` in `xyberos/planner/` — asks the LLM to break the request
+      into one-step-per-line, with a custom `parse` callable for other shapes
+      (e.g. JSON).
+- [x] Config-gated plan injection — `config["brain.inject_plan"] = True` makes
+      the Brain append the plan to the model prompt; default stays off so
+      default output is unchanged.
+- [ ] Optional: a plan execution/verification loop (execute steps, re-plan on
+      failure) and confidence/reflection on the plan.
 
 ## 7. Structured outputs and typed tool results
 

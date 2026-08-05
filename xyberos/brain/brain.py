@@ -22,6 +22,7 @@ from ..events.names import (
     WORKFLOW_RUN,
 )
 from ..exceptions.workflow import WorkflowPaused
+from ..kernel.config import Config
 from ..kernel.logger import Logger
 from ..llm import EchoLLM, LLMProvider
 from ..runtime.context import CognitiveContext
@@ -57,6 +58,7 @@ class Brain:
         planner: Planner | None = None,
         workflow: Workflow | None = None,
         events: EventBus | None = None,
+        config: Config | None = None,
     ) -> None:
         self.llm = llm or EchoLLM()
         self.logger = logger
@@ -66,6 +68,8 @@ class Brain:
         self.planner = planner
         self.workflow = workflow
         self.events = events
+        self.config = config
+        self._inject_plan = bool(config.get("brain.inject_plan", False)) if config is not None else False
 
     def chat(self, context: CognitiveContext) -> str:
         prompt = getattr(context, "prompt", None)
@@ -222,8 +226,21 @@ class Brain:
             plan = self.planner.plan(context)
             context.plan = plan
             self._emit(PLAN_CREATED, context=context)
+            if self._inject_plan:
+                formatted = self._format_plan(plan)
+                if formatted:
+                    sections.append(f"Plan:\n{formatted}")
 
         return "\n\n".join(sections)
+
+    @staticmethod
+    def _format_plan(plan: Any) -> str:
+        """Render a provider-defined plan as readable text."""
+        if isinstance(plan, str):
+            return plan
+        if isinstance(plan, (list, tuple)):
+            return "\n".join(f"- {item}" for item in plan)
+        return str(plan)
 
     def _remember(self, context: CognitiveContext, response: str) -> None:
         """Persist a completed turn so future requests can recall it."""
