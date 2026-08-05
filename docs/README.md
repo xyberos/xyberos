@@ -36,19 +36,24 @@ The RFCs describe the current architecture and the reasoning behind the core lay
 Import the main facade from the package root:
 
 ```python
-from xyberos import Xyberos, chat, create_app
+from xyberos import Xyberos, achat, chat, create_app
 ```
 
 Useful supporting modules:
 
-- `xyberos.kernel` - configuration, logging, registry, lifecycle
-- `xyberos.runtime` - cognitive context and runtime execution
-- `xyberos.brain` - brain orchestration and LLM adapters
-- `xyberos.agents` - multi-agent runtime and runtime adapter
-- `xyberos.workflows` - sequential workflow engine
+- `xyberos.kernel` - configuration, logging, registry, lifecycle, event bus
+- `xyberos.runtime` - cognitive context and runtime execution (sync + async)
+- `xyberos.brain` - automated cognitive pipeline
+- `xyberos.agents` - multi-agent runtime, roles, messaging, and handoffs
+- `xyberos.workflows` - sequential workflows, state graphs, and checkpoints
 - `xyberos.plugins` - plugin loading and auto-discovery (entry points + convention scan)
+- `xyberos.llm` - model providers, streaming/async, structured output, and adapters
+- `xyberos.memory` / `xyberos.knowledge` - in-memory and SQLite providers
+- `xyberos.planner` - fixed and LLM-driven planners
+- `xyberos.tools` - registries, runners, and typed function tools
+- `xyberos.events` - event bus, tracing, and exporters
+- `xyberos.utils` - resilience helpers (retry, rate limiting, timeouts)
 - `xyberos.contracts` - extension contracts
-- `xyberos.events` - event bus and pipeline observability
 - `xyberos.exceptions` - typed domain exceptions
 
 ## Reading Order

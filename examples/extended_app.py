@@ -3,18 +3,22 @@
 Run:  python examples/extended_app.py
 """
 
+import asyncio
 from typing import Any
 
 from xyberos import create_app
+from xyberos.agents import RoleAgent, handoff, post
 from xyberos.contracts import Agent, Plugin, Tool
+from xyberos.events import RESPONSE_PRODUCED, EventRecorder
+from xyberos.exceptions import WorkflowPaused
 from xyberos.kernel.kernel import Kernel
 from xyberos.knowledge import InMemoryKnowledge
 from xyberos.memory import InMemoryMemory
 from xyberos.planner import SequentialPlanner
-from xyberos.llm import CallableLLM
+from xyberos.llm import AsyncLLM, CallableLLM, structured
 from xyberos.runtime.context import CognitiveContext
-from xyberos.tools import ToolRegistry
-from xyberos.workflows import SequentialWorkflow
+from xyberos.tools import FunctionTool, ToolRegistry
+from xyberos.workflows import GraphWorkflow, SequentialWorkflow
 
 
 class GreetingPlugin(Plugin):
@@ -100,6 +104,73 @@ def main() -> None:
 
     tools = ToolRegistry([UppercaseTool()])
     print("   tool:", tools.execute("uppercase", CognitiveContext("tool")))
+
+    # 7. Events and observability.
+    responses: list[str] = []
+    recorder = EventRecorder(limit=100).subscribe_to(app.events)
+    app.events.subscribe(RESPONSE_PRODUCED, lambda e: responses.append(e.data["response"]))
+    app.chat("hello")
+    print("7) events:", recorder.count, "recorded; response event:", responses)
+
+    # 8. State graph with human-in-the-loop.
+    graph = GraphWorkflow("ask")
+
+    def ask(context: CognitiveContext) -> CognitiveContext | None:
+        if GraphWorkflow.RESUME_KEY in context.metadata:
+            context.response = "approved"
+            return context
+        raise WorkflowPaused(prompt="Approve the action?")
+
+    graph.add_node("ask", ask)
+    run = graph.execute(CognitiveContext("task"))
+    run = graph.resume(run, "yes")
+    print("8) graph:", run.status, run.context.response)
+
+    # 9. Multi-agent collaboration (handoff + roles).
+    def boss(context: CognitiveContext) -> CognitiveContext:
+        post(context, handoff("worker", sender="boss"))
+        return context
+
+    def worker(context: CognitiveContext) -> CognitiveContext:
+        context.response = "worked"
+        return context
+
+    app = create_app()
+    app.register_agent(RoleAgent("boss", "supervisor", run=boss))
+    app.register_agent(RoleAgent("worker", "performer", run=worker))
+    result = app.run_agents("task", agent_names=["boss", "worker"])
+    print("9) agents:", result.response, [m.sender + "->" + m.recipient for m in app.agents.messages])
+
+    # 10. Structured output and a typed function tool.
+    data = structured(CallableLLM(lambda prompt: '{"city": "Paris"}'), "where?")
+
+    def search(query: str, limit: int = 10) -> str:
+        return f"search({query}, limit={limit})"
+
+    tool = FunctionTool("search", search)
+    print("10) structured:", data, "| tool:", tool.execute(None, query="x", limit="5"))
+
+    # 11. Async chat.
+    async def agenerate(prompt: str) -> str:
+        return f"async:{prompt}"
+
+    app = create_app(llm=AsyncLLM(agenerate))
+    print("11) async:", asyncio.run(app.achat("hello")))
+
+    # 12. Production hardening (retry via config).
+    attempts: list[int] = []
+
+    def flaky(prompt: str) -> str:
+        attempts.append(1)
+        if len(attempts) < 3:
+            raise RuntimeError("transient")
+        return "ok"
+
+    app = create_app(
+        config={"brain.max_attempts": 3, "brain.retry_backoff": 0},
+        llm=CallableLLM(flaky),
+    )
+    print("12) retry:", app.chat("hi"), "| attempts:", len(attempts))
 
 
 if __name__ == "__main__":

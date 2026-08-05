@@ -9,12 +9,13 @@ class LLMProvider:
     def generate(self, prompt: str) -> str:
         ...
 
-Possible implementations:
+Optional capabilities (detected at runtime):
 
-OpenAI
-Ollama
-Anthropic
-Gemini
-Local models
+- ``stream(prompt, on_token)`` / ``astream(...)`` — incremental output
+- ``agenerate(prompt)`` — async generation
+
+Bundled adapters (``xyberos/llm/adapters.py``): ``OpenAILLM``, ``AnthropicLLM``,
+and ``GeminiLLM`` (lazy SDK imports), plus ``OllamaLLM`` and
+``OpenAICompatibleLLM`` (stdlib HTTP).
 
 The Brain depends only on this interface.

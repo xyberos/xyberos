@@ -41,7 +41,7 @@ Runtime	Cognitive execution
 Brain	Reasoning and inference
 Non-goals
 
-This RFC does not define:
+This RFC does not define the extension subsystems:
 
 Memory
 Knowledge
@@ -49,5 +49,7 @@ Tools
 Planning
 Agents
 Plugins
+Workflows
+Events
 
-Those are specified by later RFCs.
+Those are specified by later RFCs and are implemented in the current codebase.

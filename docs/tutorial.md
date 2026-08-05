@@ -1,15 +1,18 @@
 # Xyberos Tutorial
 
-This tutorial shows how to build a small Xyberos application using the extension surfaces that exist today:
+This tutorial shows how to build a small Xyberos application using the features that exist today:
 
 - configuration and services
-- swapping the LLM
-- knowledge providers
-- memory providers
-- tools
-- workflows
-- agents
+- swapping the LLM and model adapters
+- memory and knowledge providers (in-memory and SQLite)
+- tools and typed function tools
+- workflows and state graphs
+- agents and multi-agent collaboration
 - plugins
+- events and observability
+- async and streaming
+- structured outputs and LLM-driven planning
+- production hardening
 
 The codebase does not currently include a first-class automatic tool-calling or `skills` subsystem. In this repository, those responsibilities are covered by tools, workflows, planners, agents, and plugins.
 
@@ -52,6 +55,7 @@ The app also exposes common services directly:
 - `app.tool_runner`
 - `app.planner`
 - `app.workflow`
+- `app.events`
 
 ## 3. Override the LLM
 
@@ -77,6 +81,17 @@ from xyberos import Xyberos
 from xyberos.llm import CallableLLM
 
 app = Xyberos(llm=CallableLLM(lambda prompt: f"handled: {prompt}"))
+```
+
+For a real model, use one of the bundled adapters — `OllamaLLM` and
+`OpenAICompatibleLLM` need no extra dependencies, while `OpenAILLM`,
+`AnthropicLLM`, and `GeminiLLM` import their SDK lazily (see
+[Model adapters](#19-model-adapters)):
+
+```python
+from xyberos.llm import OllamaLLM
+
+app = create_app(llm=OllamaLLM(model="llama3.2"))   # a local Ollama server
 ```
 
 ### Important note
@@ -143,9 +158,18 @@ for entry in app.memory.retrieve(None):
     print(entry.prompt, "->", entry.response)
 ```
 
-Swap in your own backend by passing `memory=` to `create_app()`, or by
-registering a replacement service. The tool runner is available as
-`app.tool_runner` and can choose and execute a tool for a context.
+Swap in your own backend by passing `memory=` to `create_app()`. For durable
+storage that survives restarts, use the SQLite provider (stdlib only):
+
+```python
+from xyberos import create_app
+from xyberos.memory import SqliteMemory
+
+app = create_app(memory=SqliteMemory("chat.db"))
+```
+
+The tool runner is available as `app.tool_runner` and can choose and execute a
+tool for a context.
 
 ## 6. Add knowledge
 
@@ -190,7 +214,8 @@ print(app.chat("What are your hours?"))
 # {'hours': '9am-6pm'}
 ```
 
-You can extend the provider at runtime with `knowledge.add(key, value)`.
+You can extend the provider at runtime with `knowledge.add(key, value)`, and use
+`SqliteKnowledge("facts.db")` for a durable backend.
 
 ## 7. Use tools
 
@@ -216,6 +241,22 @@ print(registry.execute("reverse", CognitiveContext("abc")))  # cba
 
 runner = ToolRunner([ReverseTool()])
 print(runner.dispatch(CognitiveContext("reverse this")))  # cba
+```
+
+For typed tools, wrap a plain function — `FunctionTool` derives a JSON schema
+from the signature and validates/coerces arguments:
+
+```python
+from xyberos.tools import FunctionTool
+
+
+def search(query: str, limit: int = 10) -> str:
+    return f"search({query}, limit={limit})"
+
+
+tool = FunctionTool("search", search, description="Search the catalog")
+print(tool.schema)   # JSON schema for the parameters
+print(tool.execute(CognitiveContext("x"), query="books", limit="5"))  # limit coerced to 5
 ```
 
 ## 8. Build workflows
@@ -245,6 +286,35 @@ print(result.metadata)   # {'source': 'workflow'}
 Steps that return `None` keep the current context. Steps that return a new
 `CognitiveContext` replace it. Raising an exception stops the workflow.
 
+For branching, loops, and human-in-the-loop, use `GraphWorkflow` — a directed
+graph of named steps with `add_edge` (fixed) and `add_route` (conditional):
+
+```python
+from xyberos.workflows import GraphWorkflow
+from xyberos.exceptions import WorkflowPaused
+
+
+def review(context):
+    if GraphWorkflow.RESUME_KEY in context.metadata:   # resumed with a value
+        context.response = f"approved by {context.metadata[GraphWorkflow.RESUME_KEY]}"
+        return context
+    raise WorkflowPaused(prompt="Approve this action?")
+
+
+graph = GraphWorkflow("review")
+graph.add_node("review", review)
+
+run = graph.execute(CognitiveContext("task"))
+if run.status == "paused":
+    print(run.prompt)                        # "Approve this action?"
+    run = graph.resume(run, "the reviewer")  # human-in-the-loop
+
+print(run.context.response)                  # approved by the reviewer
+```
+
+Paused runs can be persisted and resumed in a later process with
+`WorkflowCheckpoint("runs.db")` and `graph.resume_from_checkpoint(...)`.
+
 ## 9. Add agents
 
 Agents are named participants that transform a context. The framework ships with
@@ -270,6 +340,32 @@ result = app.run_agents("task", agent_names=["audit", "default"])
 print(result.response)
 print(result.metadata)   # {'audits': ['checked']}
 ```
+
+Agents can also collaborate with messages, handoffs, and roles via `RoleAgent`,
+`Message`, `post`, and `handoff`:
+
+```python
+from xyberos.agents import RoleAgent, handoff, post
+
+
+def ask(context):
+    post(context, handoff("worker", sender="boss"))
+    return context
+
+
+def work(context):
+    context.response = "handled by worker"
+    return context
+
+
+app.register_agent(RoleAgent("boss", "supervisor", run=ask))
+app.register_agent(RoleAgent("worker", "performer", run=work))
+app.run_agents("task", agent_names=["boss", "worker"])
+```
+
+A `handoff` message runs its recipient next, `recipient="*"` broadcasts, and
+agents that implement `receive(message)` get inbound messages. The whole
+exchange is recorded on `app.agents.messages`.
 
 ## 10. Load plugins
 
@@ -413,7 +509,129 @@ for entry in app.memory.retrieve(None):
     print(entry.prompt, "->", entry.response)
 ```
 
-## 14. Practical guidance
+## 14. Events and observability
+
+Every request publishes events to an `EventBus` (exposed as `app.events`):
+kernel and plugin lifecycle, runtime requests, and each brain pipeline step
+(memory, knowledge, planner, tools, response). Subscribe with the event names
+from `xyberos.events`:
+
+```python
+from xyberos.events import RESPONSE_PRODUCED, TOKEN_STREAMED
+
+app.events.subscribe(RESPONSE_PRODUCED, lambda e: print("response:", e.data["response"]))
+app.events.subscribe(TOKEN_STREAMED, lambda e: print(e.data["token"], end=""))
+```
+
+Attach an `EventRecorder` to record everything and forward to exporters:
+
+```python
+from xyberos.events import EventRecorder, LoggingExporter
+
+recorder = EventRecorder(limit=1000).subscribe_to(app.events)
+recorder.add_exporter(LoggingExporter(app.logger))
+print(recorder.counts())   # per-event counts for dashboards
+```
+
+A listener that raises is logged and isolated — it never breaks the pipeline.
+
+## 15. Async and streaming
+
+The synchronous API is the default; async is opt-in via `app.arun` and
+`app.achat`:
+
+```python
+import asyncio
+from xyberos import create_app
+from xyberos.llm import AsyncLLM
+
+
+async def agenerate(prompt):
+    return f"async: {prompt}"
+
+
+app = create_app(llm=AsyncLLM(agenerate))
+response = asyncio.run(app.achat("hello"))
+```
+
+An LLM that implements `stream(prompt, on_token)` emits tokens incrementally;
+the brain publishes them as `brain.token_streamed` events:
+
+```python
+from xyberos.llm import StreamingLLM
+
+
+def stream(prompt, on_token):
+    for token in "abc":
+        on_token(token)
+    return "abc"
+
+
+app = create_app(llm=StreamingLLM(generate=lambda p: p, stream=stream))
+```
+
+## 16. Structured outputs
+
+Parse LLM text output into data with `StructuredLLM` or the one-shot
+`structured` helper. Parse failures raise `StructuredOutputError`:
+
+```python
+from xyberos.llm import structured
+
+data = structured(app.llm, "Return JSON: {'city': 'Paris'}")   # -> {'city': 'Paris'}
+```
+
+## 17. LLM-driven planning
+
+`LLMPlanner` asks the LLM to break a request into ordered steps, and the Brain
+records the plan on `context.plan`:
+
+```python
+from xyberos import create_app
+from xyberos.planner import LLMPlanner
+from xyberos.llm import CallableLLM
+
+app = create_app(
+    config={"brain.inject_plan": True},   # optional: feed the plan to the model
+    planner=LLMPlanner(CallableLLM(lambda p: "research\ndraft\nreview")),
+)
+print(app.run("build a report").plan)      # ['research', 'draft', 'review']
+```
+
+## 18. Production hardening
+
+Retries, rate limiting, and timeouts are configured through `Config` and all
+default to off:
+
+```python
+app = create_app(config={
+    "brain.max_attempts": 3,     # retry LLM calls
+    "brain.retry_backoff": 0.1,  # exponential backoff base
+    "brain.rate_limit": 10,      # calls per second
+    "brain.timeout": 30,         # seconds per LLM call
+})
+```
+
+The standalone helpers (`retry`, `RateLimiter`, `with_timeout`) live in
+`xyberos.utils`.
+
+## 19. Model adapters
+
+Dependency-light adapters for real models live in `xyberos.llm`:
+
+- `OllamaLLM` — a local Ollama server (stdlib HTTP, no dependencies).
+- `OpenAICompatibleLLM` — any `/chat/completions` endpoint (OpenAI, llama.cpp,
+  vLLM, LM Studio).
+- `OpenAILLM`, `AnthropicLLM`, `GeminiLLM` — official SDKs, imported lazily on
+  first use (a clear `ProviderError` is raised if the SDK isn't installed).
+
+```python
+from xyberos.llm import OpenAILLM
+
+app = create_app(llm=OpenAILLM(api_key="sk-..."))   # requires `pip install openai`
+```
+
+## 20. Practical guidance
 
 - Use `create_app()` for the simplest setup.
 - Pass `llm=` during creation when you want to override the model.

@@ -3,13 +3,15 @@
 Xyberos is built around a small set of extension surfaces. This guide shows how to use the ones that exist in the codebase today:
 
 - services
-- tools
-- knowledge providers
-- memory providers
-- planners
-- workflows
-- agents
+- tools and typed function tools
+- knowledge and memory providers (in-memory + SQLite)
+- planners (fixed and LLM-driven)
+- workflows and state graphs
+- agents and collaboration
 - plugins
+- events and observability
+- structured outputs and resilience
+- model adapters
 
 If you were expecting a first-class `skills` subsystem, this repository does not currently define one. In practice, the closest supported equivalents are plugins, tools, workflows, planners, and agents.
 
@@ -85,6 +87,25 @@ class EchoTool(Tool):
 
 registry = ToolRegistry([EchoTool()])
 result = registry.execute("echo", context={"prompt": "hello"}, mode="debug")
+```
+
+### Typed function tools
+
+Wrap a plain typed function with `FunctionTool` to get a JSON schema derived
+from the signature and automatic argument validation/coercion. Bad arguments
+raise `ToolArgumentError`:
+
+```python
+from xyberos.tools import FunctionTool
+
+
+def search(query: str, limit: int = 10) -> str:
+    return f"search({query}, limit={limit})"
+
+
+tool = FunctionTool("search", search, description="Search the catalog")
+print(tool.schema)   # typed JSON schema
+print(tool.execute(None, query="books", limit="5"))  # limit coerced to 5
 ```
 
 ### When to use tools
@@ -168,6 +189,22 @@ print(plan)
 planner = SequentialPlanner(("analyze", "draft", "verify"))
 ```
 
+### LLM-driven planning
+
+`LLMPlanner` asks an LLM to break the request into ordered steps, with a custom
+`parse` for other shapes (e.g. JSON):
+
+```python
+from xyberos.planner import LLMPlanner
+from xyberos.llm import CallableLLM
+
+planner = LLMPlanner(CallableLLM(lambda p: "research\ndraft"))
+print(planner.plan(CognitiveContext("build a report")))   # ['research', 'draft']
+```
+
+Combine with `config={"brain.inject_plan": True}` to have the Brain feed the
+plan to the model prompt.
+
 ### When to use planners
 
 - you want to derive a step list before execution
@@ -203,6 +240,34 @@ print(result.response)
 - return a new `CognitiveContext` to replace it
 - raise an exception to stop execution
 
+### State graphs
+
+`GraphWorkflow` builds a directed graph of named steps with fixed `add_edge`
+and conditional `add_route` routing (branches and loops), and supports
+pause/resume for human-in-the-loop. Paused runs can be checkpointed to SQLite:
+
+```python
+from xyberos.workflows import GraphWorkflow, WorkflowCheckpoint
+from xyberos.exceptions import WorkflowPaused
+
+
+def review(context):
+    if GraphWorkflow.RESUME_KEY in context.metadata:
+        context.response = "approved"
+        return context
+    raise WorkflowPaused(prompt="Approve?")
+
+
+graph = GraphWorkflow("review")
+graph.add_node("review", review)
+checkpoint = WorkflowCheckpoint("runs.db")
+
+run = graph.execute(CognitiveContext("task"))
+checkpoint.save("r1", run)              # persist the pause
+run = graph.resume_from_checkpoint(checkpoint, "r1", "yes")  # resume later
+print(run.context.response)              # approved
+```
+
 ## 7. Agents
 
 Agents are named participants that transform a context.
@@ -223,6 +288,31 @@ result = app.run_agents("hello")
 - you want multiple sequential context transforms
 - you want to adapt an existing runtime into a multi-agent pipeline
 - you need named participants you can register, list, and remove
+
+### Collaboration: messages, handoffs, and roles
+
+Agents collaborate with `Message` (via `post`) and `handoff`, and carry a role
+via `RoleAgent`:
+
+```python
+from xyberos.agents import RoleAgent, handoff, post
+
+
+def ask(context):
+    post(context, handoff("worker", sender="boss"))
+    return context
+
+
+app.register_agent(RoleAgent("boss", "supervisor", run=ask))
+app.register_agent(
+    RoleAgent("worker", "performer", run=work_step, receive=on_message)
+)
+app.run_agents("task", agent_names=["boss", "worker"])
+```
+
+A handoff runs its recipient next; `recipient="*"` broadcasts; agents that
+implement `receive(message)` get inbound messages; the exchange is recorded on
+`app.agents.messages`.
 
 ## 8. Plugins
 
@@ -297,7 +387,59 @@ Entry-point values are `module:attribute` (or a bare module whose `plugin`
 export is used). Both discovery styles are idempotent — re-running never
 double-registers a plugin.
 
-## 9. Putting It Together
+## 9. Events and observability
+
+Every layer publishes to an `EventBus` (`app.events`). Subscribe with the
+canonical names from `xyberos.events`, or attach an `EventRecorder` to record
+everything and forward to exporters:
+
+```python
+from xyberos.events import RESPONSE_PRODUCED, EventRecorder, LoggingExporter
+
+app.events.subscribe(RESPONSE_PRODUCED, lambda e: print(e.data["response"]))
+recorder = EventRecorder(limit=1000).subscribe_to(app.events)
+recorder.add_exporter(LoggingExporter(app.logger))
+```
+
+## 10. Structured outputs
+
+`StructuredLLM` (and the one-shot `structured` helper) parse LLM text output
+into data; parse failures raise `StructuredOutputError`:
+
+```python
+from xyberos.llm import structured
+
+data = structured(model, "Return JSON: {'ok': true}")
+```
+
+## 11. Resilience
+
+`xyberos.utils` provides `retry`, `RateLimiter`, and `with_timeout`. The Brain
+applies them to LLM/tool calls via config keys — all default to off:
+
+```python
+app = create_app(config={
+    "brain.max_attempts": 3,
+    "brain.retry_backoff": 0.1,
+    "brain.rate_limit": 10,
+    "brain.timeout": 30,
+})
+```
+
+## 12. Model adapters
+
+`xyberos.llm` ships dependency-light adapters: `OllamaLLM` and
+`OpenAICompatibleLLM` use stdlib HTTP; `OpenAILLM`, `AnthropicLLM`, and
+`GeminiLLM` lazy-import their SDKs and raise a clear `ProviderError` when one
+is missing:
+
+```python
+from xyberos.llm import OllamaLLM
+
+app = create_app(llm=OllamaLLM(model="llama3.2"))
+```
+
+## 13. Putting It Together
 
 A typical flow looks like this:
 
@@ -315,15 +457,16 @@ app.register("cache", {})
 print(app.chat("hello"))
 ```
 
-## 10. Important Limits
+## 14. Important Limits
 
-- Tool selection uses a simple prompt-name heuristic; there is no LLM-driven
-  tool-calling or tool-choice learning yet.
+- Tool selection uses a simple prompt-name heuristic; there is no schema-driven
+  LLM function calling yet (`FunctionTool.schema` is available for describing
+  tools, but selection is not LLM-driven).
 - `Knowledge` and `Memory` ship with in-memory and SQLite providers; there are
   no Redis or vector-store backends bundled yet (they need optional dependencies).
 - `SequentialWorkflow` is linear; `GraphWorkflow` adds branching, loops, and
-  pause/resume (human-in-the-loop). There is no automatic disk checkpointing of
-  paused runs yet.
+  pause/resume (human-in-the-loop). Paused runs can be checkpointed to SQLite
+  via `WorkflowCheckpoint`.
 - Observability is limited to the in-process `EventBus`; there is no event
   persistence, distributed tracing, or metrics export yet.
 - `PluginLoader` manages plugin lifecycle and discovery (entry points + package

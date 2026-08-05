@@ -354,18 +354,21 @@ Xyberos exposes a structured exception hierarchy under `xyberos.exceptions` for:
 
 ```text
 xyberos/
-  agents/      multi-agent coordination
-  brain/       brain orchestration and LLM adapters
+  agents/      multi-agent coordination (roles, messaging, handoffs)
+  brain/       automated cognitive pipeline
   contracts/   extension contracts
+  events/      event bus, tracing, and exporters
   exceptions/  typed domain exceptions
-  kernel/      config, logging, registry, lifecycle
-  knowledge/   knowledge providers
-  memory/      memory providers
-  planner/     planning providers
-  plugins/     plugin loading
-  runtime/     context and runtime execution
-  tools/       tool registry
-  workflows/   workflow execution
+  kernel/      config, logging, registry, lifecycle, event bus
+  knowledge/   knowledge providers (in-memory, SQLite)
+  llm/         model providers, streaming/async, structured output, adapters
+  memory/      memory providers (in-memory, SQLite)
+  planner/     planning providers (fixed, LLM-driven)
+  plugins/     plugin loading and auto-discovery
+  runtime/     context and runtime execution (sync + async)
+  tools/       tool registry, runner, typed function tools
+  utils/       resilience helpers (retry, rate limiting, timeouts)
+  workflows/   sequential workflows, state graphs, checkpoints
   docs/        RFCs and documentation index
 ```
 

@@ -25,3 +25,7 @@ Brain
 Updated Context
 
 Runtime is intentionally unaware of specific LLM providers.
+
+In addition to the synchronous ``run``, the Runtime provides an async ``arun``
+that awaits the brain's async pipeline, and it emits request lifecycle events
+on the kernel event bus (request started / completed / failed).

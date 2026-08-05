@@ -12,22 +12,22 @@ configuration
 logging
 dependency registration
 lifecycle
-future event system
+event bus
+plugin management
 
 It never performs reasoning.
 
-Initial Services
+Current Services
 Kernel
 ├── Config
-└── Logger
+├── Logger
+├── Registry
+├── EventBus
+└── PluginManager
 
 Future revisions may add:
 
 Kernel
-├── Config
-├── Logger
-├── EventBus
 ├── Storage
-├── PluginManager
 ├── Scheduler
 └── Security
