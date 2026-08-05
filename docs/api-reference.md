@@ -19,7 +19,9 @@ lists what the class is, **what it owns**, and **when to use it**.
 | `SequentialWorkflow` | ordered steps | composing pipeline steps |
 | `SequentialPlanner` | ordered plan steps | producing a plan for a context |
 | `InMemoryMemory` | stored contexts | dev/test memory provider |
+| `SqliteMemory` | persistent context rows | durable memory provider |
 | `InMemoryKnowledge` | keyword facts | dev/test knowledge provider |
+| `SqliteKnowledge` | persistent keyword facts | durable knowledge provider |
 | `ToolRegistry` | named tools | registering and executing tools |
 | `ToolRunner` | a tool registry | selecting and dispatching tools |
 | `PluginLoader` | loaded plugins, entry-point discovery, convention scan | loading, unloading, and auto-discovering extensions |
@@ -183,11 +185,13 @@ Every step is optional. A bare `Brain` behaves like a plain LLM wrapper, and
 
 ### `xyberos.memory` / `xyberos.knowledge`
 
-#### `InMemoryMemory` / `InMemoryKnowledge`
+#### `InMemoryMemory` / `InMemoryKnowledge` / `SqliteMemory` / `SqliteKnowledge`
 
-- **What they own:** in-process context storage / keyword-keyed facts.
-- **When to use them:** development and tests, or as a template for a real
-  database or vector-store provider.
+- **What they own:** in-process context storage / keyword-keyed facts; the
+  SQLite variants persist rows to a database file (stdlib `sqlite3`).
+- **When to use them:** in-memory for dev/tests; SQLite for durable storage —
+  pass them to `create_app(memory=..., knowledge=...)`. Metadata, plans, and
+  values are JSON-encoded, so any JSON-serializable payload round-trips.
 
 ### `xyberos.tools`
 

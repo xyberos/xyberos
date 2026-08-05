@@ -22,6 +22,7 @@ Implemented:
 - Sequential workflow engine
 - Multi-agent runtime with a runtime adapter
 - Event bus and pipeline observability (kernel, plugin, runtime, and brain events)
+- Persistent SQLite memory and knowledge providers (stdlib, no dependencies)
 - Plugin loading and unloading, with entry-point auto-discovery
 - Typed exception hierarchy
 
@@ -167,7 +168,21 @@ It is intentionally small and can be replaced with a more sophisticated planner 
 
 ### Memory and Knowledge
 
-`InMemoryMemory` and `InMemoryKnowledge` are lightweight provider implementations useful for tests and local development.
+`InMemoryMemory` and `InMemoryKnowledge` are lightweight in-process providers for
+tests and development. `SqliteMemory` and `SqliteKnowledge` persist data to a
+SQLite database (stdlib `sqlite3`, no dependencies) and survive process
+restarts:
+
+```python
+from xyberos import create_app
+from xyberos.memory import SqliteMemory
+from xyberos.knowledge import SqliteKnowledge
+
+app = create_app(
+    memory=SqliteMemory("chat.db"),
+    knowledge=SqliteKnowledge("facts.db"),
+)
+```
 
 ### Tools
 

@@ -319,8 +319,8 @@ print(app.chat("hello"))
 
 - Tool selection uses a simple prompt-name heuristic; there is no LLM-driven
   tool-calling or tool-choice learning yet.
-- `Knowledge` and `Memory` ship as in-memory reference implementations; there are
-  no persistent or vector-store backends bundled yet.
+- `Knowledge` and `Memory` ship with in-memory and SQLite providers; there are
+  no Redis or vector-store backends bundled yet (they need optional dependencies).
 - Workflows are sequential only; there is no branching, state graph, or
   human-in-the-loop support yet.
 - Observability is limited to the in-process `EventBus`; there is no event

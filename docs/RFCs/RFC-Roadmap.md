@@ -86,9 +86,18 @@ Status: core implemented in v0.9.0.
 
 ## 2. Persistent memory and knowledge backends
 
-- Add `sqlite.py`, `redis.py`, and `vector.py` providers under `memory/` and `knowledge/`.
-- Keep the existing `contracts/memory.py` and `contracts/knowledge.py` interfaces unchanged.
-- Configure providers via `create_app(memory=..., knowledge=...)` or plugin registration.
+Status: SQLite implemented in v0.9.0.
+
+- [x] `SqliteMemory` and `SqliteKnowledge` providers under `memory/` and
+      `knowledge/` (stdlib `sqlite3`, no runtime dependencies). File-backed
+      databases survive process restarts; `start`/`stop` participate in the
+      kernel lifecycle so `app.stop()` releases the database handle.
+- [x] Existing `contracts/memory.py` and `contracts/knowledge.py` interfaces unchanged.
+- [x] Configure via `create_app(memory=SqliteMemory("chat.db"),
+      knowledge=SqliteKnowledge("facts.db"))` or plugin registration.
+- [ ] Redis (`redis.py`) and vector (`vector.py`) providers — deferred: they
+      require optional third-party dependencies and a retrieval/embedding
+      strategy. The existing contracts already allow them.
 
 ## 3. Branching workflows and state graphs
 
