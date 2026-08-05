@@ -120,8 +120,20 @@ Status: implemented in v0.9.0.
 
 ## 4. Streaming and async
 
-- Add async variants (`achat`, `arun`) and streaming callbacks for LLM output.
-- Keep the synchronous API as the default; add async as an opt-in.
+Status: implemented in v0.9.0.
+
+- [x] Async variants — `app.arun` / `app.achat` (plus a module-level `achat`
+      helper) flow through `Runtime.arun` and `Brain.achat`. An LLM with an
+      async `agenerate` (or `astream`) is awaited; otherwise the sync `generate`
+      is used as a fallback.
+- [x] Streaming — an LLM may implement `stream(prompt, on_token)` (sync) or
+      `astream(...)` (async); the Brain publishes each token as the
+      `brain.token_streamed` event.
+- [x] LLM helpers — `StreamingLLM` (generate + stream) and `AsyncLLM`
+      (async-only `agenerate`).
+- [x] Sync stays the default; async is opt-in via `achat` / `arun`.
+- [ ] Optional: async variants for `run_agents` and async plugins, plus
+      backpressure/rate limiting for streaming.
 
 ## 5. Multi-agent collaboration
 

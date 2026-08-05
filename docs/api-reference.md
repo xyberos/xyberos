@@ -27,6 +27,10 @@ lists what the class is, **what it owns**, and **when to use it**.
 | `ToolRunner` | a tool registry | selecting and dispatching tools |
 | `PluginLoader` | loaded plugins, entry-point discovery, convention scan | loading, unloading, and auto-discovering extensions |
 | `LLMProvider` | a model backend | providing text generation |
+| `EchoLLM` | nothing (echoes the prompt) | default no-op model |
+| `CallableLLM` | a wrapped callable | turning a function into an LLM |
+| `StreamingLLM` | generate + stream callables | streaming token output |
+| `AsyncLLM` | an async agenerate | async-only LLM provider |
 | `EventBus` | subscribers and published events | observing and extending the pipeline |
 
 ## Package Root
@@ -149,6 +153,18 @@ Every step is optional. A bare `Brain` behaves like a plain LLM wrapper, and
 - **What it owns:** a wrapped plain callable.
 - **When to use it:** turning a simple `prompt -> response` function into an
   `LLMProvider`.
+
+#### `StreamingLLM`
+
+- **What it owns:** a `generate` callable and a `stream(prompt, on_token)` callable.
+- **When to use it:** providing streaming token output; the Brain emits each
+  token as the `brain.token_streamed` event.
+
+#### `AsyncLLM`
+
+- **What it owns:** an async `agenerate` coroutine.
+- **When to use it:** async-only providers used with `app.achat` / `app.arun`.
+  Not usable from the synchronous API (a clear `TypeError` is raised).
 
 ### `xyberos.agents`
 
@@ -395,5 +411,22 @@ app.register_factory("dynamic", lambda answer: f"answer={answer}")
 ```python
 context = app.run("hello")
 text = app.chat("hello")
+```
+
+### Run the pipeline asynchronously
+
+```python
+import asyncio
+
+context = asyncio.run(app.arun("hello"))
+text = asyncio.run(app.achat("hello"))
+```
+
+### Stream LLM output
+
+```python
+from xyberos.events import TOKEN_STREAMED
+
+app.events.subscribe(TOKEN_STREAMED, lambda e: print(e.data["token"], end=""))
 ```
 

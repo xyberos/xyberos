@@ -23,6 +23,7 @@ Implemented:
 - Multi-agent runtime with a runtime adapter
 - Event bus and pipeline observability (kernel, plugin, runtime, and brain events)
 - Persistent SQLite memory and knowledge providers (stdlib, no dependencies)
+- Async `achat`/`arun` and streaming LLM output (token events)
 - Plugin loading and unloading, with entry-point auto-discovery
 - Typed exception hierarchy
 
@@ -79,6 +80,10 @@ with an in-memory default.
 
 Convenience helper that creates an app and returns the generated response text.
 It accepts the same provider arguments as `create_app`.
+
+### `achat(prompt, config=None, llm=None, ...)`
+
+Async one-shot helper, equivalent to `chat` but awaited.
 
 ### `Xyberos`
 

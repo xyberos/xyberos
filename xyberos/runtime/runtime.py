@@ -39,3 +39,25 @@ class Runtime:
         if self.events is not None:
             self.events.emit(REQUEST_COMPLETED, context=context)
         return context
+
+    async def arun(self, context: CognitiveContext) -> CognitiveContext:
+        """Async variant of :meth:`run`, awaiting the brain's async pipeline."""
+        if not isinstance(context, CognitiveContext):
+            raise TypeError("context must be a CognitiveContext")
+
+        if self.events is not None:
+            self.events.emit(REQUEST_STARTED, context=context)
+
+        try:
+            context.response = await self.brain.achat(context)
+            context.error = None
+        except WorkflowPaused:
+            raise  # a workflow pause, not a request failure
+        except Exception as exc:
+            context.error = exc
+            if self.events is not None:
+                self.events.emit(REQUEST_FAILED, context=context, error=str(exc))
+            raise
+        if self.events is not None:
+            self.events.emit(REQUEST_COMPLETED, context=context)
+        return context

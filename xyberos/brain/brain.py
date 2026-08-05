@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
 from ..contracts.knowledge import KnowledgeProvider
@@ -16,6 +17,7 @@ from ..events.names import (
     MEMORY_STORED,
     PLAN_CREATED,
     RESPONSE_PRODUCED,
+    TOKEN_STREAMED,
     TOOL_DISPATCHED,
     WORKFLOW_RUN,
 )
@@ -81,8 +83,51 @@ class Brain:
             self._emit(BRAIN_ERROR, context=context)
             raise
 
+    async def achat(self, context: CognitiveContext) -> str:
+        """Async variant of :meth:`chat`, awaiting an async LLM when available."""
+        prompt = getattr(context, "prompt", None)
+        if not isinstance(prompt, str):
+            raise TypeError("context must be a CognitiveContext")
+
+        if self.logger is not None:
+            self.logger.debug("Generating response")
+
+        try:
+            return await self._achat(context, prompt)
+        except WorkflowPaused:
+            raise  # a workflow pause, not an error — let the caller resume it
+        except Exception:
+            self._emit(BRAIN_ERROR, context=context)
+            raise
+
     def _chat(self, context: CognitiveContext, prompt: str) -> str:
-        """Run the configured pipeline and return the generated response."""
+        """Run the configured pipeline synchronously and return the response."""
+        prepared = self._prepare(context, prompt)
+        if prepared.short_response is not None:
+            self._remember(prepared.context, prepared.short_response)
+            return prepared.short_response
+        if prepared.tool_response is not None:
+            return self._handle_tool(prepared)
+        response = self._generate(prepared.context, prepared.prompt)
+        self._emit(RESPONSE_PRODUCED, context=prepared.context, response=response)
+        self._remember(prepared.context, response)
+        return response
+
+    async def _achat(self, context: CognitiveContext, prompt: str) -> str:
+        """Run the configured pipeline asynchronously and return the response."""
+        prepared = self._prepare(context, prompt)
+        if prepared.short_response is not None:
+            self._remember(prepared.context, prepared.short_response)
+            return prepared.short_response
+        if prepared.tool_response is not None:
+            return self._handle_tool(prepared)
+        response = await self._agenerate(prepared.context, prepared.prompt)
+        self._emit(RESPONSE_PRODUCED, context=prepared.context, response=response)
+        self._remember(prepared.context, response)
+        return response
+
+    def _prepare(self, context: CognitiveContext, prompt: str) -> _Prepared:
+        """Run workflow, memory, knowledge, planner, and tools; return what to send."""
         # A configured workflow gets first crack at producing the response.
         # A step-less workflow passes the context through unchanged, so the
         # built-in pipeline below still runs.
@@ -92,8 +137,7 @@ class Brain:
             if not isinstance(result, CognitiveContext):
                 raise TypeError("workflow must return a CognitiveContext")
             if result.response is not None:
-                self._remember(result, result.response)
-                return result.response
+                return _Prepared(context=result, prompt=prompt, short_response=result.response)
             context = result
 
         enriched = self._enrich_prompt(context, prompt)
@@ -105,17 +149,57 @@ class Brain:
                 tool_result = None
             else:
                 if tool_result is not None:
-                    response = tool_result if isinstance(tool_result, str) else str(tool_result)
-                    self._emit(TOOL_DISPATCHED, context=context)
-                    self._remember(context, response)
-                    return response
+                    return _Prepared(context=context, prompt=enriched, tool_response=tool_result)
 
-        response = self.llm.generate(enriched)
+        return _Prepared(context=context, prompt=enriched)
+
+    def _handle_tool(self, prepared: _Prepared) -> str:
+        """Finalize a tool-produced response."""
+        tool = prepared.tool_response
+        response = tool if isinstance(tool, str) else str(tool)
+        self._emit(TOOL_DISPATCHED, context=prepared.context)
+        self._remember(prepared.context, response)
+        return response
+
+    def _generate(self, context: CognitiveContext, prompt: str) -> str:
+        """Generate text synchronously, streaming tokens when the LLM supports it."""
+        stream = getattr(self.llm, "stream", None)
+        if callable(stream):
+            response = stream(prompt, self._token_sink(context))
+        else:
+            generate = getattr(self.llm, "generate", None)
+            if not callable(generate):
+                raise TypeError("LLM must implement generate() for synchronous use")
+            response = generate(prompt)
         if not isinstance(response, str):
             raise TypeError("LLM must return a string")
-        self._emit(RESPONSE_PRODUCED, context=context, response=response)
-        self._remember(context, response)
         return response
+
+    async def _agenerate(self, context: CognitiveContext, prompt: str) -> str:
+        """Generate text asynchronously, preferring astream/agenerate when present."""
+        astream = getattr(self.llm, "astream", None)
+        if callable(astream):
+            response = await astream(prompt, self._token_sink(context))
+        else:
+            agenerate = getattr(self.llm, "agenerate", None)
+            if callable(agenerate):
+                response = await agenerate(prompt)
+            else:
+                generate = getattr(self.llm, "generate", None)
+                if not callable(generate):
+                    raise TypeError("LLM must implement agenerate() for asynchronous use")
+                response = generate(prompt)
+        if not isinstance(response, str):
+            raise TypeError("LLM must return a string")
+        return response
+
+    def _token_sink(self, context: CognitiveContext) -> Any:
+        """Return a callback that publishes each streamed token as an event."""
+
+        def sink(token: str) -> None:
+            self._emit(TOKEN_STREAMED, context=context, token=token)
+
+        return sink
 
     def _enrich_prompt(self, context: CognitiveContext, prompt: str) -> str:
         """Compose memory and knowledge context around the original prompt."""
@@ -179,3 +263,13 @@ def _size(value: Any) -> int | None:
         except TypeError:
             return None
     return None
+
+
+@dataclass
+class _Prepared:
+    """The outcome of preparing a request up to the LLM call."""
+
+    context: CognitiveContext
+    prompt: str
+    short_response: str | None = None
+    tool_response: Any | None = None

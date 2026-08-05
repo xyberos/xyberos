@@ -174,9 +174,21 @@ class Xyberos:
         context = CognitiveContext(prompt=prompt, metadata=dict(metadata or {}))
         return self.runtime.run(context)
 
+    async def arun(self, prompt: str, *, metadata: Mapping[str, Any] | None = None) -> CognitiveContext:
+        """Async variant of :meth:`run`, awaiting the async pipeline."""
+        context = CognitiveContext(prompt=prompt, metadata=dict(metadata or {}))
+        return await self.runtime.arun(context)
+
     def chat(self, prompt: str, *, metadata: Mapping[str, Any] | None = None) -> str:
         """Convenience API returning only the generated text."""
         response = self.run(prompt, metadata=metadata).response
+        if response is None:
+            raise RuntimeError("the cognitive pipeline produced no response")
+        return response
+
+    async def achat(self, prompt: str, *, metadata: Mapping[str, Any] | None = None) -> str:
+        """Async convenience API returning only the generated text."""
+        response = (await self.arun(prompt, metadata=metadata)).response
         if response is None:
             raise RuntimeError("the cognitive pipeline produced no response")
         return response
@@ -241,4 +253,29 @@ def chat(
     ).chat(prompt)
 
 
-__all__ = ["Xyberos", "create_app", "chat"]
+async def achat(
+    prompt: str,
+    *,
+    config: Mapping[str, Any] | None = None,
+    llm: LLMProvider | None = None,
+    memory: MemoryProvider | None = None,
+    knowledge: KnowledgeProvider | None = None,
+    tools: ToolRegistry | None = None,
+    planner: Planner | None = None,
+    workflow: Workflow | None = None,
+    tool_runner: ToolRunner | None = None,
+) -> str:
+    """One-shot async helper for the default application configuration."""
+    return await create_app(
+        config=config,
+        llm=llm,
+        memory=memory,
+        knowledge=knowledge,
+        tools=tools,
+        tool_runner=tool_runner,
+        planner=planner,
+        workflow=workflow,
+    ).achat(prompt)
+
+
+__all__ = ["Xyberos", "achat", "chat", "create_app"]

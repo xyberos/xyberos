@@ -2,7 +2,7 @@
 
 from .diagnostics import DiagnosticReport, doctor
 from .events import Event, EventBus
-from .xyberos import Xyberos, chat, create_app
+from .xyberos import Xyberos, achat, chat, create_app
 from .version import __version__
 
 __all__ = [
@@ -11,6 +11,7 @@ __all__ = [
     "EventBus",
     "Xyberos",
     "__version__",
+    "achat",
     "chat",
     "create_app",
     "doctor",
