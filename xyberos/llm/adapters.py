@@ -108,6 +108,37 @@ class OllamaLLM:
         )
         return data["response"]
 
+    def stream(self, prompt: str, on_token: Callable[[str], None]) -> str:
+        """Stream tokens from the local Ollama server (NDJSON ``/api/generate``)."""
+        payload = {"model": self._model, "prompt": prompt, "stream": True}
+        request = urllib.request.Request(
+            self._base_url + "/api/generate",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        parts: list[str] = []
+        with urllib.request.urlopen(request) as response:
+            for token in self._iter_tokens(response):
+                on_token(token)
+                parts.append(token)
+        return "".join(parts)
+
+    @staticmethod
+    def _iter_tokens(response: Any):
+        """Yield text tokens from Ollama's streaming newline-delimited JSON."""
+        for raw in response:
+            line = raw.decode("utf-8").strip()
+            if not line:
+                continue
+            try:
+                data = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            token = data.get("response", "")
+            if token:
+                yield token
+
 
 class OpenAILLM:
     """Official OpenAI chat-completions adapter (lazy SDK import)."""

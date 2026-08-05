@@ -49,6 +49,24 @@ def test_ollama_llm_builds_request_and_parses():
     assert payload == {"model": "llama3", "prompt": "hi", "stream": False}
 
 
+def test_ollama_llm_parses_streaming_tokens():
+    class FakeResponse:
+        def __iter__(self):
+            return iter(
+                [
+                    b'{"response": "hel"}\n',
+                    b'{"response": "lo"}\n',
+                    b"not json\n",
+                    b'{"done": true}\n',
+                ]
+            )
+
+    llm = OllamaLLM("llama3")
+
+    assert list(llm._iter_tokens(FakeResponse())) == ["hel", "lo"]
+    assert callable(llm.stream)
+
+
 def test_openai_llm_uses_an_injected_client():
     class FakeCompletions:
         def __init__(self, content):

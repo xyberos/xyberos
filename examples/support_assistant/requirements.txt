@@ -1,0 +1,4 @@
+# Xyberos support-assistant example dependencies.
+# The Xyberos core itself has no runtime dependencies.
+fastapi
+uvicorn
