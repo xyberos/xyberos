@@ -146,6 +146,14 @@ class GraphWorkflow(Workflow):
             prior_count=run.steps_taken,
         )
 
+    def resume_from_checkpoint(self, checkpoint: Any, run_id: str, value: Any = None) -> WorkflowRun:
+        """Resume a paused run restored from ``checkpoint`` under ``run_id``.
+
+        ``checkpoint`` is any object exposing ``load(run_id) -> WorkflowRun``
+        (e.g. :class:`~workflows.checkpoint.WorkflowCheckpoint`).
+        """
+        return self.resume(checkpoint.load(run_id), value)
+
     def _execute(
         self,
         context: object,

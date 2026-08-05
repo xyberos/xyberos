@@ -26,6 +26,8 @@ Implemented:
 - Async `achat`/`arun` and streaming LLM output (token events)
 - LLM-driven planning and config-gated plan injection
 - Structured LLM output parsing and typed function tools (JSON schema)
+- Production hardening: retries, rate limiting, timeouts, workflow checkpoints
+- Model adapters for OpenAI, Anthropic, Ollama, Gemini, and any OpenAI-compatible endpoint
 - Plugin loading and unloading, with entry-point auto-discovery
 - Typed exception hierarchy
 

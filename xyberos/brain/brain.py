@@ -27,6 +27,7 @@ from ..kernel.logger import Logger
 from ..llm import EchoLLM, LLMProvider
 from ..runtime.context import CognitiveContext
 from ..tools import ToolRunner
+from ..utils.resilience import RateLimiter, retry, with_timeout
 
 
 class Brain:
@@ -70,6 +71,11 @@ class Brain:
         self.events = events
         self.config = config
         self._inject_plan = bool(config.get("brain.inject_plan", False)) if config is not None else False
+        self._max_attempts = int(config.get("brain.max_attempts", 1)) if config is not None else 1
+        self._retry_backoff = float(config.get("brain.retry_backoff", 0.1)) if config is not None else 0.1
+        rate_limit = float(config.get("brain.rate_limit", 0.0)) if config is not None else 0.0
+        self._rate_limiter = RateLimiter(calls_per_second=rate_limit) if rate_limit > 0 else None
+        self._timeout = float(config.get("brain.timeout", 0.0)) if config is not None else 0.0
 
     def chat(self, context: CognitiveContext) -> str:
         prompt = getattr(context, "prompt", None)
@@ -148,7 +154,7 @@ class Brain:
 
         if self.tool_runner is not None:
             try:
-                tool_result = self.tool_runner.dispatch(context)
+                tool_result = self._resilient_tool(lambda: self.tool_runner.dispatch(context))
             except ValueError:
                 tool_result = None
             else:
@@ -169,18 +175,27 @@ class Brain:
         """Generate text synchronously, streaming tokens when the LLM supports it."""
         stream = getattr(self.llm, "stream", None)
         if callable(stream):
-            response = stream(prompt, self._token_sink(context))
+
+            def call() -> str:
+                return stream(prompt, self._token_sink(context))
+
         else:
             generate = getattr(self.llm, "generate", None)
             if not callable(generate):
                 raise TypeError("LLM must implement generate() for synchronous use")
-            response = generate(prompt)
+
+            def call() -> str:
+                return generate(prompt)
+
+        response = self._resilient_llm(call)
         if not isinstance(response, str):
             raise TypeError("LLM must return a string")
         return response
 
     async def _agenerate(self, context: CognitiveContext, prompt: str) -> str:
         """Generate text asynchronously, preferring astream/agenerate when present."""
+        if self._rate_limiter is not None:
+            self._rate_limiter.acquire()
         astream = getattr(self.llm, "astream", None)
         if callable(astream):
             response = await astream(prompt, self._token_sink(context))
@@ -204,6 +219,25 @@ class Brain:
             self._emit(TOKEN_STREAMED, context=context, token=token)
 
         return sink
+
+    def _resilient_llm(self, func: Any) -> Any:
+        """Apply rate limiting, timeout, and retries around an LLM call."""
+        if self._rate_limiter is not None:
+            self._rate_limiter.acquire()
+        wrapped = func
+        if self._timeout > 0:
+            inner = wrapped
+            wrapped = lambda: with_timeout(self._timeout, inner)  # noqa: E731
+        if self._max_attempts > 1:
+            inner = wrapped
+            wrapped = lambda: retry(inner, max_attempts=self._max_attempts, backoff=self._retry_backoff)  # noqa: E731
+        return wrapped()
+
+    def _resilient_tool(self, func: Any) -> Any:
+        """Apply rate limiting around a tool call (retries would mask errors)."""
+        if self._rate_limiter is not None:
+            self._rate_limiter.acquire()
+        return func()
 
     def _enrich_prompt(self, context: CognitiveContext, prompt: str) -> str:
         """Compose memory and knowledge context around the original prompt."""

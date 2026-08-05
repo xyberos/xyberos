@@ -185,14 +185,30 @@ Status: implemented in v0.9.0.
 
 ## 8. Production hardening
 
-- Retries, rate limiting, and timeouts around LLM and tool calls.
-- Checkpointing for long-running workflows.
-- Config-driven tuning through the existing `Config` object.
+Status: implemented in v0.9.0.
+
+- [x] Resilience helpers — `retry` (exponential backoff, configurable `retry_on`),
+      `RateLimiter` (token bucket), and `with_timeout` in `xyberos/utils/resilience.py`.
+- [x] Config-driven tuning — the Brain reads `brain.max_attempts`,
+      `brain.retry_backoff`, `brain.rate_limit`, and `brain.timeout` from
+      `Config`. All default to off, so default behavior is unchanged.
+- [x] Checkpointing — `WorkflowCheckpoint` persists paused `GraphWorkflow` runs
+      to SQLite; `graph.resume_from_checkpoint(...)` resumes across processes.
+- [ ] Optional: circuit breakers, jittered backoff, async retries/timeouts, and
+      rate limiting for the async path.
 
 ## 9. Model adapter catalog
 
-- Publish adapters for common providers (OpenAI, Anthropic, Ollama, Gemini,
-  local models) as `LLMProvider` implementations.
+Status: implemented in v0.9.0.
+
+- [x] Dependency-light adapters in `xyberos/llm/adapters.py`:
+      `OpenAICompatibleLLM` (any `/chat/completions` endpoint, stdlib HTTP),
+      `OllamaLLM` (local server, stdlib HTTP), and lazy-SDK `OpenAILLM`,
+      `AnthropicLLM`, `GeminiLLM` (import the SDK only when used and raise a
+      clear `ProviderError` if missing).
+- [x] The core package keeps zero runtime dependencies.
+- [ ] Optional: streaming/async variants for each adapter, and a registry of
+      pre-configured provider presets.
 
 ## v1.0 — Stable Architecture
 

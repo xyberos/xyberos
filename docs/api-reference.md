@@ -20,6 +20,7 @@ lists what the class is, **what it owns**, and **when to use it**.
 | `RoleAgent` | name, role, handlers | role-based collaborative agents |
 | `SequentialWorkflow` | ordered steps | composing pipeline steps |
 | `GraphWorkflow` | named nodes, edges, routes | branching, looping, and pausing workflows |
+| `WorkflowCheckpoint` | SQLite-persisted runs | resuming paused graphs across processes |
 | `SequentialPlanner` | ordered plan steps | producing a plan for a context |
 | `LLMPlanner` | an LLM and optional parser | deriving plan steps from the request |
 | `InMemoryMemory` | stored contexts | dev/test memory provider |
@@ -35,6 +36,9 @@ lists what the class is, **what it owns**, and **when to use it**.
 | `StreamingLLM` | generate + stream callables | streaming token output |
 | `AsyncLLM` | an async agenerate | async-only LLM provider |
 | `StructuredLLM` | a provider + parser | parsing LLM output into data |
+| `OpenAILLM` / `AnthropicLLM` / `GeminiLLM` | lazy SDK clients | official provider adapters |
+| `OllamaLLM` | stdlib HTTP | local Ollama server |
+| `OpenAICompatibleLLM` | stdlib HTTP | any /chat/completions endpoint |
 | `FunctionTool` | a typed callable + schema | typed, validated tool results |
 | `EventBus` | subscribers and published events | observing and extending the pipeline |
 
@@ -178,6 +182,18 @@ Every step is optional. A bare `Brain` behaves like a plain LLM wrapper, and
   `parse(prompt)`; raises `StructuredOutputError` on parse failure. The
   `structured(llm, prompt, parser=None)` helper is the one-shot form.
 
+#### Provider adapters
+
+- `OpenAILLM(model, api_key, base_url, timeout, client)` — official OpenAI SDK (lazy import).
+- `AnthropicLLM(model, api_key, client)` — official Anthropic SDK (lazy import).
+- `GeminiLLM(model, api_key, client)` — official Google Gemini SDK (lazy import).
+- `OllamaLLM(model, base_url)` — local Ollama server over stdlib HTTP.
+- `OpenAICompatibleLLM(model, base_url, api_key)` — any `/chat/completions`
+  endpoint over stdlib HTTP.
+
+All are `LLMProvider`s. The SDK-based adapters raise a clear `ProviderError`
+when the underlying package is not installed, keeping the core dependency-free.
+
 ### `xyberos.agents`
 
 #### `RuntimeAgent`
@@ -226,8 +242,14 @@ Every step is optional. A bare `Brain` behaves like a plain LLM wrapper, and
   `context.metadata["workflow.resume_value"]`.
 - **Useful methods:** `add_node(name, step)`, `add_edge(source, target)`,
   `add_route(source, route)`, `execute(context)`, `resume(run, value)`,
-  `run(context)` (contract method — returns the final context, raises
-  `WorkflowPaused` on pause).
+  `resume_from_checkpoint(checkpoint, run_id, value)`, `run(context)` (contract
+  method — returns the final context, raises `WorkflowPaused` on pause).
+
+#### `WorkflowCheckpoint`
+
+- **What it owns:** SQLite-persisted `WorkflowRun` records.
+- **When to use it:** saving a paused graph and resuming it in a later process.
+  Methods: `save(run_id, run)`, `load(run_id)`, `delete(run_id)`, `list_ids()`, `close()`.
 
 #### `WorkflowRun`
 
@@ -425,6 +447,17 @@ tracing backend is just a function.
 - `DiagnosticReport` - structured diagnostics payload
 
 **When to use it:** debugging an app or inspecting its runtime state.
+
+### `xyberos.utils`
+
+- `retry(func, max_attempts=3, backoff=0.1, retry_on=Exception, on_retry=None)` - call `func` with exponential backoff.
+- `RateLimiter(calls_per_second, burst=1)` - a token-bucket limiter with `acquire()` / `try_acquire()`.
+- `with_timeout(seconds, func)` - run `func` with a best-effort timeout (daemon thread).
+- `RetryError` - raised when retries are exhausted.
+
+**When to use it:** wrapping LLM or tool calls for resilience, or via the Brain
+config keys (`brain.max_attempts`, `brain.retry_backoff`, `brain.rate_limit`,
+`brain.timeout`).
 
 ## Common Patterns
 
