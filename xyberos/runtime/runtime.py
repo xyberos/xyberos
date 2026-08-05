@@ -7,6 +7,7 @@ if TYPE_CHECKING:
 
 from ..events import EventBus
 from ..events.names import REQUEST_COMPLETED, REQUEST_FAILED, REQUEST_STARTED
+from ..exceptions.workflow import WorkflowPaused
 from .context import CognitiveContext
 
 
@@ -28,6 +29,8 @@ class Runtime:
         try:
             context.response = self.brain.chat(context)
             context.error = None
+        except WorkflowPaused:
+            raise  # a workflow pause, not a request failure
         except Exception as exc:
             context.error = exc
             if self.events is not None:

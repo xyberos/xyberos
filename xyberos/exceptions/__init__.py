@@ -14,6 +14,7 @@ from .registry import (
 from .runtime import CognitiveRuntimeError, ContextExecutionError
 from .kernel import KernelError
 from .provider import ProviderError
+from .workflow import WorkflowError, WorkflowPaused
 
 __all__ = [
     "AgentAlreadyRegisteredError",
@@ -36,4 +37,6 @@ __all__ = [
     "ToolAlreadyRegisteredError",
     "ToolError",
     "ToolNotFoundError",
+    "WorkflowError",
+    "WorkflowPaused",
 ]

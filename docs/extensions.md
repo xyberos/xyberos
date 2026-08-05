@@ -321,8 +321,9 @@ print(app.chat("hello"))
   tool-calling or tool-choice learning yet.
 - `Knowledge` and `Memory` ship with in-memory and SQLite providers; there are
   no Redis or vector-store backends bundled yet (they need optional dependencies).
-- Workflows are sequential only; there is no branching, state graph, or
-  human-in-the-loop support yet.
+- `SequentialWorkflow` is linear; `GraphWorkflow` adds branching, loops, and
+  pause/resume (human-in-the-loop). There is no automatic disk checkpointing of
+  paused runs yet.
 - Observability is limited to the in-process `EventBus`; there is no event
   persistence, distributed tracing, or metrics export yet.
 - `PluginLoader` manages plugin lifecycle and discovery (entry points + package

@@ -19,6 +19,7 @@ from ..events.names import (
     TOOL_DISPATCHED,
     WORKFLOW_RUN,
 )
+from ..exceptions.workflow import WorkflowPaused
 from ..kernel.logger import Logger
 from ..llm import EchoLLM, LLMProvider
 from ..runtime.context import CognitiveContext
@@ -74,6 +75,8 @@ class Brain:
 
         try:
             return self._chat(context, prompt)
+        except WorkflowPaused:
+            raise  # a workflow pause, not an error — let the caller resume it
         except Exception:
             self._emit(BRAIN_ERROR, context=context)
             raise

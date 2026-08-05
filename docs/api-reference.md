@@ -17,6 +17,7 @@ lists what the class is, **what it owns**, and **when to use it**.
 | `RuntimeAgent` | one runtime | exposing a runtime as an agent |
 | `MultiAgentRuntime` | named agents | running several agents in sequence |
 | `SequentialWorkflow` | ordered steps | composing pipeline steps |
+| `GraphWorkflow` | named nodes, edges, routes | branching, looping, and pausing workflows |
 | `SequentialPlanner` | ordered plan steps | producing a plan for a context |
 | `InMemoryMemory` | stored contexts | dev/test memory provider |
 | `SqliteMemory` | persistent context rows | durable memory provider |
@@ -170,6 +171,32 @@ Every step is optional. A bare `Brain` behaves like a plain LLM wrapper, and
 - **What it owns:** an ordered list of steps.
 - **When to use it:** composing pipeline operations that each receive and return
   the context.
+
+#### `GraphWorkflow`
+
+- **What it owns:** named nodes (steps), fixed edges, conditional routes, and a
+  max-steps guard.
+- **When to use it:** branching, looping, or pausing workflows. A step raises
+  `WorkflowPaused` to pause; `execute(context)` returns a `WorkflowRun`, and
+  `resume(run, value)` continues with the value in
+  `context.metadata["workflow.resume_value"]`.
+- **Useful methods:** `add_node(name, step)`, `add_edge(source, target)`,
+  `add_route(source, route)`, `execute(context)`, `resume(run, value)`,
+  `run(context)` (contract method — returns the final context, raises
+  `WorkflowPaused` on pause).
+
+#### `WorkflowRun`
+
+- **What it owns:** a `status` (`"completed"` or `"paused"`), the current
+  `context`, the current `node`, an optional `prompt` (when paused), and a
+  `steps` trace.
+- **When to use it:** driving a human-in-the-loop loop:
+
+```python
+run = graph.execute(context)
+while run.status == "paused":
+    run = graph.resume(run, input(run.prompt))
+```
 
 #### `WorkflowStep`
 

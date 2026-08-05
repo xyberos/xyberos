@@ -161,6 +161,21 @@ It is the canonical object passed through the runtime pipeline.
 `SequentialWorkflow` executes a list of callables in order.
 Each step may mutate the context in place or return a replacement context.
 
+`GraphWorkflow` builds a directed graph of named steps with fixed edges
+(`add_edge`) and conditional routes (`add_route`) for branches and loops, and
+supports pause/resume for human-in-the-loop checkpoints:
+
+```python
+from xyberos.workflows import GraphWorkflow
+
+graph = GraphWorkflow("review")
+graph.add_node("review", review_step)
+
+run = graph.execute(context)
+while run.status == "paused":
+    run = graph.resume(run, input(run.prompt))  # human-in-the-loop
+```
+
 ### Planner
 
 `SequentialPlanner` is a simple ordered planning implementation.

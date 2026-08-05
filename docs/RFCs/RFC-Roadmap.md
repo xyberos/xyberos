@@ -101,10 +101,22 @@ Status: SQLite implemented in v0.9.0.
 
 ## 3. Branching workflows and state graphs
 
-- Extend `contracts/workflow.py` (or add a new contract) to support branches,
-  loops, and conditional steps.
-- Add a state-graph workflow that can pause/resume, mirroring LangGraph-style control flow.
-- Support human-in-the-loop checkpoints.
+Status: implemented in v0.9.0.
+
+- [x] `GraphWorkflow` — a directed graph of named steps with fixed `add_edge`
+      and conditional `add_route` routing, supporting branches and loops (with
+      a `max_steps` guard).
+- [x] Pause/resume — a step raises `WorkflowPaused` to pause; `execute` returns
+      a `WorkflowRun` and `resume(run, value)` continues with the value injected
+      into `context.metadata["workflow.resume_value"]`.
+- [x] Human-in-the-loop checkpoints — `WorkflowPaused` carries a `prompt` for
+      external input; the Brain and Runtime propagate it as a pause (not an
+      error), so it works through `app.run()` / `app.chat()`.
+- [x] The existing `contracts/workflow.py` contract is unchanged;
+      `GraphWorkflow` implements it (`run` returns the final context and raises
+      `WorkflowPaused` on pause).
+- [ ] Optional: automatic checkpoints that persist paused runs to disk and
+      resume across processes (build on the SQLite providers from item 2).
 
 ## 4. Streaming and async
 
