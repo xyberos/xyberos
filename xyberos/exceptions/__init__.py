@@ -7,7 +7,7 @@ from .agent import (
     HandoffLoopError,
 )
 from .plugin import PluginAlreadyLoadedError, PluginError, PluginLoadError, PluginNotFoundError
-from .tool import ToolAlreadyRegisteredError, ToolError, ToolNotFoundError
+from .tool import ToolAlreadyRegisteredError, ToolArgumentError, ToolError, ToolNotFoundError
 from .registry import (
     CircularDependencyError,
     DependencyResolutionError,
@@ -18,6 +18,7 @@ from .registry import (
 )
 from .runtime import CognitiveRuntimeError, ContextExecutionError
 from .kernel import KernelError
+from .llm import LLMOutputError, StructuredOutputError
 from .provider import ProviderError
 from .workflow import WorkflowError, WorkflowPaused
 
@@ -32,6 +33,7 @@ __all__ = [
     "HandoffLoopError",
     "InvalidServiceNameError",
     "KernelError",
+    "LLMOutputError",
     "ProviderError",
     "PluginAlreadyLoadedError",
     "PluginError",
@@ -40,7 +42,9 @@ __all__ = [
     "RegistryError",
     "ServiceAlreadyRegisteredError",
     "ServiceNotFoundError",
+    "StructuredOutputError",
     "ToolAlreadyRegisteredError",
+    "ToolArgumentError",
     "ToolError",
     "ToolNotFoundError",
     "WorkflowError",

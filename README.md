@@ -25,6 +25,7 @@ Implemented:
 - Persistent SQLite memory and knowledge providers (stdlib, no dependencies)
 - Async `achat`/`arun` and streaming LLM output (token events)
 - LLM-driven planning and config-gated plan injection
+- Structured LLM output parsing and typed function tools (JSON schema)
 - Plugin loading and unloading, with entry-point auto-discovery
 - Typed exception hierarchy
 

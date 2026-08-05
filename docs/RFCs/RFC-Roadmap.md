@@ -170,8 +170,18 @@ Status: implemented in v0.9.0.
 
 ## 7. Structured outputs and typed tool results
 
-- Add typed tool signatures and structured LLM output parsing (e.g., JSON schema).
-- Expose parse failures as typed exceptions.
+Status: implemented in v0.9.0.
+
+- [x] Structured LLM output — `StructuredLLM` and a `structured(llm, prompt)`
+      helper in `xyberos/llm/`; `extract_json` tolerates prose and code fences.
+      Parse failures raise `StructuredOutputError`.
+- [x] Typed tool results — `FunctionTool(name, func)` derives a JSON schema from
+      the callable's signature, validates/coerces arguments before invocation,
+      and raises `ToolArgumentError` for missing/unknown/mistyped arguments.
+- [x] Typed exceptions — `LLMOutputError`/`StructuredOutputError` and
+      `ToolArgumentError` exported from `xyberos.exceptions`.
+- [ ] Optional: schema-driven LLM function calling (auto-generate tool calls
+      from `FunctionTool.schema`) and async structured output.
 
 ## 8. Production hardening
 

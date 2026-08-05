@@ -34,6 +34,8 @@ lists what the class is, **what it owns**, and **when to use it**.
 | `CallableLLM` | a wrapped callable | turning a function into an LLM |
 | `StreamingLLM` | generate + stream callables | streaming token output |
 | `AsyncLLM` | an async agenerate | async-only LLM provider |
+| `StructuredLLM` | a provider + parser | parsing LLM output into data |
+| `FunctionTool` | a typed callable + schema | typed, validated tool results |
 | `EventBus` | subscribers and published events | observing and extending the pipeline |
 
 ## Package Root
@@ -169,6 +171,13 @@ Every step is optional. A bare `Brain` behaves like a plain LLM wrapper, and
 - **When to use it:** async-only providers used with `app.achat` / `app.arun`.
   Not usable from the synchronous API (a clear `TypeError` is raised).
 
+#### `StructuredLLM`
+
+- **What it owns:** a wrapped `LLMProvider` and a parser (JSON by default).
+- **When to use it:** converting LLM text output into structured data via
+  `parse(prompt)`; raises `StructuredOutputError` on parse failure. The
+  `structured(llm, prompt, parser=None)` helper is the one-shot form.
+
 ### `xyberos.agents`
 
 #### `RuntimeAgent`
@@ -275,6 +284,13 @@ while run.status == "paused":
 - **What it owns:** a `ToolRegistry`.
 - **When to use it:** choosing a tool by name heuristic and dispatching it
   against a `CognitiveContext`.
+
+#### `FunctionTool`
+
+- **What it owns:** a typed callable, its JSON schema, and argument coercion.
+- **When to use it:** wrapping a plain typed function as a `Tool`. `schema`
+  describes the parameters; `execute` validates/coerces arguments and raises
+  `ToolArgumentError` for missing, unknown, or mistyped arguments.
 
 ### `xyberos.plugins`
 
