@@ -4,20 +4,20 @@ This directory contains the project documentation beyond the package code itself
 
 ## Start Here
 
-- [Repository README](../../README.md)
+- [Repository README](https://github.com/xyberos/xyberos/blob/main/README.md)
 - [Using Extension Surfaces](extensions.md)
 - [Configuring Services](configuring-services.md) — explicit, factory, and plugin approaches
 - [Tutorial](tutorial.md)
 - [API Reference](api-reference.md)
 - [Lifecycle and Service Behavior](lifecycle.md)
-- [Architecture RFCs](RFCs/)
+- [Architecture RFCs](RFCs/RFC-Roadmap.md)
 
 ## Examples
 
-- [Hello World to Full Stack](../examples/hello_world_to_full_stack/README.md) - one runnable script that grows from a one-liner into a full-stack app
-- [Chat App](../examples/chat_app/README.md) - a real FastAPI + SQLAlchemy backend with pluggable auto-discovery
-- [`examples/minimal_chat.py`](../examples/minimal_chat.py) - the shortest possible chat
-- [`examples/extended_app.py`](../examples/extended_app.py) - a broad walkthrough of the app API
+- [Hello World to Full Stack](https://github.com/xyberos/xyberos/blob/main/examples/hello_world_to_full_stack/README.md) - one runnable script that grows from a one-liner into a full-stack app
+- [Chat App](https://github.com/xyberos/xyberos/blob/main/examples/chat_app/README.md) - a real FastAPI + SQLAlchemy backend with pluggable auto-discovery
+- [`examples/minimal_chat.py`](https://github.com/xyberos/xyberos/blob/main/examples/minimal_chat.py) - the shortest possible chat
+- [`examples/extended_app.py`](https://github.com/xyberos/xyberos/blob/main/examples/extended_app.py) - a broad walkthrough of the app API
 
 ## RFC Set
 

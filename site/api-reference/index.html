@@ -1,0 +1,3264 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="An experimental cognitive framework for building AI systems">
+      
+      
+        <meta name="author" content="Xyberos Contributors">
+      
+      
+      
+        <link rel="prev" href="../lifecycle/">
+      
+      
+        <link rel="next" href="../RFCs/RFC-Roadmap/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>API Reference - Xyberos</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#api-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Xyberos" class="md-header__button md-logo" aria-label="Xyberos" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Xyberos
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API Reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/xyberos/xyberos" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xyberos/xyberos
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../tutorial/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Tutorial
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../configuring-services/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../RFCs/RFC-Roadmap/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Architecture RFCs
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Xyberos" class="md-nav__button md-logo" aria-label="Xyberos" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Xyberos
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/xyberos/xyberos" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xyberos/xyberos
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuring-services/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuring Services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../extensions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extension Surfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle & Services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        At a Glance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#package-root" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package Root
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Package Root">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#xyberos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Xyberos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create_appconfignone-llmnone-memorynone-knowledgenone-toolsnone-plannernone-workflownone-tool_runnernone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create_app(config=None, llm=None, memory=None, knowledge=None, tools=None, planner=None, workflow=None, tool_runner=None)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chatprompt-confignone-llmnone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        chat(prompt, config=None, llm=None, ...)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Classes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#xyberoskernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.kernel
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.kernel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serviceregistry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ServiceRegistry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logger
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosruntime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.runtime
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.runtime">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cognitivecontext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CognitiveContext
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosbrain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.brain
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.brain">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#brain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Brain
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Brain">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-cognitive-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The cognitive pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.llm
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.llm">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#llmprovider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLMProvider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#echollm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EchoLLM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#callablellm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CallableLLM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streamingllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StreamingLLM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asyncllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AsyncLLM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structuredllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StructuredLLM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#provider-adapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provider adapters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosagents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.agents
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#runtimeagent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RuntimeAgent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiagentruntime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MultiAgentRuntime
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#message" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Message
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roleagent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RoleAgent
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosworkflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.workflows
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.workflows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sequentialworkflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SequentialWorkflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphworkflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GraphWorkflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflowcheckpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowCheckpoint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflowrun" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowRun
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflowstep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowStep
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosplanner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.planner
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.planner">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sequentialplanner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SequentialPlanner
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#llmplanner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLMPlanner
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosmemory-xyberosknowledge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.memory / xyberos.knowledge
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.memory / xyberos.knowledge">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inmemorymemory-inmemoryknowledge-sqlitememory-sqliteknowledge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InMemoryMemory / InMemoryKnowledge / SqliteMemory / SqliteKnowledge
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberostools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.tools
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.tools">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#toolregistry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ToolRegistry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toolrunner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ToolRunner
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#functiontool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FunctionTool
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosplugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.plugins
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.plugins">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pluginloader" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PluginLoader
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PluginLoader">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#app-creation-with-custom-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        App creation with custom providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#service-registration-and-dependency-injection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service registration and dependency injection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auto-discovering-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auto-discovering plugins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-llm-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom LLM provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosevents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.events
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.events">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#eventbus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EventBus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#event" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eventrecorder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EventRecorder
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loggingexporter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LoggingExporter
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosdiagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosutils" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.utils
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#build-the-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build the app
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inject-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inject dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#register-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Register services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-the-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run the pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-the-pipeline-asynchronously" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run the pipeline asynchronously
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stream-llm-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stream LLM output
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture RFCs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture RFCs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../RFCs/RFC-Roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../RFCs/RFC-0001-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-0001 Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../RFCs/RFC-0002-kernel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-0002 Kernel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../RFCs/RFC-0003-runtime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-0003 Runtime
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../RFCs/RFC-0004-brain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-0004 Brain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../RFCs/RFC-0005-context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-0005 Context
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../RFCs/RFC-0006-llm-provider/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RFC-0006 LLM Provider
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        At a Glance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#package-root" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package Root
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Package Root">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#xyberos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Xyberos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create_appconfignone-llmnone-memorynone-knowledgenone-toolsnone-plannernone-workflownone-tool_runnernone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create_app(config=None, llm=None, memory=None, knowledge=None, tools=None, planner=None, workflow=None, tool_runner=None)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chatprompt-confignone-llmnone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        chat(prompt, config=None, llm=None, ...)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Classes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#xyberoskernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.kernel
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.kernel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serviceregistry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ServiceRegistry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logger
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosruntime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.runtime
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.runtime">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cognitivecontext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CognitiveContext
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosbrain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.brain
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.brain">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#brain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Brain
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Brain">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-cognitive-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The cognitive pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.llm
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.llm">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#llmprovider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLMProvider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#echollm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EchoLLM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#callablellm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CallableLLM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streamingllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StreamingLLM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asyncllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AsyncLLM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structuredllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StructuredLLM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#provider-adapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provider adapters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosagents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.agents
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#runtimeagent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RuntimeAgent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiagentruntime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MultiAgentRuntime
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#message" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Message
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roleagent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RoleAgent
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosworkflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.workflows
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.workflows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sequentialworkflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SequentialWorkflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphworkflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GraphWorkflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflowcheckpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowCheckpoint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflowrun" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowRun
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflowstep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowStep
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosplanner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.planner
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.planner">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sequentialplanner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SequentialPlanner
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#llmplanner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLMPlanner
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosmemory-xyberosknowledge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.memory / xyberos.knowledge
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.memory / xyberos.knowledge">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inmemorymemory-inmemoryknowledge-sqlitememory-sqliteknowledge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InMemoryMemory / InMemoryKnowledge / SqliteMemory / SqliteKnowledge
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberostools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.tools
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.tools">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#toolregistry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ToolRegistry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toolrunner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ToolRunner
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#functiontool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FunctionTool
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosplugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.plugins
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.plugins">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pluginloader" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PluginLoader
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PluginLoader">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#app-creation-with-custom-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        App creation with custom providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#service-registration-and-dependency-injection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service registration and dependency injection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auto-discovering-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auto-discovering plugins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-llm-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom LLM provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosevents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.events
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="xyberos.events">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#eventbus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EventBus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#event" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eventrecorder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EventRecorder
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loggingexporter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LoggingExporter
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosdiagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xyberosutils" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        xyberos.utils
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#build-the-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build the app
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inject-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inject dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#register-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Register services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-the-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run the pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-the-pipeline-asynchronously" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run the pipeline asynchronously
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stream-llm-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stream LLM output
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
+<p>A short reference to Xyberos' primary public objects. For each main class it
+lists what the class is, <strong>what it owns</strong>, and <strong>when to use it</strong>.</p>
+<h2 id="at-a-glance">At a Glance<a class="headerlink" href="#at-a-glance" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Owns</th>
+<th>When to use it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Xyberos</code></td>
+<td>kernel, brain, runtime, agents</td>
+<td>default entry point to compose an app</td>
+</tr>
+<tr>
+<td><code>Kernel</code></td>
+<td>config, logger, registry, plugins</td>
+<td>platform/lifecycle; service registration and DI</td>
+</tr>
+<tr>
+<td><code>ServiceRegistry</code></td>
+<td>named services and factories</td>
+<td>manual registration, resolution, and injection</td>
+</tr>
+<tr>
+<td><code>Config</code></td>
+<td>configuration values</td>
+<td>reading and writing settings</td>
+</tr>
+<tr>
+<td><code>CognitiveContext</code></td>
+<td>prompt, response, metadata, error, plan</td>
+<td>passing state through the pipeline</td>
+</tr>
+<tr>
+<td><code>Runtime</code></td>
+<td>a brain</td>
+<td>executing a context through the pipeline</td>
+</tr>
+<tr>
+<td><code>Brain</code></td>
+<td>LLM, optional tool runner, memory, knowledge, planner, workflow</td>
+<td>orchestrating the automated cognitive pipeline</td>
+</tr>
+<tr>
+<td><code>RuntimeAgent</code></td>
+<td>one runtime</td>
+<td>exposing a runtime as an agent</td>
+</tr>
+<tr>
+<td><code>MultiAgentRuntime</code></td>
+<td>named agents, message board</td>
+<td>coordinated runs with messaging and handoffs</td>
+</tr>
+<tr>
+<td><code>Message</code></td>
+<td>sender, recipient, content</td>
+<td>agent-to-agent communication</td>
+</tr>
+<tr>
+<td><code>RoleAgent</code></td>
+<td>name, role, handlers</td>
+<td>role-based collaborative agents</td>
+</tr>
+<tr>
+<td><code>SequentialWorkflow</code></td>
+<td>ordered steps</td>
+<td>composing pipeline steps</td>
+</tr>
+<tr>
+<td><code>GraphWorkflow</code></td>
+<td>named nodes, edges, routes</td>
+<td>branching, looping, and pausing workflows</td>
+</tr>
+<tr>
+<td><code>WorkflowCheckpoint</code></td>
+<td>SQLite-persisted runs</td>
+<td>resuming paused graphs across processes</td>
+</tr>
+<tr>
+<td><code>SequentialPlanner</code></td>
+<td>ordered plan steps</td>
+<td>producing a plan for a context</td>
+</tr>
+<tr>
+<td><code>LLMPlanner</code></td>
+<td>an LLM and optional parser</td>
+<td>deriving plan steps from the request</td>
+</tr>
+<tr>
+<td><code>InMemoryMemory</code></td>
+<td>stored contexts</td>
+<td>dev/test memory provider</td>
+</tr>
+<tr>
+<td><code>SqliteMemory</code></td>
+<td>persistent context rows</td>
+<td>durable memory provider</td>
+</tr>
+<tr>
+<td><code>InMemoryKnowledge</code></td>
+<td>keyword facts</td>
+<td>dev/test knowledge provider</td>
+</tr>
+<tr>
+<td><code>SqliteKnowledge</code></td>
+<td>persistent keyword facts</td>
+<td>durable knowledge provider</td>
+</tr>
+<tr>
+<td><code>ToolRegistry</code></td>
+<td>named tools</td>
+<td>registering and executing tools</td>
+</tr>
+<tr>
+<td><code>ToolRunner</code></td>
+<td>a tool registry</td>
+<td>selecting and dispatching tools</td>
+</tr>
+<tr>
+<td><code>PluginLoader</code></td>
+<td>loaded plugins, entry-point discovery, convention scan</td>
+<td>loading, unloading, and auto-discovering extensions</td>
+</tr>
+<tr>
+<td><code>LLMProvider</code></td>
+<td>a model backend</td>
+<td>providing text generation</td>
+</tr>
+<tr>
+<td><code>EchoLLM</code></td>
+<td>nothing (echoes the prompt)</td>
+<td>default no-op model</td>
+</tr>
+<tr>
+<td><code>CallableLLM</code></td>
+<td>a wrapped callable</td>
+<td>turning a function into an LLM</td>
+</tr>
+<tr>
+<td><code>StreamingLLM</code></td>
+<td>generate + stream callables</td>
+<td>streaming token output</td>
+</tr>
+<tr>
+<td><code>AsyncLLM</code></td>
+<td>an async agenerate</td>
+<td>async-only LLM provider</td>
+</tr>
+<tr>
+<td><code>StructuredLLM</code></td>
+<td>a provider + parser</td>
+<td>parsing LLM output into data</td>
+</tr>
+<tr>
+<td><code>OpenAILLM</code> / <code>AnthropicLLM</code> / <code>GeminiLLM</code></td>
+<td>lazy SDK clients</td>
+<td>official provider adapters</td>
+</tr>
+<tr>
+<td><code>OllamaLLM</code></td>
+<td>stdlib HTTP</td>
+<td>local Ollama server</td>
+</tr>
+<tr>
+<td><code>OpenAICompatibleLLM</code></td>
+<td>stdlib HTTP</td>
+<td>any /chat/completions endpoint</td>
+</tr>
+<tr>
+<td><code>FunctionTool</code></td>
+<td>a typed callable + schema</td>
+<td>typed, validated tool results</td>
+</tr>
+<tr>
+<td><code>EventBus</code></td>
+<td>subscribers and published events</td>
+<td>observing and extending the pipeline</td>
+</tr>
+</tbody>
+</table>
+<h2 id="package-root">Package Root<a class="headerlink" href="#package-root" title="Permanent link">&para;</a></h2>
+<p>Import the facade helpers from the package root:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">xyberos</span><span class="w"> </span><span class="kn">import</span> <span class="n">Xyberos</span><span class="p">,</span> <span class="n">chat</span><span class="p">,</span> <span class="n">create_app</span>
+</code></pre></div>
+<h3 id="xyberos"><code>Xyberos</code><a class="headerlink" href="#xyberos" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>What it is:</strong> the application facade that composes the core layers.</li>
+<li><strong>What it owns:</strong> a <code>Kernel</code>, a <code>Brain</code>, a <code>Runtime</code>, a default <code>RuntimeAgent</code>,
+  and a <code>MultiAgentRuntime</code>. It also exposes the core services through typed
+  properties: <code>config</code>, <code>logger</code>, <code>registry</code>, <code>plugins</code>, <code>llm</code>, <code>memory</code>,
+  <code>knowledge</code>, <code>tools</code>, <code>tool_runner</code>, <code>planner</code>, <code>workflow</code>, <code>brain</code>, <code>runtime</code>,
+  and <code>agents</code>.</li>
+<li><strong>When to use it:</strong> when you want a ready-to-run application with service
+  registration, dependency injection, plugin management, agent management, and
+  request execution. Prefer <code>create_app()</code> unless you need to keep a reference
+  around.</li>
+</ul>
+<h3 id="create_appconfignone-llmnone-memorynone-knowledgenone-toolsnone-plannernone-workflownone-tool_runnernone"><code>create_app(config=None, llm=None, memory=None, knowledge=None, tools=None, planner=None, workflow=None, tool_runner=None)</code><a class="headerlink" href="#create_appconfignone-llmnone-memorynone-knowledgenone-toolsnone-plannernone-workflownone-tool_runnernone" title="Permanent link">&para;</a></h3>
+<p>Convenience constructor for a ready-to-use <code>Xyberos</code> application. Any provider
+you omit is filled in with an in-memory default.</p>
+<h3 id="chatprompt-confignone-llmnone"><code>chat(prompt, config=None, llm=None, ...)</code><a class="headerlink" href="#chatprompt-confignone-llmnone" title="Permanent link">&para;</a></h3>
+<p>One-shot helper for the common case where you only need a response string. It
+accepts the same provider arguments as <code>create_app</code>.</p>
+<h2 id="core-classes">Core Classes<a class="headerlink" href="#core-classes" title="Permanent link">&para;</a></h2>
+<h3 id="xyberoskernel"><code>xyberos.kernel</code><a class="headerlink" href="#xyberoskernel" title="Permanent link">&para;</a></h3>
+<h4 id="kernel"><code>Kernel</code><a class="headerlink" href="#kernel" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> configuration (<code>Config</code>), logging (<code>Logger</code>), the service
+  registry (<code>ServiceRegistry</code>), plugin loading (<code>PluginLoader</code>), and the
+  start/stop lifecycle.</li>
+<li><strong>When to use it:</strong> rarely directly — <code>Xyberos</code> builds one for you. Reach for
+  it when you need platform-level service registration or lifecycle control.</li>
+</ul>
+<h4 id="config"><code>Config</code><a class="headerlink" href="#config" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> a mutable key/value mapping.</li>
+<li><strong>When to use it:</strong> reading and writing application settings, typically via
+  <code>app.config</code>.</li>
+</ul>
+<h4 id="serviceregistry"><code>ServiceRegistry</code><a class="headerlink" href="#serviceregistry" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> named services and lazy factories, plus constructor
+  dependency injection (<code>inject</code>).</li>
+<li><strong>When to use it:</strong> manual service registration and resolution, or when you
+  need DI beyond the facade.</li>
+</ul>
+<h4 id="logger"><code>Logger</code><a class="headerlink" href="#logger" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> level-aware log output.</li>
+<li><strong>When to use it:</strong> logging from your own code, usually via <code>app.logger</code>.</li>
+</ul>
+<h3 id="xyberosruntime"><code>xyberos.runtime</code><a class="headerlink" href="#xyberosruntime" title="Permanent link">&para;</a></h3>
+<h4 id="cognitivecontext"><code>CognitiveContext</code><a class="headerlink" href="#cognitivecontext" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> a single request's <code>prompt</code>, <code>response</code>, <code>metadata</code>, <code>error</code>,
+  and <code>plan</code> (the plan produced by the planner during processing), plus the
+  <code>succeeded</code> flag.</li>
+<li><strong>When to use it:</strong> the state object passed through the whole pipeline; build
+  one to run a request manually.</li>
+</ul>
+<h4 id="runtime"><code>Runtime</code><a class="headerlink" href="#runtime" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> a configured <code>Brain</code>.</li>
+<li><strong>When to use it:</strong> executing a <code>CognitiveContext</code> through the pipeline and
+  returning the completed context.</li>
+</ul>
+<h3 id="xyberosbrain"><code>xyberos.brain</code><a class="headerlink" href="#xyberosbrain" title="Permanent link">&para;</a></h3>
+<h4 id="brain"><code>Brain</code><a class="headerlink" href="#brain" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> an <code>LLMProvider</code>, and optional <code>ToolRunner</code>, memory,
+  knowledge, planner, and workflow providers.</li>
+<li><strong>When to use it:</strong> validating input and generating a response; the brain
+  orchestrates the automated pipeline. See <a href="#the-cognitive-pipeline">The cognitive pipeline</a>
+  below for the exact order.</li>
+</ul>
+<h5 id="the-cognitive-pipeline">The cognitive pipeline<a class="headerlink" href="#the-cognitive-pipeline" title="Permanent link">&para;</a></h5>
+<p>For each request, <code>Brain.chat()</code> runs the configured subsystems in order:</p>
+<ol>
+<li><strong>Workflow</strong> — if configured, its steps run first; a step that sets the
+   response short-circuits the pipeline.</li>
+<li><strong>Memory</strong> — past turns are retrieved and injected into the prompt.</li>
+<li><strong>Knowledge</strong> — matching facts are queried and injected into the prompt.</li>
+<li><strong>Planner</strong> — the plan is computed and recorded on <code>context.plan</code>.</li>
+<li><strong>Tools</strong> — a matching tool is dispatched via the <code>ToolRunner</code>.</li>
+<li><strong>LLM</strong> — the enriched prompt is sent to the model.</li>
+<li><strong>Memory</strong> — the completed turn is stored for future requests.</li>
+</ol>
+<p>Every step is optional. A bare <code>Brain</code> behaves like a plain LLM wrapper, and
+<code>create_app()</code> wires all of the in-memory defaults automatically.</p>
+<h3 id="xyberosllm"><code>xyberos.llm</code><a class="headerlink" href="#xyberosllm" title="Permanent link">&para;</a></h3>
+<h4 id="llmprovider"><code>LLMProvider</code><a class="headerlink" href="#llmprovider" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> the model backend contract (<code>generate</code>).</li>
+<li><strong>When to use it:</strong> implementing a custom model backend for Xyberos.</li>
+</ul>
+<h4 id="echollm"><code>EchoLLM</code><a class="headerlink" href="#echollm" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> nothing; it echoes the prompt back.</li>
+<li><strong>When to use it:</strong> the default no-op model, useful for smoke tests.</li>
+</ul>
+<h4 id="callablellm"><code>CallableLLM</code><a class="headerlink" href="#callablellm" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> a wrapped plain callable.</li>
+<li><strong>When to use it:</strong> turning a simple <code>prompt -&gt; response</code> function into an
+  <code>LLMProvider</code>.</li>
+</ul>
+<h4 id="streamingllm"><code>StreamingLLM</code><a class="headerlink" href="#streamingllm" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> a <code>generate</code> callable and a <code>stream(prompt, on_token)</code> callable.</li>
+<li><strong>When to use it:</strong> providing streaming token output; the Brain emits each
+  token as the <code>brain.token_streamed</code> event.</li>
+</ul>
+<h4 id="asyncllm"><code>AsyncLLM</code><a class="headerlink" href="#asyncllm" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> an async <code>agenerate</code> coroutine.</li>
+<li><strong>When to use it:</strong> async-only providers used with <code>app.achat</code> / <code>app.arun</code>.
+  Not usable from the synchronous API (a clear <code>TypeError</code> is raised).</li>
+</ul>
+<h4 id="structuredllm"><code>StructuredLLM</code><a class="headerlink" href="#structuredllm" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> a wrapped <code>LLMProvider</code> and a parser (JSON by default).</li>
+<li><strong>When to use it:</strong> converting LLM text output into structured data via
+  <code>parse(prompt)</code>; raises <code>StructuredOutputError</code> on parse failure. The
+  <code>structured(llm, prompt, parser=None)</code> helper is the one-shot form.</li>
+</ul>
+<h4 id="provider-adapters">Provider adapters<a class="headerlink" href="#provider-adapters" title="Permanent link">&para;</a></h4>
+<ul>
+<li><code>OpenAILLM(model, api_key, base_url, timeout, client)</code> — official OpenAI SDK (lazy import).</li>
+<li><code>AnthropicLLM(model, api_key, client)</code> — official Anthropic SDK (lazy import).</li>
+<li><code>GeminiLLM(model, api_key, client)</code> — official Google Gemini SDK (lazy import).</li>
+<li><code>OllamaLLM(model, base_url)</code> — local Ollama server over stdlib HTTP.</li>
+<li><code>OpenAICompatibleLLM(model, base_url, api_key)</code> — any <code>/chat/completions</code>
+  endpoint over stdlib HTTP.</li>
+</ul>
+<p>All are <code>LLMProvider</code>s. The SDK-based adapters raise a clear <code>ProviderError</code>
+when the underlying package is not installed, keeping the core dependency-free.</p>
+<h3 id="xyberosagents"><code>xyberos.agents</code><a class="headerlink" href="#xyberosagents" title="Permanent link">&para;</a></h3>
+<h4 id="runtimeagent"><code>RuntimeAgent</code><a class="headerlink" href="#runtimeagent" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> a single <code>Runtime</code>.</li>
+<li><strong>When to use it:</strong> exposing an existing runtime as a named agent in a
+  multi-agent pipeline.</li>
+</ul>
+<h4 id="multiagentruntime"><code>MultiAgentRuntime</code><a class="headerlink" href="#multiagentruntime" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> named <code>Agent</code> instances and a running message board.</li>
+<li><strong>When to use it:</strong> running agents over one shared context with inter-agent
+  messaging, handoffs, and roles. Each agent runs at most once per <code>run()</code> call;
+  a <code>handoff</code> message runs its recipient next.</li>
+<li><strong>Useful members:</strong> <code>names</code>, <code>messages</code>, <code>register</code>, <code>get</code>, <code>remove</code>, <code>role</code>,
+  <code>send(message)</code>, <code>run(context, agent_names=None)</code>.</li>
+</ul>
+<h4 id="message"><code>Message</code><a class="headerlink" href="#message" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> an immutable <code>sender</code>, <code>recipient</code>, <code>content</code>, <code>kind</code>, and <code>metadata</code>.</li>
+<li><strong>When to use it:</strong> agent-to-agent communication. <code>recipient="*"</code> broadcasts;
+  <code>kind == "handoff"</code> transfers control to the recipient.</li>
+<li><strong>Helpers:</strong> <code>post(context, message)</code> queues a message for the runtime;
+  <code>handoff(target, content=None, sender="")</code> builds a handoff.</li>
+</ul>
+<h4 id="roleagent"><code>RoleAgent</code><a class="headerlink" href="#roleagent" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> a <code>name</code>, <code>role</code>, optional <code>run</code> handler, and optional <code>receive</code> handler.</li>
+<li><strong>When to use it:</strong> building role-based collaborative agents without subclassing.</li>
+</ul>
+<h3 id="xyberosworkflows"><code>xyberos.workflows</code><a class="headerlink" href="#xyberosworkflows" title="Permanent link">&para;</a></h3>
+<h4 id="sequentialworkflow"><code>SequentialWorkflow</code><a class="headerlink" href="#sequentialworkflow" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> an ordered list of steps.</li>
+<li><strong>When to use it:</strong> composing pipeline operations that each receive and return
+  the context.</li>
+</ul>
+<h4 id="graphworkflow"><code>GraphWorkflow</code><a class="headerlink" href="#graphworkflow" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> named nodes (steps), fixed edges, conditional routes, and a
+  max-steps guard.</li>
+<li><strong>When to use it:</strong> branching, looping, or pausing workflows. A step raises
+  <code>WorkflowPaused</code> to pause; <code>execute(context)</code> returns a <code>WorkflowRun</code>, and
+  <code>resume(run, value)</code> continues with the value in
+  <code>context.metadata["workflow.resume_value"]</code>.</li>
+<li><strong>Useful methods:</strong> <code>add_node(name, step)</code>, <code>add_edge(source, target)</code>,
+  <code>add_route(source, route)</code>, <code>execute(context)</code>, <code>resume(run, value)</code>,
+  <code>resume_from_checkpoint(checkpoint, run_id, value)</code>, <code>run(context)</code> (contract
+  method — returns the final context, raises <code>WorkflowPaused</code> on pause).</li>
+</ul>
+<h4 id="workflowcheckpoint"><code>WorkflowCheckpoint</code><a class="headerlink" href="#workflowcheckpoint" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> SQLite-persisted <code>WorkflowRun</code> records.</li>
+<li><strong>When to use it:</strong> saving a paused graph and resuming it in a later process.
+  Methods: <code>save(run_id, run)</code>, <code>load(run_id)</code>, <code>delete(run_id)</code>, <code>list_ids()</code>, <code>close()</code>.</li>
+</ul>
+<h4 id="workflowrun"><code>WorkflowRun</code><a class="headerlink" href="#workflowrun" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> a <code>status</code> (<code>"completed"</code> or <code>"paused"</code>), the current
+  <code>context</code>, the current <code>node</code>, an optional <code>prompt</code> (when paused), and a
+  <code>steps</code> trace.</li>
+<li><strong>When to use it:</strong> driving a human-in-the-loop loop:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">run</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">while</span> <span class="n">run</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;paused&quot;</span><span class="p">:</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">run</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="nb">input</span><span class="p">(</span><span class="n">run</span><span class="o">.</span><span class="n">prompt</span><span class="p">))</span>
+</code></pre></div>
+<h4 id="workflowstep"><code>WorkflowStep</code><a class="headerlink" href="#workflowstep" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> a callable type alias, <code>(CognitiveContext) -&gt; CognitiveContext | None</code>.</li>
+<li><strong>When to use it:</strong> typing your workflow step functions.</li>
+</ul>
+<h3 id="xyberosplanner"><code>xyberos.planner</code><a class="headerlink" href="#xyberosplanner" title="Permanent link">&para;</a></h3>
+<h4 id="sequentialplanner"><code>SequentialPlanner</code><a class="headerlink" href="#sequentialplanner" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> an ordered set of plan step names.</li>
+<li><strong>When to use it:</strong> producing a simple ordered plan for a context.</li>
+</ul>
+<h4 id="llmplanner"><code>LLMPlanner</code><a class="headerlink" href="#llmplanner" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> an <code>LLMProvider</code> and an optional <code>parse</code> callable.</li>
+<li><strong>When to use it:</strong> deriving plan steps by asking the LLM to break down the
+  request (one step per line by default; pass <code>parse</code> for JSON or other shapes).</li>
+<li><strong>Note:</strong> combine with <code>config={"brain.inject_plan": True}</code> to have the Brain
+  append the plan to the model prompt.</li>
+</ul>
+<h3 id="xyberosmemory-xyberosknowledge"><code>xyberos.memory</code> / <code>xyberos.knowledge</code><a class="headerlink" href="#xyberosmemory-xyberosknowledge" title="Permanent link">&para;</a></h3>
+<h4 id="inmemorymemory-inmemoryknowledge-sqlitememory-sqliteknowledge"><code>InMemoryMemory</code> / <code>InMemoryKnowledge</code> / <code>SqliteMemory</code> / <code>SqliteKnowledge</code><a class="headerlink" href="#inmemorymemory-inmemoryknowledge-sqlitememory-sqliteknowledge" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What they own:</strong> in-process context storage / keyword-keyed facts; the
+  SQLite variants persist rows to a database file (stdlib <code>sqlite3</code>).</li>
+<li><strong>When to use them:</strong> in-memory for dev/tests; SQLite for durable storage —
+  pass them to <code>create_app(memory=..., knowledge=...)</code>. Metadata, plans, and
+  values are JSON-encoded, so any JSON-serializable payload round-trips.</li>
+</ul>
+<h3 id="xyberostools"><code>xyberos.tools</code><a class="headerlink" href="#xyberostools" title="Permanent link">&para;</a></h3>
+<h4 id="toolregistry"><code>ToolRegistry</code><a class="headerlink" href="#toolregistry" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> named <code>Tool</code> instances.</li>
+<li><strong>When to use it:</strong> registering, looking up, and executing tools.</li>
+</ul>
+<h4 id="toolrunner"><code>ToolRunner</code><a class="headerlink" href="#toolrunner" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> a <code>ToolRegistry</code>.</li>
+<li><strong>When to use it:</strong> choosing a tool by name heuristic and dispatching it
+  against a <code>CognitiveContext</code>.</li>
+</ul>
+<h4 id="functiontool"><code>FunctionTool</code><a class="headerlink" href="#functiontool" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> a typed callable, its JSON schema, and argument coercion.</li>
+<li><strong>When to use it:</strong> wrapping a plain typed function as a <code>Tool</code>. <code>schema</code>
+  describes the parameters; <code>execute</code> validates/coerces arguments and raises
+  <code>ToolArgumentError</code> for missing, unknown, or mistyped arguments.</li>
+</ul>
+<h3 id="xyberosplugins"><code>xyberos.plugins</code><a class="headerlink" href="#xyberosplugins" title="Permanent link">&para;</a></h3>
+<h4 id="pluginloader"><code>PluginLoader</code><a class="headerlink" href="#pluginloader" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> loaded <code>Plugin</code> instances, a reference to the platform
+  kernel, and auto-discovery machinery (<code>importlib.metadata.entry_points</code>).</li>
+<li><strong>When to use it:</strong> loading, unloading, and auto-discovering plugins.</li>
+</ul>
+<h5 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h5>
+<ul>
+<li><code>load(plugin)</code> — register and retain one plugin instance.</li>
+<li><code>load_from_module(module_name, attribute="plugin")</code> — import a module and
+  load its plugin export.</li>
+<li><code>load_entry_points(group="xyberos.plugins")</code> — auto-discover every plugin
+  declared under the given entry-point group via <code>importlib.metadata</code>. Entry
+  point values are <code>module:attribute</code> (or a bare module whose <code>plugin</code> export
+  is used).</li>
+</ul>
+<h3 id="app-creation-with-custom-providers">App creation with custom providers<a class="headerlink" href="#app-creation-with-custom-providers" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">xyberos</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_app</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">xyberos.llm</span><span class="w"> </span><span class="kn">import</span> <span class="n">CallableLLM</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">xyberos.knowledge</span><span class="w"> </span><span class="kn">import</span> <span class="n">InMemoryKnowledge</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">app</span> <span class="o">=</span> <span class="n">create_app</span><span class="p">(</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">llm</span><span class="o">=</span><span class="n">CallableLLM</span><span class="p">(</span><span class="k">lambda</span> <span class="n">prompt</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;answer: </span><span class="si">{</span><span class="n">prompt</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">),</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">knowledge</span><span class="o">=</span><span class="n">InMemoryKnowledge</span><span class="p">({</span><span class="s2">&quot;hours&quot;</span><span class="p">:</span> <span class="s2">&quot;9am-6pm&quot;</span><span class="p">}),</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">)</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;What are your hours?&quot;</span><span class="p">))</span>
+</code></pre></div>
+<h3 id="service-registration-and-dependency-injection">Service registration and dependency injection<a class="headerlink" href="#service-registration-and-dependency-injection" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">app</span> <span class="o">=</span> <span class="n">create_app</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="s2">&quot;production&quot;</span><span class="p">})</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">app</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;cache&quot;</span><span class="p">,</span> <span class="p">{})</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">app</span><span class="o">.</span><span class="n">register_factory</span><span class="p">(</span><span class="s2">&quot;adapter&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">config</span><span class="p">,</span> <span class="n">cache</span><span class="p">:</span> <span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">cache</span><span class="p">))</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">adapter</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="s2">&quot;adapter&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="auto-discovering-plugins">Auto-discovering plugins<a class="headerlink" href="#auto-discovering-plugins" title="Permanent link">&para;</a></h3>
+<p>Two styles — no manual wiring required.</p>
+<p><strong>Convention scan</strong> (drop a module in a folder):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">app</span> <span class="o">=</span> <span class="n">create_app</span><span class="p">()</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">app</span><span class="o">.</span><span class="n">load_plugins_from</span><span class="p">(</span><span class="s2">&quot;app.plugins&quot;</span><span class="p">)</span>   <span class="c1"># every Plugin subclass in app/plugins is loaded</span>
+</code></pre></div>
+<p><strong>Entry points</strong> (declared in package metadata):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">app</span> <span class="o">=</span> <span class="n">create_app</span><span class="p">()</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">app</span><span class="o">.</span><span class="n">load_entry_points</span><span class="p">()</span>   <span class="c1"># every installed &quot;xyberos.plugins&quot; entry point is loaded</span>
+</code></pre></div>
+<h3 id="custom-llm-provider">Custom LLM provider<a class="headerlink" href="#custom-llm-provider" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">xyberos.contracts.llm</span><span class="w"> </span><span class="kn">import</span> <span class="n">LLMProvider</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyLLM</span><span class="p">(</span><span class="n">LLMProvider</span><span class="p">):</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;response to: </span><span class="si">{</span><span class="n">prompt</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="n">app</span> <span class="o">=</span> <span class="n">create_app</span><span class="p">(</span><span class="n">llm</span><span class="o">=</span><span class="n">MyLLM</span><span class="p">())</span>
+</code></pre></div>
+- <code>load_from_package(package)</code> — convention-based auto-discovery: walk a
+  package and load every concrete (non-abstract) <code>Plugin</code> subclass found.
+- <code>get(name)</code> / <code>unload(name)</code> — retrieve / unregister by name.</p>
+<p><code>load_entry_points</code> and <code>load_from_package</code> are idempotent when called with
+<code>skip_existing=True</code> (the default) — re-running discovery never double-registers
+a plugin.</p>
+<p>These are also exposed on the facade:</p>
+<ul>
+<li><code>app.load_entry_points(group="xyberos.plugins")</code></li>
+<li><code>app.load_plugins_from("app.plugins")</code></li>
+</ul>
+<h3 id="xyberosevents"><code>xyberos.events</code><a class="headerlink" href="#xyberosevents" title="Permanent link">&para;</a></h3>
+<h4 id="eventbus"><code>EventBus</code><a class="headerlink" href="#eventbus" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> named listeners, wildcard listeners, and the publish/emit loop.</li>
+<li><strong>When to use it:</strong> subscribing to pipeline and lifecycle events for
+  observability, tracing, or automation; reachable as <code>app.events</code>.</li>
+<li><strong>Useful methods:</strong> <code>subscribe(event, listener)</code>, <code>subscribe_any(listener)</code>,
+  <code>unsubscribe(event, listener)</code>, <code>emit(name, context=None, **data)</code>,
+  <code>publish(event)</code>, <code>has_listeners(event)</code>.</li>
+</ul>
+<h4 id="event"><code>Event</code><a class="headerlink" href="#event" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> an immutable <code>name</code>, optional <code>context</code>, and a <code>data</code> mapping.</li>
+<li><strong>When to use it:</strong> the payload delivered to every listener.</li>
+</ul>
+<p>Canonical event names are exported from <code>xyberos.events</code> (e.g. <code>REQUEST_STARTED</code>,
+<code>RESPONSE_PRODUCED</code>, <code>BRAIN_ERROR</code>); see <code>xyberos/events/names.py</code> for the full list.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">xyberos</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_app</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">xyberos.events</span><span class="w"> </span><span class="kn">import</span> <span class="n">BRAIN_ERROR</span><span class="p">,</span> <span class="n">RESPONSE_PRODUCED</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">app</span> <span class="o">=</span> <span class="n">create_app</span><span class="p">()</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">app</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">RESPONSE_PRODUCED</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;response&quot;</span><span class="p">]))</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">app</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">BRAIN_ERROR</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;request failed&quot;</span><span class="p">))</span>
+</code></pre></div>
+<p>A listener that raises is logged and isolated — it never breaks the pipeline.</p>
+<h4 id="eventrecorder"><code>EventRecorder</code><a class="headerlink" href="#eventrecorder" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> a bounded event history, per-name counts, and attached exporters.</li>
+<li><strong>When to use it:</strong> recording every event for inspection, dashboards, or
+  forwarding to metrics/tracing backends. Attach with <code>subscribe_to(app.events)</code>.</li>
+</ul>
+<h4 id="loggingexporter"><code>LoggingExporter</code><a class="headerlink" href="#loggingexporter" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>What it owns:</strong> a logger and the export logic.</li>
+<li><strong>When to use it:</strong> writing one structured log line per event.</li>
+</ul>
+<p>Any callable <code>event -&gt; None</code> can be an <code>Exporter</code>, so integrating a metrics or
+tracing backend is just a function.</p>
+<h3 id="xyberosdiagnostics"><code>xyberos.diagnostics</code><a class="headerlink" href="#xyberosdiagnostics" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>doctor()</code> - build a developer-focused runtime report</li>
+<li><code>DiagnosticReport</code> - structured diagnostics payload</li>
+</ul>
+<p><strong>When to use it:</strong> debugging an app or inspecting its runtime state.</p>
+<h3 id="xyberosutils"><code>xyberos.utils</code><a class="headerlink" href="#xyberosutils" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>retry(func, max_attempts=3, backoff=0.1, retry_on=Exception, on_retry=None)</code> - call <code>func</code> with exponential backoff.</li>
+<li><code>RateLimiter(calls_per_second, burst=1)</code> - a token-bucket limiter with <code>acquire()</code> / <code>try_acquire()</code>.</li>
+<li><code>with_timeout(seconds, func)</code> - run <code>func</code> with a best-effort timeout (daemon thread).</li>
+<li><code>RetryError</code> - raised when retries are exhausted.</li>
+</ul>
+<p><strong>When to use it:</strong> wrapping LLM or tool calls for resilience, or via the Brain
+config keys (<code>brain.max_attempts</code>, <code>brain.retry_backoff</code>, <code>brain.rate_limit</code>,
+<code>brain.timeout</code>).</p>
+<h2 id="common-patterns">Common Patterns<a class="headerlink" href="#common-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="build-the-app">Build the app<a class="headerlink" href="#build-the-app" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">xyberos</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_app</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">app</span> <span class="o">=</span> <span class="n">create_app</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="inject-dependencies">Inject dependencies<a class="headerlink" href="#inject-dependencies" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="k">lambda</span> <span class="n">logger</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">config</span><span class="p">))</span>
+</code></pre></div>
+<h3 id="register-services">Register services<a class="headerlink" href="#register-services" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">app</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;answer&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">app</span><span class="o">.</span><span class="n">register_factory</span><span class="p">(</span><span class="s2">&quot;dynamic&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">answer</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;answer=</span><span class="si">{</span><span class="n">answer</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="run-the-pipeline">Run the pipeline<a class="headerlink" href="#run-the-pipeline" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">context</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">text</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="run-the-pipeline-asynchronously">Run the pipeline asynchronously<a class="headerlink" href="#run-the-pipeline-asynchronously" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">context</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">arun</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">))</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">text</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">achat</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">))</span>
+</code></pre></div>
+<h3 id="stream-llm-output">Stream LLM output<a class="headerlink" href="#stream-llm-output" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">xyberos.events</span><span class="w"> </span><span class="kn">import</span> <span class="n">TOKEN_STREAMED</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="n">app</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">TOKEN_STREAMED</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;token&quot;</span><span class="p">],</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">))</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

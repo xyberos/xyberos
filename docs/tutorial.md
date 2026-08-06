@@ -424,9 +424,9 @@ Both styles are idempotent — re-running discovery never double-registers a plu
 
 A typical Xyberos app composes the kernel, an LLM, providers, tools, agents, and
 plugins. For a complete walkthrough, run the
-[Hello World to Full Stack](../examples/hello_world_to_full_stack/README.md)
+[Hello World to Full Stack](https://github.com/xyberos/xyberos/blob/main/examples/hello_world_to_full_stack/README.md)
 example, or study the
-[Chat App](../examples/chat_app/README.md) for a real FastAPI + database
+[Chat App](https://github.com/xyberos/xyberos/blob/main/examples/chat_app/README.md) for a real FastAPI + database
 backend with pluggable auto-discovery.
 
 ```python

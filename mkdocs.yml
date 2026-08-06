@@ -1,0 +1,77 @@
+site_name: Xyberos
+site_description: An experimental cognitive framework for building AI systems
+site_author: Xyberos Contributors
+repo_url: https://github.com/xyberos/xyberos
+repo_name: xyberos/xyberos
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+extra:
+  version:
+    provider: mike
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+
+nav:
+  - Home: README.md
+  - Tutorial: tutorial.md
+  - Guides:
+      - Configuring Services: configuring-services.md
+      - Extension Surfaces: extensions.md
+      - Lifecycle & Services: lifecycle.md
+  - API Reference: api-reference.md
+  - Architecture RFCs:
+      - Overview: RFCs/RFC-Roadmap.md
+      - RFC-0001 Architecture: RFCs/RFC-0001-architecture.md
+      - RFC-0002 Kernel: RFCs/RFC-0002-kernel.md
+      - RFC-0003 Runtime: RFCs/RFC-0003-runtime.md
+      - RFC-0004 Brain: RFCs/RFC-0004-brain.md
+      - RFC-0005 Context: RFCs/RFC-0005-context.md
+      - RFC-0006 LLM Provider: RFCs/RFC-0006-llm-provider.md
