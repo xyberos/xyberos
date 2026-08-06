@@ -29,6 +29,15 @@ The RFCs describe the current architecture and the reasoning behind the core lay
 - `RFC-0004-brain.md` - brain orchestration
 - `RFC-0005-context.md` - cognitive context model
 - `RFC-0006-llm-provider.md` - language model provider interface
+- `RFC-0007-memory.md` - memory contract and providers
+- `RFC-0008-knowledge.md` - knowledge contract and providers
+- `RFC-0009-planner.md` - planner contract and providers
+- `RFC-0010-tools.md` - tool contract and typed function tools
+- `RFC-0011-workflows.md` - workflow contract and graph engine
+- `RFC-0012-agents.md` - multi-agent contract and runtime
+- `RFC-0013-plugins.md` - plugin contract and discovery
+- `RFC-0014-events.md` - event bus and observability
+- `RFC-0015-security.md` - kill switch, guardrails, and audit log
 - `RFC-Roadmap.md` - roadmap, current status, and future enhancement backlog
 
 ## Public API Map

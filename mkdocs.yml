@@ -67,8 +67,8 @@ nav:
       - Extension Surfaces: extensions.md
       - Lifecycle & Services: lifecycle.md
   - API Reference: api-reference.md
+  - Roadmap: RFCs/RFC-Roadmap.md
   - Architecture RFCs:
-      - Overview: RFCs/RFC-Roadmap.md
       - RFC-0001 Architecture: RFCs/RFC-0001-architecture.md
       - RFC-0002 Kernel: RFCs/RFC-0002-kernel.md
       - RFC-0003 Runtime: RFCs/RFC-0003-runtime.md
