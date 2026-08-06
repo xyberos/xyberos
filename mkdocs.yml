@@ -75,3 +75,12 @@ nav:
       - RFC-0004 Brain: RFCs/RFC-0004-brain.md
       - RFC-0005 Context: RFCs/RFC-0005-context.md
       - RFC-0006 LLM Provider: RFCs/RFC-0006-llm-provider.md
+      - RFC-0007 Memory: RFCs/RFC-0007-memory.md
+      - RFC-0008 Knowledge: RFCs/RFC-0008-knowledge.md
+      - RFC-0009 Planner: RFCs/RFC-0009-planner.md
+      - RFC-0010 Tools: RFCs/RFC-0010-tools.md
+      - RFC-0011 Workflows: RFCs/RFC-0011-workflows.md
+      - RFC-0012 Agents: RFCs/RFC-0012-agents.md
+      - RFC-0013 Plugins: RFCs/RFC-0013-plugins.md
+      - RFC-0014 Events: RFCs/RFC-0014-events.md
+      - RFC-0015 Security: RFCs/RFC-0015-security.md

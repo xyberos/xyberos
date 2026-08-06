@@ -9,6 +9,7 @@ from .registry import ServiceRegistry
 from ..events import EventBus
 from ..events.names import KERNEL_STARTED, KERNEL_STOPPED
 from ..plugins.loader import PluginLoader
+from ..security import Security
 
 
 T = TypeVar("T")
@@ -31,6 +32,9 @@ class Kernel:
         self.register("events", self.events)
         self.plugins = PluginLoader(self)
         self.register("plugins", self.plugins)
+        self.security = Security()
+        self.security._events = self.events
+        self.register("security", self.security)
 
     @property
     def started(self) -> bool:

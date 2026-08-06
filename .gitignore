@@ -58,6 +58,9 @@ logs/
 # OS-generated files
 .DS_Store
 Thumbs.db
+
+# MkDocs build output
+site/
 Desktop.ini
 $RECYCLE.BIN/
 

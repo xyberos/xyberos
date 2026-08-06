@@ -23,6 +23,7 @@ from .planner import SequentialPlanner
 from .plugins.loader import PluginLoader
 from .runtime.context import CognitiveContext
 from .runtime.runtime import Runtime
+from .security import Security
 from .tools import ToolRegistry, ToolRunner
 from .workflows import SequentialWorkflow
 
@@ -53,9 +54,9 @@ class Xyberos:
         self.kernel.register("tool_runner", tool_runner or ToolRunner(resolved_tools))
         self.kernel.register("planner", planner or SequentialPlanner())
         self.kernel.register("workflow", workflow or SequentialWorkflow())
-        self.brain = self.kernel.inject(Brain)
+        self.brain = self.kernel.inject(Brain, security=self.kernel.security)
         self.kernel.register("brain", self.brain)
-        self.runtime = self.kernel.inject(Runtime)
+        self.runtime = self.kernel.inject(Runtime, security=self.kernel.security)
         self.kernel.register("runtime", self.runtime)
         self.agent = RuntimeAgent("default", self.runtime)
         self.agents = MultiAgentRuntime([self.agent])
@@ -80,6 +81,10 @@ class Xyberos:
     @property
     def events(self) -> EventBus:
         return cast(EventBus, self.resolve("events"))
+
+    @property
+    def security(self) -> Security:
+        return cast(Security, self.resolve("security"))
 
     @property
     def llm(self) -> LLMProvider:

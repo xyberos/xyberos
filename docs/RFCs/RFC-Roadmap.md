@@ -27,7 +27,7 @@ v0.9
 [x] Multi-Agent Runtime
 
 v1.0
-[ ] Stable Architecture
+[x] Stable Architecture
 
 ---
 
@@ -210,416 +210,181 @@ Status: implemented in v0.9.0.
 - [ ] Optional: streaming/async variants for each adapter, and a registry of
       pre-configured provider presets.
 
-## v1.0 — Stable Architecture
+## v1.0 — Stable Architecture  ✅
 
-- Freeze the public API and contracts.
-- Stabilize the enhancement backlog items that prove out in real usage.
+With the addition of the Security service (RFC-0015), Xyberos v1.0 is a
+**complete cognitive platform**. Every RFC-0001 subsystem is implemented,
+tested, and integrated:
 
+| # | Subsystem | Status |
+|---|---|---|
+| RFC-0001 | Architecture | ✅ |
+| RFC-0002 | Kernel | ✅ |
+| RFC-0003 | Runtime | ✅ |
+| RFC-0004 | Brain | ✅ |
+| RFC-0005 | Context | ✅ |
+| RFC-0006 | LLM Provider | ✅ |
+| RFC-0007 | Memory | ✅ |
+| RFC-0008 | Knowledge | ✅ |
+| RFC-0009 | Planner | ✅ |
+| RFC-0010 | Tools | ✅ |
+| RFC-0011 | Workflows | ✅ |
+| RFC-0012 | Agents | ✅ |
+| RFC-0013 | Plugins | ✅ |
+| RFC-0014 | Events | ✅ |
+| RFC-0015 | Security | ✅ |
 
-
-For **v0.3**, I would focus on making Xyberos **extensible** rather than adding AI capabilities. The directory structure should reflect that philosophy.
-
-## Repository Structure
-
-```text
-Xyberos_v2/
-│
-├── docs/
-│
-├── test/
-│
-├── xyberos/
-│
-├── README.md
-├── pyproject.toml
-├── pytest.ini
-└── .gitignore
-```
-
-The repository root contains project documentation, RFCs, examples, tests, and the Python package.
-
----
-
-# Python Package
-
-```text
-xyberos/
-│
-├── __init__.py
-├── version.py
-├── xyberos.py
-│
-├── kernel/
-│   ├── __init__.py
-│   ├── kernel.py
-│   ├── config.py
-│   ├── logger.py
-│   └── registry.py
-│
-├── runtime/
-│   ├── __init__.py
-│   ├── runtime.py
-│   └── context.py
-│
-├── brain/
-│   ├── __init__.py
-│   ├── brain.py
-│   └── llm.py
-│
-├── contracts/
-│   ├── __init__.py
-│   ├── agent.py
-│   ├── knowledge.py
-│   ├── llm.py
-│   ├── memory.py
-│   ├── planner.py
-│   ├── plugin.py
-│   ├── service.py
-│   ├── tool.py
-│   └── workflow.py
-│
-├── agents/
-│   ├── __init__.py
-│   ├── multi_runtime.py
-│   └── runtime_agent.py
-│
-├── workflows/
-│   ├── __init__.py
-│   └── sequential.py
-│
-├── plugins/
-│   ├── __init__.py
-│   └── loader.py
-│
-├── events/
-│   └── __init__.py
-│
-├── memory/
-│   └── in_memory.py
-├── knowledge/
-│   └── in_memory.py
-├── planner/
-│   └── sequential.py
-├── tools/
-│   └── registry.py
-│
-├── exceptions/
-│   ├── __init__.py
-│   ├── agent.py
-│   ├── kernel.py
-│   ├── plugin.py
-│   ├── provider.py
-│   ├── registry.py
-│   └── runtime.py
-│
-└── utils/
-    ├── __init__.py
-    └── typing.py
-```
+The public API, contracts, and event names are frozen. All future capabilities
+ship as **plugins** — no more core subsystems.
 
 ---
 
-# Purpose of Each Package
+# What Can You Build on Xyberos Now?
 
-## `kernel/`
+Xyberos is a general-purpose cognitive runtime. It provides the **how**
+(pipeline, memory, planning, tools, agents, security) and leaves the **what**
+to plugins and applications. Here are the categories of systems it can power:
 
-Owns the platform.
+## 1. AI-Powered IDEs and Developer Tools
 
-```text
-Kernel
-├── Config
-├── Logger
-└── Registry
-```
+Xyberos already has the primitives: streaming tokens, multi-agent
+collaboration, typed tools, and observability. An IDE plugin could:
 
-Nothing in this package performs reasoning.
+- **Code assistant agent** — a `RuntimeAgent` that reads files, runs lint,
+  suggests fixes, and streams results
+- **Code review agent** — supervisors hand off to specialist reviewers
+  (security, style, performance)
+- **Refactoring workflow** — a `GraphWorkflow` that plans → applies → tests →
+  reverts on failure, with human-in-the-loop approval at each step
+- **Documentation generator** — a tool that reads source, queries a knowledge
+  base of project conventions, and produces docs
 
----
+The `Tool` contract maps naturally to IDE capabilities: `read_file`,
+`run_test`, `git_diff`, `search_codebase`. The `Guardrail` system can block
+destructive operations before they execute.
 
-## `runtime/`
+## 2. Robotics and Embodied AI
 
-Owns execution.
+The multi-agent runtime and workflow engine make Xyberos suitable for
+robotics control loops:
 
-```text
-Context
+- **Perception → Plan → Act loop** — the Brain pipeline already does this;
+  swap the LLM for a vision-language model and tools for motor commands
+- **Hierarchical agents** — a supervisor agent delegates to navigation,
+  manipulation, and safety agents via handoffs
+- **Human-in-the-loop** — `GraphWorkflow` pause/resume is purpose-built for
+  "robot wants to grab something, human approves"
+- **Safety kill switch** — the `KillSwitch` in `Security` is a literal
+  emergency stop; engage it and ALL motor commands halt immediately
+- **Sensor fusion** — each sensor is a `KnowledgeProvider`; the Brain queries
+  them all before planning
 
-↓
+## 3. Customer Support and Service Desks
 
-Brain
+The `support_assistant` example already demonstrates this:
 
-↓
+- **Intent routing** — tools match order IDs, ticket creation, FAQ lookups
+- **Escalation** — supervisor agent hands off to human agents
+- **Refund workflows** — pause for approval, resume with decision
+- **Persistent memory** — SQLite-backed conversation history survives restarts
+- **Audit trail** — every security event, tool dispatch, and handoff is logged
 
-Context
-```
+## 4. Autonomous Research Assistants
 
-The Runtime should remain largely unchanged as the framework grows.
+- **Multi-step research** — `LLMPlanner` decomposes "summarize the state of X"
+  into search → read → synthesize → cite
+- **Tool chain** — web search, paper retrieval, citation formatting as
+  `FunctionTool`s
+- **Knowledge accumulation** — `SqliteKnowledge` grows with each query
+- **Streaming output** — results stream token-by-token to the UI
 
----
+## 5. Game NPCs and Interactive Fiction
 
-## `brain/`
+- **Role-based agents** — each NPC is a `RoleAgent` with a persona, goals,
+  and memory
+- **Dynamic conversations** — agents message each other; the multi-agent
+  runtime coordinates
+- **World state as context** — `CognitiveContext.metadata` carries game state
+- **Workflow-driven quests** — a `GraphWorkflow` encodes quest logic with
+  branching, loops, and checkpoints
 
-Owns cognition.
+## 6. Data Pipelines and ETL with AI
 
-Today (v0.9):
+- **LLM-driven transformations** — a tool that classifies, summarizes, or
+  translates rows
+- **Quality gates** — guardrails block malformed outputs
+- **Observability** — every transformation emits events; tracing tracks the
+  full pipeline
+- **Plugin architecture** — each data source/sink is a plugin
 
-```text
-Prompt
+## 7. Personal AI Assistants
 
-↓
-
-Workflow (optional)
-
-↓
-
-Memory (retrieve)
-
-↓
-
-Knowledge (query)
-
-↓
-
-Planner (record plan)
-
-↓
-
-Tools (dispatch)
-
-↓
-
-LLM (generate)
-
-↓
-
-Memory (store)
-
-↓
-
-Response
-```
-
-Every subsystem is optional, so a bare Brain is still a plain LLM wrapper.
-Future versions may add LLM-driven planning, reflection, streaming, and
-structured outputs internally without changing the Runtime interface.
-
----
-
-## `contracts/`
-
-This becomes the most important package in v0.3.
-
-```text
-contracts/
-
-Agent
-Knowledge
-LLMProvider
-Memory
-Planner
-Plugin
-Service
-Tool
-Workflow
-```
-
-Every future implementation depends on these contracts.
-
-Example:
-
-```python
-class Memory(ABC):
-
-    @abstractmethod
-    def retrieve(self, context):
-        ...
-
-    @abstractmethod
-    def store(self, context):
-        ...
-```
-
-No concrete implementation belongs here.
+- **Tool-rich** — calendar, email, notes, search, all as `FunctionTool`s
+- **Persistent** — `SqliteMemory` and `SqliteKnowledge` across sessions
+- **Safe** — guardrails block sharing sensitive data; kill switch disables
+  the assistant entirely
+- **Extensible** — new capabilities ship as plugins via entry points
 
 ---
 
-## `exceptions/`
+# Plugin-First Philosophy
 
-Framework-specific exceptions.
+Xyberos v1.0+ is **closed to new core subsystems** and **open to plugins**.
+The platform provides:
 
-```text
-KernelError
+| Platform Capability | Plugin Opportunity |
+|---|---|
+| `Tool` contract | Any API, database, or device |
+| `Memory` contract | Redis, Postgres, vector DBs |
+| `Knowledge` contract | Graph DBs, embedding stores, remote APIs |
+| `Planner` contract | Specialized planners (ToT, ReAct, custom) |
+| `Workflow` contract | DSLs, visual editors, BPMN |
+| `Agent` contract | Domain-specific agents (code, legal, medical) |
+| `Plugin` contract | Third-party packages via entry points |
+| `Security` contract | Custom guardrails, external auth, WAF integration |
+| `EventBus` | OpenTelemetry, Prometheus, Datadog exporters |
 
-RegistryError
-
-ProviderError
-
-RuntimeError
-```
-
-Avoid raising generic `Exception`.
-
----
-
-## `utils/`
-
-Keep this intentionally small.
-
-Only place truly shared helpers here, such as:
-
-```text
-typing.py
-
-validators.py
-
-constants.py
-```
-
-If a helper only serves one package, keep it in that package instead.
+A plugin author only needs to implement one contract and declare an entry
+point — the Kernel handles discovery, lifecycle, and dependency injection.
 
 ---
 
-## `agents/`
+# Community Roadmap (Plugin Ideas)
 
-Multi-agent coordination. `MultiAgentRuntime` runs named agents sequentially
-against one canonical `CognitiveContext`; `RuntimeAgent` adapts an existing
-`Runtime` into an `Agent`.
+These are not core features — they are **plugin opportunities** for the
+community:
 
-## `workflows/`
+### Developer Tools
+- VS Code / JetBrains extension using Xyberos as the agent runtime
+- GitHub bot that reviews PRs with multi-agent collaboration
+- CLI chat with streaming, tool calling, and persistent context
 
-Composable execution. `SequentialWorkflow` applies ordered steps to a context,
-where each step may mutate the context in place or return a replacement.
+### Robotics
+- ROS 2 integration — each ROS node as a `Tool` or `KnowledgeProvider`
+- Sensor fusion — camera, lidar, IMU as knowledge providers feeding the Brain
+- Motor control — tools with hardware-level safety guardrails
 
-## `plugins/`
+### Enterprise
+- Slack / Teams bot with role-based escalation agents
+- CRM integration — tools for Salesforce, HubSpot, Zendesk
+- Compliance audit — every action logged, every decision traceable
 
-Discovery and lifecycle. `PluginLoader` imports, auto-discovers, and manages
-plugins — both via `load_entry_points()` (Python entry-point groups, the same
-mechanism pytest uses) and `load_from_package()` (convention-based package
-scanning for `Plugin` subclasses). Plugins are given controlled access to the
-platform kernel through `register`/`unregister`.
+### Creative
+- Interactive storytelling engine — NPCs as agents, plot as workflow
+- Music / art generation — tools wrap Stable Diffusion, MusicGen, etc.
+- Game master AI — coordinates player actions, NPC reactions, world state
 
-## `events/`
-
-Observability. `EventBus` publishes lifecycle and pipeline events (kernel,
-plugin, runtime, and brain); applications subscribe to canonical names in
-`events/names.py`. Listeners are isolated so a failing hook never breaks the
-pipeline.
-
----
-
-# Dependency Rules
-
-One of the most valuable additions in v0.3 is documenting allowed dependencies.
-
-```text
-                Kernel
-                    ▲
-                    │
-      ┌─────────────┼─────────────┐
-      │             │             │
- Runtime         Brain       Contracts
-      │             │
-      └──────► Context
-                    │
-                    ▼
-                  LLM
-```
-
-Allowed imports:
-
-```text
-Runtime  → Brain
-
-Brain    → Contracts
-
-Kernel   → Contracts
-
-Runtime  → Context
-```
-
-Forbidden imports:
-
-```text
-Brain → Runtime
-
-Kernel → Brain
-
-Contracts → Runtime
-
-Contracts → Kernel
-```
-
-This prevents circular dependencies and preserves a layered architecture.
+### Research
+- Paper summarization pipeline — search → filter → read → synthesize
+- Experiment runner — hypothesis → design → execute → analyze loop
+- Literature review agent — multi-step research with citation graph
 
 ---
 
-# Future Growth
-
-The structure scales cleanly without reorganizing the project.
-
-```text
-xyberos/
-
-kernel/
-runtime/
-brain/
-contracts/
-agents/
-workflows/
-plugins/
-events/
-
-memory/
-knowledge/
-planner/
-tools/
-```
-
-The `kernel/`, `runtime/`, `brain/`, `contracts/`, `agents/`, `workflows/`,
-`plugins/`, `memory/`, `knowledge/`, `planner/`, and `tools/` subsystems are
-implemented. The initial `memory/`, `knowledge/`, `planner/`, and `tools/`
-providers are minimal in-memory references; production backends can replace
-them while keeping the same `contracts/` interfaces.
-
-For example:
-
-```text
-xyberos/
-
-contracts/
-    memory.py
-
-memory/
-    __init__.py
-    in_memory.py
-    sqlite.py
-    redis.py
-    vector.py
-```
-
-The `memory/` package provides implementations, while `contracts/memory.py` defines the interface they all satisfy.
+Xyberos is no longer a framework under construction — it is a **platform**
+for building cognitive systems. The core is done. The rest is plugins.
 
 ---
-
-## Long-term Vision
-
-If you continue following this architecture, the framework naturally evolves into:
-
-```text
-xyberos/
-│
-├── kernel/        # Platform services
-├── runtime/       # Execution engine
-├── brain/         # Cognitive engine
-├── contracts/     # Public extension API
-├── memory/        # Memory providers
-├── knowledge/     # Knowledge providers
-├── planner/       # Planning engines
-├── tools/         # Tool implementations
-├── events/        # Event bus
-├── plugins/       # Plugin loader
-├── workflows/     # Workflow engine
-└── agents/        # Multi-agent support
-```
 
 This organization has a consistent pattern:
 

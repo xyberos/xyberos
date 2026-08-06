@@ -26,3 +26,9 @@ TOOL_DISPATCHED = "brain.tool_dispatched"
 RESPONSE_PRODUCED = "brain.response_produced"
 TOKEN_STREAMED = "brain.token_streamed"
 BRAIN_ERROR = "brain.error"
+
+# Security lifecycle
+SECURITY_KILL_ENGAGED = "security.kill_engaged"
+SECURITY_KILL_DISENGAGED = "security.kill_disengaged"
+SECURITY_REQUEST_BLOCKED = "security.request_blocked"
+SECURITY_GUARDRAIL_TRIGGERED = "security.guardrail_triggered"

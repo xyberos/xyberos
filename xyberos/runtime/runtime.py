@@ -7,21 +7,30 @@ if TYPE_CHECKING:
 
 from ..events import EventBus
 from ..events.names import REQUEST_COMPLETED, REQUEST_FAILED, REQUEST_STARTED
+from ..exceptions.security import SecurityHaltError
 from ..exceptions.workflow import WorkflowPaused
+from ..security import Security
 from .context import CognitiveContext
 
 
 class Runtime:
     """Executes contexts with a configured :class:`~brain.brain.Brain`."""
 
-    def __init__(self, brain: "Brain", events: EventBus | None = None) -> None:
+    def __init__(self, brain: "Brain", events: EventBus | None = None, security: Security | None = None) -> None:
         self.brain = brain
         self.events = events
+        self.security = security
 
     def run(self, context: CognitiveContext) -> CognitiveContext:
         """Populate and return ``context`` after asking the brain to respond."""
         if not isinstance(context, CognitiveContext):
             raise TypeError("context must be a CognitiveContext")
+
+        # ---- security gate --------------------------------------------------
+        if self.security is not None:
+            self.security.guard(context)
+            self.security.kill_switch.check()
+        # --------------------------------------------------------------------
 
         if self.events is not None:
             self.events.emit(REQUEST_STARTED, context=context)
@@ -31,6 +40,8 @@ class Runtime:
             context.error = None
         except WorkflowPaused:
             raise  # a workflow pause, not a request failure
+        except SecurityHaltError:
+            raise  # a security halt, not a request failure
         except Exception as exc:
             context.error = exc
             if self.events is not None:
@@ -45,6 +56,12 @@ class Runtime:
         if not isinstance(context, CognitiveContext):
             raise TypeError("context must be a CognitiveContext")
 
+        # ---- security gate --------------------------------------------------
+        if self.security is not None:
+            self.security.guard(context)
+            self.security.kill_switch.check()
+        # --------------------------------------------------------------------
+
         if self.events is not None:
             self.events.emit(REQUEST_STARTED, context=context)
 
@@ -53,6 +70,8 @@ class Runtime:
             context.error = None
         except WorkflowPaused:
             raise  # a workflow pause, not a request failure
+        except SecurityHaltError:
+            raise  # a security halt, not a request failure
         except Exception as exc:
             context.error = exc
             if self.events is not None:

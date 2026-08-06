@@ -21,11 +21,13 @@ from ..events.names import (
     TOOL_DISPATCHED,
     WORKFLOW_RUN,
 )
+from ..exceptions.security import SecurityHaltError
 from ..exceptions.workflow import WorkflowPaused
 from ..kernel.config import Config
 from ..kernel.logger import Logger
 from ..llm import EchoLLM, LLMProvider
 from ..runtime.context import CognitiveContext
+from ..security import Security
 from ..tools import ToolRunner
 from ..utils.resilience import RateLimiter, retry, with_timeout
 
@@ -60,6 +62,7 @@ class Brain:
         workflow: Workflow | None = None,
         events: EventBus | None = None,
         config: Config | None = None,
+        security: Security | None = None,
     ) -> None:
         self.llm = llm or EchoLLM()
         self.logger = logger
@@ -70,6 +73,7 @@ class Brain:
         self.workflow = workflow
         self.events = events
         self.config = config
+        self.security = security
         self._inject_plan = bool(config.get("brain.inject_plan", False)) if config is not None else False
         self._max_attempts = int(config.get("brain.max_attempts", 1)) if config is not None else 1
         self._retry_backoff = float(config.get("brain.retry_backoff", 0.1)) if config is not None else 0.1
@@ -82,6 +86,11 @@ class Brain:
         if not isinstance(prompt, str):
             raise TypeError("context must be a CognitiveContext")
 
+        # ---- security gate --------------------------------------------------
+        if self.security is not None:
+            self.security.kill_switch.check()
+        # --------------------------------------------------------------------
+
         if self.logger is not None:
             self.logger.debug("Generating response")
 
@@ -89,6 +98,8 @@ class Brain:
             return self._chat(context, prompt)
         except WorkflowPaused:
             raise  # a workflow pause, not an error — let the caller resume it
+        except SecurityHaltError:
+            raise  # a security halt, not a pipeline error
         except Exception:
             self._emit(BRAIN_ERROR, context=context)
             raise
@@ -99,6 +110,11 @@ class Brain:
         if not isinstance(prompt, str):
             raise TypeError("context must be a CognitiveContext")
 
+        # ---- security gate --------------------------------------------------
+        if self.security is not None:
+            self.security.kill_switch.check()
+        # --------------------------------------------------------------------
+
         if self.logger is not None:
             self.logger.debug("Generating response")
 
@@ -106,6 +122,8 @@ class Brain:
             return await self._achat(context, prompt)
         except WorkflowPaused:
             raise  # a workflow pause, not an error — let the caller resume it
+        except SecurityHaltError:
+            raise  # a security halt, not a pipeline error
         except Exception:
             self._emit(BRAIN_ERROR, context=context)
             raise

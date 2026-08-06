@@ -20,6 +20,7 @@ from .runtime import CognitiveRuntimeError, ContextExecutionError
 from .kernel import KernelError
 from .llm import LLMOutputError, StructuredOutputError
 from .provider import ProviderError
+from .security import GuardrailTriggeredError, SecurityError, SecurityHaltError
 from .workflow import WorkflowError, WorkflowPaused
 
 __all__ = [
@@ -30,6 +31,7 @@ __all__ = [
     "CognitiveRuntimeError",
     "ContextExecutionError",
     "DependencyResolutionError",
+    "GuardrailTriggeredError",
     "HandoffLoopError",
     "InvalidServiceNameError",
     "KernelError",
@@ -40,6 +42,8 @@ __all__ = [
     "PluginLoadError",
     "PluginNotFoundError",
     "RegistryError",
+    "SecurityError",
+    "SecurityHaltError",
     "ServiceAlreadyRegisteredError",
     "ServiceNotFoundError",
     "StructuredOutputError",
