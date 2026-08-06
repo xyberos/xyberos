@@ -40,8 +40,8 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/xyberos/xyberos"
-Documentation = "https://xyberos-docs.pages.dev"
+Homepage = "https://docs.xyberos.com"
+Documentation = "https://docs.xyberos.com"
 Repository = "https://github.com/xyberos/xyberos"
 Issues = "https://github.com/xyberos/xyberos/issues"
 
