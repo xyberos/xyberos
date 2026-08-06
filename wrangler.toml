@@ -1,0 +1,11 @@
+name = "xyberos-docs"
+pages_build_output_dir = "site"
+compatibility_date = "2026-08-06"
+
+# Cloudflare Pages will run this in the build environment:
+#   mkdocs build
+# Output goes to ./site/ (configured above)
+#
+# Dashboard settings should match:
+#   Build command:    mkdocs build
+#   Build directory:  site
