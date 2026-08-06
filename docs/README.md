@@ -4,7 +4,6 @@ This directory contains the project documentation beyond the package code itself
 
 ## Start Here
 
-- [Repository README](https://github.com/xyberos/xyberos/blob/main/README.md)
 - [Using Extension Surfaces](extensions.md)
 - [Configuring Services](configuring-services.md) — explicit, factory, and plugin approaches
 - [Tutorial](tutorial.md)

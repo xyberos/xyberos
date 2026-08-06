@@ -4,19 +4,46 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xyberos"
-description = "An experimental cognitive framework for building AI systems."
+description = "A complete cognitive platform for building AI systems — agents, tools, workflows, multi-agent collaboration, streaming, memory, knowledge, planning, plugins, observability, and security."
 readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.10"
 dynamic = ["version"]
+authors = [
+    {name = "Baltazar G. de Chavez Jr."},
+]
+keywords = [
+    "ai",
+    "agent",
+    "cognitive",
+    "llm",
+    "multi-agent",
+    "observability",
+    "platform",
+    "plugin",
+    "security",
+    "streaming",
+    "tools",
+    "workflow",
+]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+
+[project.urls]
+Homepage = "https://github.com/xyberos/xyberos"
+Documentation = "https://xyberos-docs.pages.dev"
+Repository = "https://github.com/xyberos/xyberos"
+Issues = "https://github.com/xyberos/xyberos/issues"
 
 [project.optional-dependencies]
 dev = [
