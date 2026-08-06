@@ -1,0 +1,4 @@
+# Dependencies for building the Xyberos documentation site with Cloudflare Pages.
+# These are ONLY for the docs build — the xyberos package itself has no runtime deps.
+mkdocs>=1.6
+mkdocs-material>=9.0
