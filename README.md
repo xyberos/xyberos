@@ -1,37 +1,54 @@
-# Xyberos
+<p align="center">
+  <h1 align="center">Xyberos</h1>
+  <p align="center"><strong>The cognitive platform for AI systems.</strong></p>
+</p>
 
-Xyberos is an experimental cognitive framework for building AI systems.
-It provides a small layered core:
+---
 
-- `Kernel` for services, configuration, logging, lifecycle, and plugins
-- `Runtime` for request execution
-- `Brain` for response generation
-- `LLM` for model/provider abstraction
+**Xyberos** is a complete, layered platform for building AI applications —
+agents, tools, workflows, multi-agent collaboration, streaming, memory,
+knowledge, planning, plugins, observability, and security. Every subsystem
+is swappable through stable contracts. The core has **zero runtime dependencies**.
 
-## Status
+```text
+                 ┌──────────────────────────────┐
+                 │          Kernel               │
+                 │  Config · Logger · Registry   │
+                 │  EventBus · Plugins · Security │
+                 └──────────────┬───────────────┘
+                                │
+    ┌───────────────┐  ┌────────┴────────┐  ┌───────────────┐
+    │    Runtime    │  │     Brain        │  │   Contracts   │
+    │  sync · async │  │  Pipeline Engine │  │ 15 interfaces │
+    └───────┬───────┘  └────────┬─────────┘  └───────────────┘
+            │                   │
+            └──── Context ──────┘
+```
 
-Current version: `0.9.0`
+You bring **what** the system should do. Xyberos provides **how** — the
+pipeline, the memory, the planning, the tools, the agents, the guardrails.
 
-Implemented:
+---
 
-- Kernel, service registry, dependency injection, and lifecycle management
-- Runtime and cognitive context
-- Brain and LLM abstraction, with an automated cognitive pipeline that wires
-  memory, knowledge, planner, workflow, and tools into every request
-- Contracts for agent, tool, memory, planner, knowledge, workflow, plugin, and service
-- Sequential workflow engine
-- Multi-agent runtime with messaging, handoffs, and role-based coordination
-- Event bus and pipeline observability (kernel, plugin, runtime, and brain events)
-- Persistent SQLite memory and knowledge providers (stdlib, no dependencies)
-- Async `achat`/`arun` and streaming LLM output (token events)
-- LLM-driven planning and config-gated plan injection
-- Structured LLM output parsing and typed function tools (JSON schema)
-- Production hardening: retries, rate limiting, timeouts, workflow checkpoints
-- Model adapters for OpenAI, Anthropic, Ollama, Gemini, and any OpenAI-compatible endpoint
-- Plugin loading and unloading, with entry-point auto-discovery
-- Typed exception hierarchy
+## Platform at a Glance
 
-The repository test suite is the best indicator of current behavior. At the time of this docs pass, the project test suite passes locally.
+| Subsystem | What it does |
+|---|---|
+| **Kernel** | Config, logging, DI, lifecycle, event bus, plugin loader, security |
+| **Runtime** | Executes cognitive requests — sync and async |
+| **Brain** | Automated pipeline: workflow → memory → knowledge → plan → tools → LLM |
+| **LLM** | OpenAI, Anthropic, Gemini, Ollama, any OpenAI-compatible endpoint |
+| **Memory** | In-memory and SQLite providers — swap for Redis or vectors |
+| **Knowledge** | Fact injection from in-memory dicts or SQLite |
+| **Planner** | Sequential or LLM-driven plan generation |
+| **Tools** | Typed function tools with JSON-schema signatures |
+| **Workflows** | Sequential + graph-based with branches, loops, pause/resume |
+| **Agents** | Multi-agent runtime with messaging, handoffs, roles |
+| **Plugins** | Auto-discovery via entry points or package scanning |
+| **Events** | Pub/sub bus with 19 canonical events, tracing, and exporters |
+| **Security** | Kill switch, content guardrails, audit logging |
+
+---
 
 ## Install
 
@@ -39,345 +56,234 @@ The repository test suite is the best indicator of current behavior. At the time
 pip install -e .
 ```
 
-For development tooling:
+That's it. No runtime dependencies.
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[dev]"   # pytest + coverage for development
 ```
+
+---
 
 ## Quick Start
 
 ```python
 from xyberos import create_app
-from xyberos.llm import CallableLLM
 
-# Default model is EchoLLM, which simply returns the prompt.
 app = create_app()
-print(app.chat("hello"))  # hello
-
-# Provide your own model implementation.
-app = create_app(llm=CallableLLM(lambda prompt: f"handled: {prompt}"))
-print(app.chat("hi"))  # handled: hi
+print(app.chat("Hello, world!"))  # "Hello, world!"
 ```
 
-For a guided, single-script walkthrough that grows from this hello world into a
-full-stack app, run
-[`examples/hello_world_to_full_stack/app.py`](examples/hello_world_to_full_stack/app.py).
-
-A real chat backend with FastAPI, SQLAlchemy, and pluggable auto-discovery lives
-in [`examples/chat_app/`](examples/chat_app/README.md).
-
-## Public API
-
-Import the main facade from the package root:
+No API keys. No config. The default `EchoLLM` echoes your prompt — zero
+dependencies, zero setup. Swap in a real model when you're ready:
 
 ```python
-from xyberos import Xyberos, chat, create_app
+from xyberos.llm import OllamaLLM
+
+app = create_app(llm=OllamaLLM(model="qwen2.5:1.5b"))
+print(app.chat("Explain quantum computing in one sentence."))
 ```
 
-### `create_app(config=None, llm=None, memory=None, knowledge=None, tools=None, planner=None, workflow=None, tool_runner=None)`
+---
 
-Builds a ready-to-use `Xyberos` application. Any provider you omit is filled in
-with an in-memory default.
+## What You Can Build
 
-### `chat(prompt, config=None, llm=None, ...)`
+### AI-Powered IDE or Dev Tool
+Multi-agent code review with streaming, guardrails blocking destructive ops,
+tools for `read_file` / `run_test` / `git_diff`. Each step is a workflow node
+with human approval.
 
-Convenience helper that creates an app and returns the generated response text.
-It accepts the same provider arguments as `create_app`.
+### Robotics Controller
+Perception → Plan → Act loop. Hierarchical agents (supervisor → navigation →
+manipulation). **Literal emergency stop** via `Security.engage_kill_switch()` —
+all motor commands halt immediately.
 
-### `achat(prompt, config=None, llm=None, ...)`
+### Customer Support Platform
+Intent routing via typed tools, escalation through agent handoffs, refund
+workflows that pause for human approval, persistent SQLite conversation
+history, full audit trail.
 
-Async one-shot helper, equivalent to `chat` but awaited.
+### Autonomous Research Assistant
+`LLMPlanner` decomposes "summarize the state of X" into search → read →
+synthesize → cite. Every result streams token-by-token.
 
-### `Xyberos`
+### Anything else
+Every subsystem is a plugin surface. The platform is done — the rest is
+building blocks.
 
-The application facade exposes the key runtime services:
-
-- `config`
-- `logger`
-- `registry`
-- `plugins`
-- `events`
-- `llm`
-- `memory`
-- `knowledge`
-- `tools`
-- `tool_runner`
-- `planner`
-- `workflow`
-- `brain`
-- `runtime`
-- `agents`
-- `started`
-
-It also provides methods for service registration, dependency injection, plugin management,
-agent management, and request execution.
+---
 
 ## Core Concepts
 
-### Kernel
-
-The `Kernel` owns platform services and lifecycle management.
-
-Typical responsibilities:
-
-- store configuration
-- expose logging
-- register and resolve services
-- inject constructor dependencies by parameter name
-- start and stop lifecycle-aware services
-- load and unload plugins
-
-### Runtime
-
-The `Runtime` executes a `CognitiveContext` by delegating to the configured `Brain`.
-
-### Brain
-
-The `Brain` is the cognitive orchestration layer. For every request it runs an
-automated pipeline across the pluggable subsystems:
-
-1. **Workflow** — run configured steps first; a step that sets the response is honored.
-2. **Memory** — retrieve past turns and inject them into the prompt as history.
-3. **Knowledge** — query relevant facts and inject them into the prompt.
-4. **Planner** — run the planner and record its plan on `context.plan`.
-5. **Tools** — dispatch a matching tool through the `ToolRunner`.
-6. **LLM** — generate the response.
-7. **Memory** — store the completed turn so future requests can recall it.
-
-Every subsystem is optional; a bare `Brain` behaves like a plain LLM wrapper.
-Concrete LLM services live under `xyberos.llm`.
-
-### Cognitive Context
-
-`CognitiveContext` carries:
-
-- `prompt`
-- `response`
-- `metadata`
-- `error`
-- `plan` — the plan produced by the planner during processing
-
-It is the canonical object passed through the runtime pipeline.
-
-### Multi-Agent Runtime
-
-`MultiAgentRuntime` runs registered agents against one context, with inter-agent
-messaging, handoffs, and role-based coordination:
+### Security & Kill Switch
 
 ```python
-from xyberos.agents import Message, RoleAgent, handoff, post
+app.security.engage_kill_switch("emergency maintenance")
+app.chat("hello")  # raises SecurityHaltError
 
-def ask(context):
-    post(context, handoff("worker", sender="boss"))
-    return context
+app.security.disengage_kill_switch()
+app.chat("hello")  # works again
 
-boss = RoleAgent("boss", "supervisor", run=ask)
-worker = RoleAgent("worker", "performer", run=work_step, receive=on_message)
-app.register_agent(boss)
-app.register_agent(worker)
+# Block harmful prompts
+from xyberos import Guardrail
+app.security.add_guardrail(
+    Guardrail("no-hacks", lambda ctx: "hack" not in ctx.prompt)
+)
 ```
 
-`Message` carries `sender`/`recipient`/`content`; `recipient="*"` broadcasts,
-and a `handoff` message runs the recipient next. Agents that implement
-`receive(message)` get inbound messages, and `runtime.messages` records the
-whole exchange. `RoleAgent` bundles a name, role, run handler, and optional
-message handler. `RuntimeAgent` adapts an existing runtime into the agent
-contract.
+### Multi-Agent Collaboration
 
-### Workflow Engine
+```python
+from xyberos.agents import RoleAgent, handoff, post
 
-`SequentialWorkflow` executes a list of callables in order.
-Each step may mutate the context in place or return a replacement context.
+def supervisor(context):
+    post(context, handoff("worker", sender="supervisor"))
+    return context
 
-`GraphWorkflow` builds a directed graph of named steps with fixed edges
-(`add_edge`) and conditional routes (`add_route`) for branches and loops, and
-supports pause/resume for human-in-the-loop checkpoints:
+def worker(context):
+    context.response = f"Handled: {context.prompt}"
+    return context
+
+app.register_agent(RoleAgent("supervisor", "triage", run=supervisor))
+app.register_agent(RoleAgent("worker", "resolver", run=worker))
+app.run_agents("escalate this", agent_names=["supervisor", "worker"])
+```
+
+### Human-in-the-Loop Workflows
 
 ```python
 from xyberos.workflows import GraphWorkflow
+from xyberos.exceptions import WorkflowPaused
 
-graph = GraphWorkflow("review")
-graph.add_node("review", review_step)
+def approve(context):
+    if context.metadata.get("approved"):
+        context.response = "Approved!"
+        return context
+    raise WorkflowPaused("Approve this action? yes/no")
+
+graph = GraphWorkflow("approve")
+graph.add_node("approve", approve)
 
 run = graph.execute(context)
 while run.status == "paused":
-    run = graph.resume(run, input(run.prompt))  # human-in-the-loop
+    answer = input(run.prompt + " ")   # human decides
+    run = graph.resume(run, answer)
 ```
 
-### Planner
-
-`SequentialPlanner` produces a fixed ordered plan; `LLMPlanner` asks the
-configured LLM to derive steps from the request. Set
-`config={"brain.inject_plan": True}` to have the Brain append the plan to the
-model prompt (off by default, so default output is unchanged):
+### Streaming & Async
 
 ```python
-from xyberos import create_app
-from xyberos.planner import LLMPlanner
-from xyberos.llm import CallableLLM
+# Stream tokens as they arrive
+app.events.subscribe("brain.token_streamed", lambda e: print(e.data["token"], end=""))
+app.chat("Write a haiku about code.")
 
+# Async pipeline
+response = await app.achat("Summarize this document.")
+```
+
+### Observability
+
+```python
+from xyberos.events import EventRecorder
+
+recorder = EventRecorder(limit=10_000).subscribe_to(app.events)
+app.chat("hello")
+print(recorder.counts())
+# {'brain.response_produced': 1, 'brain.memory_stored': 1, ...}
+```
+
+### LLM-Driven Planning
+
+```python
 app = create_app(
     config={"brain.inject_plan": True},
-    planner=LLMPlanner(CallableLLM(lambda prompt: "research\ndraft\nreview")),
+    planner=LLMPlanner(your_llm),
 )
+# The model sees: "Plan: 1. research 2. draft 3. review\n\nUser: ..."
 ```
 
-### Memory and Knowledge
-
-`InMemoryMemory` and `InMemoryKnowledge` are lightweight in-process providers for
-tests and development. `SqliteMemory` and `SqliteKnowledge` persist data to a
-SQLite database (stdlib `sqlite3`, no dependencies) and survive process
-restarts:
+### Persistent Memory & Knowledge
 
 ```python
-from xyberos import create_app
-from xyberos.memory import SqliteMemory
-from xyberos.knowledge import SqliteKnowledge
-
 app = create_app(
-    memory=SqliteMemory("chat.db"),
-    knowledge=SqliteKnowledge("facts.db"),
+    memory=SqliteMemory("chat.db"),       # survives restarts
+    knowledge=SqliteKnowledge("facts.db"), # curated domain facts
 )
+app.knowledge.add("hours", "Support is available 9am-6pm Mon-Fri.")
 ```
 
-### Tools
+---
 
-`ToolRegistry` registers named tools and executes them by name.
-`ToolRunner` adds a small dispatch layer that chooses and executes a tool against a context.
+## Production Hardening
 
-### Plugins
-
-`PluginLoader` loads plugin instances, imports them from modules, and supports two auto-discovery
-styles so modules/services register themselves without manual wiring:
-
-- **Entry points** (`app.load_entry_points()`): finds every plugin declared under `[project.entry-points."xyberos.plugins"]` via `importlib.metadata` — the same mechanism pytest and uvicorn use.
-- **Convention scan** (`app.load_plugins_from("package")`): walks a package and loads every concrete `Plugin` subclass it finds. Drop a module in the folder and it is wired up.
-
-Both are idempotent — re-running discovery never double-registers a plugin.
-
-### Events and Observability
-
-The kernel exposes an `EventBus` (also registered as the `events` service, and
-reachable as `app.events`). The kernel, plugin loader, runtime, and brain
-publish canonical lifecycle and pipeline events:
+Built-in, config-driven, all off by default:
 
 ```python
-from xyberos import create_app
-from xyberos.events import RESPONSE_PRODUCED
-
-app = create_app()
-app.events.subscribe(RESPONSE_PRODUCED, lambda event: print(event.data["response"]))
+app = create_app(config={
+    "brain.max_attempts": 3,       # retry on failure
+    "brain.retry_backoff": 0.5,    # exponential backoff
+    "brain.rate_limit": 10.0,      # calls per second
+    "brain.timeout": 30,           # seconds
+})
 ```
 
-Events cover `kernel.started/stopped`, `plugin.loaded/unloaded`,
-`runtime.request_started/completed/failed`, and the brain pipeline steps
-(`brain.workflow_run`, `brain.memory_retrieved/stored`,
-`brain.knowledge_queried`, `brain.plan_created`, `brain.tool_dispatched`,
-`brain.response_produced`, `brain.error`). A listener that raises is logged and
-isolated — it never breaks the pipeline.
+- **Retries** with exponential backoff
+- **Rate limiting** with token bucket
+- **Timeouts** on LLM calls
+- **Checkpointing** — paused workflows persist to SQLite across restarts
+- **Kill switch** — emergency halt for all processing
 
-For analysis, attach an `EventRecorder` to capture every event with bounded
-history and per-name counts, and forward them to exporters:
+---
 
-```python
-from xyberos import create_app
-from xyberos.events import EventRecorder, LoggingExporter
+## Tests
 
-app = create_app()
-recorder = EventRecorder(limit=1000).subscribe_to(app.events)
-recorder.add_exporter(LoggingExporter(app.logger))
-print(recorder.counts())  # events per name for dashboards
+```bash
+pip install -e ".[dev]"
+pytest
 ```
 
-Any callable `event -> None` is an exporter, so integrating a metrics or
-tracing backend is just a function.
+242 tests, 95% coverage. The test suite is the authoritative reference for
+current behavior.
 
-## Examples
-
-### Minimal Chat App
-
-### Minimal Chat App
-
-```python
-from xyberos import create_app
-
-app = create_app()
-print(app.chat("Say hello"))
-```
-
-### Register a Service
-
-```python
-from xyberos import create_app
-
-app = create_app()
-app.register("answer", 42)
-print(app.resolve("answer"))
-```
-
-### Dependency Injection
-
-```python
-from xyberos import create_app
-
-app = create_app()
-
-def build_message(logger, config):
-    return f"{logger!r}:{config.as_dict()}"
-
-message = app.inject(build_message)
-```
-
-### Multi-Agent Execution
-
-```python
-from xyberos import create_app
-
-app = create_app()
-result = app.run_agents("hello")
-print(result.prompt)
-```
-
-## Exceptions
-
-Xyberos exposes a structured exception hierarchy under `xyberos.exceptions` for:
-
-- agents
-- plugins
-- tools
-- registry / dependency resolution
-- runtime / context execution
-- kernel / provider errors
-
-## Project Layout
-
-```text
-xyberos/
-  agents/      multi-agent coordination (roles, messaging, handoffs)
-  brain/       automated cognitive pipeline
-  contracts/   extension contracts
-  events/      event bus, tracing, and exporters
-  exceptions/  typed domain exceptions
-  kernel/      config, logging, registry, lifecycle, event bus
-  knowledge/   knowledge providers (in-memory, SQLite)
-  llm/         model providers, streaming/async, structured output, adapters
-  memory/      memory providers (in-memory, SQLite)
-  planner/     planning providers (fixed, LLM-driven)
-  plugins/     plugin loading and auto-discovery
-  runtime/     context and runtime execution (sync + async)
-  tools/       tool registry, runner, typed function tools
-  utils/       resilience helpers (retry, rate limiting, timeouts)
-  workflows/   sequential workflows, state graphs, checkpoints
-  docs/        RFCs and documentation index
-```
+---
 
 ## Documentation
 
-Start here:
+Full documentation at **[xyberos-docs.pages.dev](https://xyberos-docs.pages.dev)** (or `mkdocs serve` locally):
 
-- [Documentation Index](docs/README.md)
-- [Architecture RFCs](docs/RFCs/)
+- [Tutorial](https://xyberos-docs.pages.dev/tutorial/)
+- [API Reference](https://xyberos-docs.pages.dev/api-reference/)
+- [Roadmap & Vision](https://xyberos-docs.pages.dev/RFCs/RFC-Roadmap/)
+- [15 Architecture RFCs](https://xyberos-docs.pages.dev/RFCs/RFC-0001-architecture/)
+
+Run locally:
+
+```bash
+pip install mkdocs mkdocs-material
+mkdocs serve
+```
+
+---
+
+## Examples
+
+| Example | What it shows |
+|---|---|
+| [`examples/minimal_chat.py`](examples/minimal_chat.py) | Shortest possible chat |
+| [`examples/configuring_services.py`](examples/configuring_services.py) | Three ways to wire services |
+| [`examples/extended_app.py`](examples/extended_app.py) | Full app API walkthrough |
+| [`examples/chat_app/`](examples/chat_app/README.md) | FastAPI + SQLAlchemy backend |
+| [`examples/support_assistant/`](examples/support_assistant/README.md) | Every subsystem in one service |
+| [`examples/hello_world_to_full_stack/`](examples/hello_world_to_full_stack/README.md) | One script, from one-liner to full stack |
+
+---
+
+## License
+
+Apache 2.0 — see [LICENSE](LICENSE).
+
+---
+
+<p align="center"><strong>Core done. Build anything.</strong></p>
 
 ## Testing
 
