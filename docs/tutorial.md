@@ -16,6 +16,22 @@ This tutorial shows how to build a small Xyberos application using the features 
 
 The codebase does not currently include a first-class automatic tool-calling or `skills` subsystem. In this repository, those responsibilities are covered by tools, workflows, planners, agents, and plugins.
 
+## Prerequisites
+
+Install Xyberos from PyPI:
+
+```bash
+pip install xyberos
+```
+
+Or from source:
+
+```bash
+git clone https://github.com/xyberos/xyberos.git
+cd xyberos
+pip install -e .
+```
+
 ## 1. Create an app
 
 The fastest entry point is `create_app()`.

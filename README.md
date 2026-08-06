@@ -53,13 +53,21 @@ pipeline, the memory, the planning, the tools, the agents, the guardrails.
 ## Install
 
 ```bash
-pip install -e .
+pip install xyberos
 ```
 
-That's it. No runtime dependencies.
+That's it. Zero runtime dependencies — the standard library is all it needs.
 
 ```bash
-pip install -e ".[dev]"   # pytest + coverage for development
+pip install xyberos[dev]     # pytest + coverage for development
+```
+
+Or install from source:
+
+```bash
+git clone https://github.com/xyberos/xyberos.git
+cd xyberos
+pip install -e .
 ```
 
 ---
@@ -237,7 +245,7 @@ app = create_app(config={
 ## Tests
 
 ```bash
-pip install -e ".[dev]"
+pip install xyberos[dev]
 pytest
 ```
 
