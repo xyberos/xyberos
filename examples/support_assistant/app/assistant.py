@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 import re
+from typing import Any, cast
 
 from xyberos import create_app
 from xyberos.agents import RoleAgent, handoff, post
@@ -50,7 +51,7 @@ def build_llm(model: str | None = None):
     ``model="echo"`` (or ``XYBEROS_MODEL=echo``) uses a deterministic local
     provider so the app runs without a model server.
     """
-    model = model or os.getenv("XYBEROS_MODEL", "llama3.2")
+    model = model or os.getenv("XYBEROS_MODEL", "qwen2.5:1.5b")
     if model == "echo":
         return CallableLLM(lambda prompt: f"[support] {prompt}")
     return OllamaLLM(model=model, base_url=os.getenv("OLLAMA_URL", "http://localhost:11434"))
@@ -81,11 +82,11 @@ def build_app(model: str | None = None, *, data_dir: str = DEFAULT_DATA_DIR):
     )
 
     # Observability: record every event for the /events endpoint.
-    app.recorder = EventRecorder(limit=10_000).subscribe_to(app.events)
+    cast(Any, app).recorder = EventRecorder(limit=10_000).subscribe_to(app.events)
 
     # Typed tools, called explicitly from the request handlers (tool selection
     # here is intent-based rather than the built-in prompt-name heuristic).
-    app.tool_registry = ToolRegistry(
+    cast(Any, app).tool_registry = ToolRegistry(
         [
             FunctionTool("lookup_order", lookup_order, description="Look up an order's status"),
             FunctionTool("open_ticket", open_ticket, description="Open a new support ticket"),
@@ -103,8 +104,8 @@ def build_app(model: str | None = None, *, data_dir: str = DEFAULT_DATA_DIR):
         raise WorkflowPaused(prompt="Approve this refund? Reply yes or no.")
 
     refund_graph.add_node("verify", verify)
-    app.refund_graph = refund_graph
-    app.refund_checkpoint = WorkflowCheckpoint(os.path.join(data_dir, "runs.db"))
+    cast(Any, app).refund_graph = refund_graph
+    cast(Any, app).refund_checkpoint = WorkflowCheckpoint(os.path.join(data_dir, "runs.db"))
 
     # Multi-agent escalation: a supervisor hands off to a support worker.
     def supervisor_run(context: CognitiveContext):
