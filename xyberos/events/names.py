@@ -27,6 +27,13 @@ RESPONSE_PRODUCED = "brain.response_produced"
 TOKEN_STREAMED = "brain.token_streamed"
 BRAIN_ERROR = "brain.error"
 
+# Trainable-engine events (RFC-0016, Phase 0)
+INTENT_CLASSIFIED = "brain.intent_classified"
+EPISODE_RECORDED = "brain.episode_recorded"
+FEEDBACK_RECORDED = "brain.feedback_recorded"
+ENGINE_TRAINED = "engine.trained"
+ENGINE_REFRESHED = "engine.refreshed"
+
 # Security lifecycle
 SECURITY_KILL_ENGAGED = "security.kill_engaged"
 SECURITY_KILL_DISENGAGED = "security.kill_disengaged"

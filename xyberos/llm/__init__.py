@@ -5,8 +5,10 @@ from .adapters import (
     GeminiLLM,
     OllamaLLM,
     OpenAICompatibleLLM,
+    OpenAIEmbeddingLLM,
     OpenAILLM,
 )
+from .embeddings import EmbeddingLLM, HashEmbedder
 from .llm import AsyncLLM, CallableLLM, ChatModel, EchoLLM, LLMProvider, StreamingLLM
 from .structured import StructuredLLM, extract_json, structured
 
@@ -16,10 +18,13 @@ __all__ = [
     "CallableLLM",
     "ChatModel",
     "EchoLLM",
+    "EmbeddingLLM",
     "GeminiLLM",
+    "HashEmbedder",
     "LLMProvider",
     "OllamaLLM",
     "OpenAICompatibleLLM",
+    "OpenAIEmbeddingLLM",
     "OpenAILLM",
     "StreamingLLM",
     "StructuredLLM",

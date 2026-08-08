@@ -1,7 +1,12 @@
 """Data passed through the Xyberos cognitive pipeline."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:  # pragma: no cover - import-time only, not runtime
+    from ..contracts.intent import Intent
 
 
 @dataclass
@@ -11,6 +16,8 @@ class CognitiveContext:
     ``metadata`` is deliberately open-ended so callers can attach request IDs,
     user information, or tracing data without changing the core API. ``plan``
     holds a provider-defined plan produced by the planner during processing.
+    ``intent`` holds the classification produced by an intent engine, when one
+    is configured (RFC-0016).
     """
 
     prompt: str
@@ -18,6 +25,7 @@ class CognitiveContext:
     metadata: dict[str, Any] = field(default_factory=dict)
     error: Exception | None = None
     plan: Any | None = None
+    intent: Intent | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.prompt, str):

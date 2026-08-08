@@ -36,3 +36,10 @@ def test_public_app_delegates_kernel_services_dependency_injection_and_lifecycle
     assert app.started
     app.stop()
     assert not app.started
+
+
+def test_public_app_exposes_intent_and_experience_services():
+    app = create_app()
+
+    assert app.intent is app.resolve("intent")
+    assert app.experience is app.resolve("experience")

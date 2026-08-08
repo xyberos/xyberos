@@ -234,8 +234,17 @@ tested, and integrated:
 | RFC-0014 | Events | ✅ |
 | RFC-0015 | Security | ✅ |
 
-The public API, contracts, and event names are frozen. All future capabilities
-ship as **plugins** — no more core subsystems.
+The public API, contracts, and event names are stable. The core stays on the 1.x
+line and is **extended additively** — new contracts and providers may be added
+without changing existing ones, while plugins remain the primary way to ship
+capabilities (see RFC-0016).
+
+> **RFC-0016 (Draft)** — *Trainable Cognitive Engines*: adds small additive seams for
+> an **intent engine**, **embeddings/vector retrieval**, and an **experience/learning
+> layer**, then implements trainable (few-shot / semantic / outcome-based) providers for
+> intent, planner, memory, and knowledge. Runtime adaptation is the default "training";
+> fine-tuning is an optional Phase-3 plugin. See
+> `docs/RFCs/RFC-0016-trainable-cognitive-engines.md`.
 
 ---
 
@@ -329,7 +338,8 @@ The `support_assistant` example already demonstrates this:
 
 # Plugin-First Philosophy
 
-Xyberos v1.0+ is **closed to new core subsystems** and **open to plugins**.
+Xyberos is **open to plugins**, and the core may be extended **additively** — new
+contracts and providers that do not change existing ones (see RFC-0016).
 The platform provides:
 
 | Platform Capability | Plugin Opportunity |

@@ -249,3 +249,38 @@ class GeminiLLM:
         client = self._get_client()
         response = client.generate_content(prompt)
         return response.text
+
+
+class OpenAIEmbeddingLLM:
+    """OpenAI-compatible ``/embeddings`` adapter (stdlib HTTP, no dependencies).
+
+    Exposes the duck-typed ``embed(text) -> list[float]`` capability against any
+    OpenAI-compatible embeddings endpoint (OpenAI, local servers, etc.). Pass
+    ``post`` to inject a transport for tests.
+    """
+
+    def __init__(
+        self,
+        model: str,
+        *,
+        base_url: str,
+        api_key: str | None = None,
+        post: PostCallable | None = None,
+    ) -> None:
+        if not isinstance(model, str) or not model.strip():
+            raise ValueError("model must be a non-empty string")
+        if not base_url:
+            raise ValueError("base_url must be provided")
+        self._model = model
+        self._base_url = base_url.rstrip("/")
+        self._api_key = api_key
+        self._post = post or _default_post
+
+    def embed(self, text: str) -> list[float]:
+        """Embed ``text`` into a float vector using the configured endpoint."""
+        headers = {"Content-Type": "application/json"}
+        if self._api_key:
+            headers["Authorization"] = f"Bearer {self._api_key}"
+        payload = {"model": self._model, "input": text}
+        data = self._post(f"{self._base_url}/embeddings", payload, headers)
+        return [float(value) for value in data["data"][0]["embedding"]]

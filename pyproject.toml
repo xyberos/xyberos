@@ -50,6 +50,11 @@ dev = [
     "pytest",
     "pytest-cov",
 ]
+vectors = [
+    "chromadb",
+    "pgvector",
+    "psycopg[binary]",
+]
 
 [tool.setuptools.packages.find]
 include = ["xyberos*"]

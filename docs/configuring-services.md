@@ -30,6 +30,16 @@ manual = Xyberos(
     llm=CallableLLM(lambda prompt: f"custom: {prompt}"),
 )
 print(manual.chat("hello"))
+
+# Trainable-engine providers (RFC-0016) — pass them explicitly, enable via config
+from xyberos.experience import SqliteExperience
+from xyberos.intent import HeuristicIntentEngine, IntentRule
+
+app = create_app(
+    intent=HeuristicIntentEngine([IntentRule("refund", ("refund",), target="refund_tool")]),
+    experience=SqliteExperience("experience.db"),
+    config={"brain.intent": True, "experience.enabled": True},
+)
 ```
 
 ### Pros and cons

@@ -459,11 +459,14 @@ print(app.chat("hello"))
 
 ## 14. Important Limits
 
-- Tool selection uses a simple prompt-name heuristic; there is no schema-driven
-  LLM function calling yet (`FunctionTool.schema` is available for describing
-  tools, but selection is not LLM-driven).
-- `Knowledge` and `Memory` ship with in-memory and SQLite providers; there are
-  no Redis or vector-store backends bundled yet (they need optional dependencies).
+- Tool selection uses a prompt-name heuristic, now preceded by intent-aware
+  routing (`context.intent.target`) when an intent engine is enabled; there is
+  still no schema-driven LLM function calling yet (`FunctionTool.schema` is
+  available for describing tools, but selection is not LLM-driven).
+- `Knowledge` and `Memory` ship with in-memory and SQLite providers; a bundled
+  dependency-free `CosineVectorStore` plus optional `ChromaVectorStore` /
+  `PgVectorStore` adapters (`xyberos[vectors]`) provide the semantic substrate
+  (RFC-0016). Redis remains unimplemented.
 - `SequentialWorkflow` is linear; `GraphWorkflow` adds branching, loops, and
   pause/resume (human-in-the-loop). Paused runs can be checkpointed to SQLite
   via `WorkflowCheckpoint`.
@@ -472,3 +475,69 @@ print(app.chat("hello"))
 - `PluginLoader` manages plugin lifecycle and discovery (entry points + package
   scan), not package installation.
 - `skills` are not a core code concept in this repository.
+
+---
+
+## 15. Intent, vectors, and experience (RFC-0016, Phase 0)
+
+Three additive seams extend the core without breaking the stable contracts.
+
+### Intent engines
+
+Implement `IntentEngine.classify(context) -> Intent`. Route by matching the
+returned `Intent.target` against registered tools, agents, or workflows.
+
+```python
+from xyberos import create_app
+from xyberos.intent import HeuristicIntentEngine, IntentRule
+
+app = create_app(
+    intent=HeuristicIntentEngine(
+        [IntentRule("refund", ("refund", "money back"), target="refund_tool")]
+    ),
+    config={"brain.intent": True},
+)
+```
+
+When enabled, the Brain classifies each request before planning, records it on
+`context.intent`, and emits `brain.intent_classified`. `ToolRunner.choose`
+honors `context.intent.target` first.
+
+### Vector stores
+
+Implement `VectorStore.upsert/query/delete/clear` over namespaces. The bundled
+`CosineVectorStore` is dependency-free; `ChromaVectorStore` and `PgVectorStore`
+are optional adapters (`pip install xyberos[vectors]`).
+
+```python
+from xyberos.vector import CosineVectorStore
+
+store = CosineVectorStore()
+store.upsert("intents", "a", [1.0, 0.0], payload={"name": "refund"})
+hits = store.query("intents", [1.0, 0.0], top_k=3)
+```
+
+Embeddings are a duck-typed LLM capability (`embed(text) -> list[float]`), like
+`stream`/`agenerate`. Use `EmbeddingLLM` to combine a generator with an
+embedder, or `OpenAIEmbeddingLLM` for an OpenAI-compatible `/embeddings`
+endpoint.
+
+### Experience / learning layer
+
+Implement `ExperienceStore.record/query/feedback/stats`. The Brain records one
+`Episode` per completed turn when enabled and emits `brain.episode_recorded`.
+
+```python
+from xyberos import create_app
+from xyberos.experience import InMemoryExperience
+
+app = create_app(
+    experience=InMemoryExperience(),
+    config={"experience.enabled": True},
+)
+app.chat("hello")          # records an episode
+app.experience.stats()     # {"total": 1, "by_outcome": {...}, "by_intent": {...}}
+```
+
+Phase 1 builds trainable providers (LLM/embedding intent engines, semantic
+memory/knowledge, adaptive/reflective planners) on top of these seams.

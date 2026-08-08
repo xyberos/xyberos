@@ -56,17 +56,19 @@ from xyberos import Xyberos, chat, create_app
 - **What it owns:** a `Kernel`, a `Brain`, a `Runtime`, a default `RuntimeAgent`,
   and a `MultiAgentRuntime`. It also exposes the core services through typed
   properties: `config`, `logger`, `registry`, `plugins`, `llm`, `memory`,
-  `knowledge`, `tools`, `tool_runner`, `planner`, `workflow`, `brain`, `runtime`,
-  and `agents`.
+  `knowledge`, `tools`, `tool_runner`, `planner`, `intent`, `experience`,
+  `workflow`, `brain`, `runtime`, and `agents`.
 - **When to use it:** when you want a ready-to-run application with service
   registration, dependency injection, plugin management, agent management, and
   request execution. Prefer `create_app()` unless you need to keep a reference
   around.
 
-### `create_app(config=None, llm=None, memory=None, knowledge=None, tools=None, planner=None, workflow=None, tool_runner=None)`
+### `create_app(config=None, llm=None, memory=None, knowledge=None, tools=None, planner=None, workflow=None, tool_runner=None, intent=None, experience=None)`
 
 Convenience constructor for a ready-to-use `Xyberos` application. Any provider
-you omit is filled in with an in-memory default.
+you omit is filled in with an in-memory default (`intent` defaults to an empty
+`HeuristicIntentEngine`, `experience` to `InMemoryExperience`; both are inactive
+unless enabled via config).
 
 ### `chat(prompt, config=None, llm=None, ...)`
 
@@ -182,6 +184,19 @@ Every step is optional. A bare `Brain` behaves like a plain LLM wrapper, and
   `parse(prompt)`; raises `StructuredOutputError` on parse failure. The
   `structured(llm, prompt, parser=None)` helper is the one-shot form.
 
+#### `EmbeddingLLM`
+
+- **What it owns:** a wrapped `LLMProvider` plus an embedder callable.
+- **When to use it:** adding the duck-typed `embed(text) -> list[float]`
+  capability to a plain generator; raises `ProviderError` when no embedder is
+  configured (RFC-0016).
+
+#### `HashEmbedder`
+
+- **What it owns:** deterministic, dependency-free embeddings (BLAKE2b).
+- **When to use it:** local development and tests before a real embedding
+  model is wired in.
+
 #### Provider adapters
 
 - `OpenAILLM(model, api_key, base_url, timeout, client)` — official OpenAI SDK (lazy import).
@@ -190,6 +205,8 @@ Every step is optional. A bare `Brain` behaves like a plain LLM wrapper, and
 - `OllamaLLM(model, base_url)` — local Ollama server over stdlib HTTP.
 - `OpenAICompatibleLLM(model, base_url, api_key)` — any `/chat/completions`
   endpoint over stdlib HTTP.
+- `OpenAIEmbeddingLLM(model, base_url, api_key)` — any OpenAI-compatible
+  `/embeddings` endpoint over stdlib HTTP (exposes `embed`).
 
 All are `LLMProvider`s. The SDK-based adapters raise a clear `ProviderError`
 when the underlying package is not installed, keeping the core dependency-free.
@@ -293,6 +310,58 @@ while run.status == "paused":
 - **When to use them:** in-memory for dev/tests; SQLite for durable storage —
   pass them to `create_app(memory=..., knowledge=...)`. Metadata, plans, and
   values are JSON-encoded, so any JSON-serializable payload round-trips.
+
+### `xyberos.intent`
+
+#### `IntentEngine`
+
+- **What it owns:** the `classify(context) -> Intent` contract (RFC-0016).
+- **When to use it:** routing a request to a planner mode, tool, agent, or
+  workflow before generation. `Intent(name, confidence, params, target)` is a
+  frozen dataclass; `target` names a tool/agent/workflow when relevant.
+
+#### `HeuristicIntentEngine`
+
+- **What it owns:** ordered `IntentRule(name, patterns, target)` rules matched
+  case-insensitively against the prompt.
+- **When to use it:** deterministic intent routing without an LLM; the first
+  matching rule wins with full confidence, otherwise a fallback intent is
+  returned. Enable via `create_app(intent=..., config={"brain.intent": True})`.
+
+### `xyberos.vector`
+
+#### `VectorStore`
+
+- **What it owns:** the `upsert`/`query`/`delete`/`clear` namespace contract
+  for vectors (RFC-0016), plus the `ScoredHit` result dataclass.
+- **When to use it:** the semantic substrate behind retrieval-based memory,
+  knowledge, and learning.
+
+#### `CosineVectorStore`
+
+- **What it owns:** a dependency-free in-memory store using exact cosine
+  similarity; `query` returns hits ranked best-first.
+- **When to use it:** local development and tests.
+
+`ChromaVectorStore` and `PgVectorStore` adapters are optional (install
+`xyberos[vectors]`); they lazy-import their backend and raise a clear
+`ProviderError` when it is missing.
+
+### `xyberos.experience`
+
+#### `ExperienceStore`
+
+- **What it owns:** the `record`/`query`/`feedback`/`stats` contract over
+  `Episode` records (RFC-0016).
+- **When to use it:** capturing runtime outcomes so intent/planner/memory/
+  knowledge providers can learn. The Brain records one `Episode` per completed
+  turn when enabled via `config={"experience.enabled": True}`.
+
+#### `InMemoryExperience` / `SqliteExperience`
+
+- **What they own:** in-memory vs. SQLite-persisted episode stores.
+- **When to use them:** in-memory for dev/tests; SQLite for durable learning
+  data across restarts.
 
 ### `xyberos.tools`
 
@@ -415,6 +484,10 @@ These are also exposed on the facade:
 
 Canonical event names are exported from `xyberos.events` (e.g. `REQUEST_STARTED`,
 `RESPONSE_PRODUCED`, `BRAIN_ERROR`); see `xyberos/events/names.py` for the full list.
+
+RFC-0016 adds `INTENT_CLASSIFIED` (`brain.intent_classified`, data: `intent`,
+`confidence`) and `EPISODE_RECORDED` (`brain.episode_recorded`), plus the
+future-facing `FEEDBACK_RECORDED`, `ENGINE_TRAINED`, and `ENGINE_REFRESHED`.
 
 ```python
 from xyberos import create_app

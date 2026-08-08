@@ -6,12 +6,16 @@ from typing import Any, TypeVar, cast
 from .agents import MultiAgentRuntime, RuntimeAgent
 from .brain.brain import Brain
 from .contracts.agent import Agent
+from .contracts.experience import ExperienceStore
+from .contracts.intent import IntentEngine
 from .contracts.knowledge import KnowledgeProvider
 from .contracts.memory import MemoryProvider
 from .contracts.planner import Planner
 from .contracts.plugin import Plugin
 from .contracts.workflow import Workflow
 from .events import EventBus
+from .experience import InMemoryExperience
+from .intent import HeuristicIntentEngine
 from .kernel.config import Config
 from .kernel.kernel import Kernel
 from .kernel.logger import Logger
@@ -26,7 +30,6 @@ from .runtime.runtime import Runtime
 from .security import Security
 from .tools import ToolRegistry, ToolRunner
 from .workflows import SequentialWorkflow
-
 
 T = TypeVar("T")
 
@@ -44,6 +47,8 @@ class Xyberos:
         planner: Planner | None = None,
         workflow: Workflow | None = None,
         tool_runner: ToolRunner | None = None,
+        intent: IntentEngine | None = None,
+        experience: ExperienceStore | None = None,
     ) -> None:
         self.kernel = Kernel(config)
         self.kernel.register("llm", llm or EchoLLM())
@@ -54,6 +59,8 @@ class Xyberos:
         self.kernel.register("tool_runner", tool_runner or ToolRunner(resolved_tools))
         self.kernel.register("planner", planner or SequentialPlanner())
         self.kernel.register("workflow", workflow or SequentialWorkflow())
+        self.kernel.register("intent", intent or HeuristicIntentEngine())
+        self.kernel.register("experience", experience or InMemoryExperience())
         self.brain = self.kernel.inject(Brain, security=self.kernel.security)
         self.kernel.register("brain", self.brain)
         self.runtime = self.kernel.inject(Runtime, security=self.kernel.security)
@@ -111,6 +118,14 @@ class Xyberos:
         return cast(Planner, self.resolve("planner"))
 
     @property
+    def intent(self) -> IntentEngine:
+        return cast(IntentEngine, self.resolve("intent"))
+
+    @property
+    def experience(self) -> ExperienceStore:
+        return cast(ExperienceStore, self.resolve("experience"))
+
+    @property
     def workflow(self) -> Workflow:
         return cast(Workflow, self.resolve("workflow"))
 
@@ -148,7 +163,16 @@ class Xyberos:
         # Propagate any provider replacements to the already-constructed brain
         # (plugins register via kernel.register("x", ..., replace=True), but the
         # brain captured its provider references during __init__).
-        for name in ("llm", "memory", "knowledge", "planner", "workflow", "tool_runner"):
+        for name in (
+            "llm",
+            "memory",
+            "knowledge",
+            "planner",
+            "workflow",
+            "tool_runner",
+            "intent",
+            "experience",
+        ):
             setattr(self.brain, name, self.resolve(name))
         return loaded
 
@@ -219,6 +243,8 @@ def create_app(
     planner: Planner | None = None,
     workflow: Workflow | None = None,
     tool_runner: ToolRunner | None = None,
+    intent: IntentEngine | None = None,
+    experience: ExperienceStore | None = None,
 ) -> Xyberos:
     """Build a ready-to-use Xyberos application."""
     return Xyberos(
@@ -230,6 +256,8 @@ def create_app(
         tool_runner=tool_runner,
         planner=planner,
         workflow=workflow,
+        intent=intent,
+        experience=experience,
     )
 
 

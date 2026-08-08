@@ -33,10 +33,20 @@ class ToolRunner:
         return self.registry.get(name)
 
     def choose(self, context: CognitiveContext, *, tool_names: Iterable[str] | None = None) -> str:
-        """Pick a tool name using a tiny prompt-name heuristic."""
+        """Pick a tool name, honoring an intent target before the prompt heuristic.
+
+        When the context carries an :class:`~contracts.intent.Intent` whose
+        ``target`` names a registered tool, that tool wins (RFC-0016). Otherwise
+        the historical prompt-name heuristic is used.
+        """
         names = tuple(tool_names) if tool_names is not None else self.names
         if not names:
             raise ValueError("no tools are registered")
+
+        intent = getattr(context, "intent", None)
+        target = getattr(intent, "target", None)
+        if target and target in names:
+            return target
 
         prompt = context.prompt
         for name in names:

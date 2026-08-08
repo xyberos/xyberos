@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from ..contracts.experience import Episode, ExperienceStore
+from ..contracts.intent import IntentEngine
 from ..contracts.knowledge import KnowledgeProvider
 from ..contracts.memory import MemoryProvider
 from ..contracts.planner import Planner
@@ -12,6 +14,8 @@ from ..contracts.workflow import Workflow
 from ..events import EventBus
 from ..events.names import (
     BRAIN_ERROR,
+    EPISODE_RECORDED,
+    INTENT_CLASSIFIED,
     KNOWLEDGE_QUERIED,
     MEMORY_RETRIEVED,
     MEMORY_STORED,
@@ -42,10 +46,14 @@ class Brain:
     2. Retrieve conversation history from :class:`~contracts.memory.Memory`
        and inject it into the prompt.
     3. Query :class:`~contracts.knowledge.Knowledge` and inject any facts.
-    4. Run the :class:`~contracts.planner.Planner` and record its plan on the
+    4. Classify the request with the :class:`~contracts.intent.IntentEngine` if
+       one is configured and ``brain.intent`` is enabled; the result is recorded
+       on ``context.intent`` and may steer tool dispatch.
+    5. Run the :class:`~contracts.planner.Planner` and record its plan on the
        context (the plan is not forced into the model prompt).
-    5. Dispatch a matching tool if a :class:`~tools.ToolRunner` is configured.
-    6. Ask the LLM, then persist the completed turn back to memory.
+    6. Dispatch a matching tool if a :class:`~tools.ToolRunner` is configured.
+    7. Ask the LLM, then persist the completed turn back to memory and (when
+       enabled) record an episode in the experience store.
 
     Every subsystem is optional; omitting one leaves its step inactive, so a
     bare ``Brain`` behaves like a plain LLM wrapper.
@@ -63,6 +71,8 @@ class Brain:
         events: EventBus | None = None,
         config: Config | None = None,
         security: Security | None = None,
+        intent: IntentEngine | None = None,
+        experience: ExperienceStore | None = None,
     ) -> None:
         self.llm = llm or EchoLLM()
         self.logger = logger
@@ -74,7 +84,15 @@ class Brain:
         self.events = events
         self.config = config
         self.security = security
+        self.intent = intent
+        self.experience = experience
         self._inject_plan = bool(config.get("brain.inject_plan", False)) if config is not None else False
+        self._intent_enabled = (
+            bool(config.get("brain.intent", False)) if config is not None else False
+        )
+        self._experience_enabled = (
+            bool(config.get("experience.enabled", False)) if config is not None else False
+        )
         self._max_attempts = int(config.get("brain.max_attempts", 1)) if config is not None else 1
         self._retry_backoff = float(config.get("brain.retry_backoff", 0.1)) if config is not None else 0.1
         rate_limit = float(config.get("brain.rate_limit", 0.0)) if config is not None else 0.0
@@ -274,6 +292,16 @@ class Brain:
             if facts:
                 sections.append(f"Relevant knowledge:\n{facts}")
 
+        if self.intent is not None and self._intent_enabled:
+            intent = self.intent.classify(context)
+            context.intent = intent
+            self._emit(
+                INTENT_CLASSIFIED,
+                context=context,
+                intent=intent.name,
+                confidence=intent.confidence,
+            )
+
         if self.planner is not None:
             plan = self.planner.plan(context)
             context.plan = plan
@@ -296,11 +324,26 @@ class Brain:
 
     def _remember(self, context: CognitiveContext, response: str) -> None:
         """Persist a completed turn so future requests can recall it."""
-        if self.memory is None:
+        if self.memory is not None:
+            context.response = response
+            self.memory.store(context)
+            self._emit(MEMORY_STORED, context=context)
+        self._record_episode(context, response)
+
+    def _record_episode(self, context: CognitiveContext, response: str) -> None:
+        """Record one experience episode for the learning layer (RFC-0016)."""
+        if self.experience is None or not self._experience_enabled:
             return
-        context.response = response
-        self.memory.store(context)
-        self._emit(MEMORY_STORED, context=context)
+        episode = Episode(
+            prompt=context.prompt,
+            intent=getattr(context, "intent", None),
+            plan=getattr(context, "plan", None),
+            tool_calls=list(context.metadata.get("tool_calls", []) or []),
+            response=response,
+            metadata=dict(context.metadata),
+        )
+        self.experience.record(episode)
+        self._emit(EPISODE_RECORDED, context=context)
 
     def _emit(self, name: str, *, context: object | None = None, **data: Any) -> None:
         """Publish ``name`` on the event bus when one is configured."""
