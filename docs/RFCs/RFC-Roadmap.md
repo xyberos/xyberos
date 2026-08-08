@@ -166,8 +166,9 @@ Status: implemented in v0.9.0.
 - [x] Config-gated plan injection — `config["brain.inject_plan"] = True` makes
       the Brain append the plan to the model prompt; default stays off so
       default output is unchanged.
-- [ ] Optional: a plan execution/verification loop (execute steps, re-plan on
-      failure) and confidence/reflection on the plan.
+- [x] Optional: a plan execution/verification loop (execute steps, re-plan on
+      failure) and confidence/reflection on the plan — shipped in RFC-0016
+      (`PlanExecutor`, `ReflectivePlanner`).
 
 ## 7. Structured outputs and typed tool results
 

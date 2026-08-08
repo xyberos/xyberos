@@ -57,6 +57,11 @@ class ConsolidatingMemory(Memory):
             self._consolidate()
             self._count = 0
 
+    def consolidate_now(self) -> None:
+        """Force a consolidation pass immediately (scheduled or manual)."""
+        self._consolidate()
+        self._count = 0
+
     def _consolidate(self) -> None:
         entries = list(self._inner.retrieve(object()) or [])
         if len(entries) <= self._keep:

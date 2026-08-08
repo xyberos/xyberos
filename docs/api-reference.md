@@ -315,6 +315,15 @@ while run.status == "paused":
 - **When to use it:** scoring plan confidence (recorded on
   `context.metadata["plan.confidence"]`) and revising the plan before execution.
 
+#### `PlanExecutor` / `PlanResult`
+
+- **What it owns:** execution of plan steps through tools/callables, per-step
+  verification, and re-planning on failure (bounded by `max_steps`/`max_replans`).
+- **When to use it:** closing the plan loop — a step can be a tool name, a
+  `{"tool": name, "args": {...}}` mapping, or a callable; `verify` decides
+  success and `replan` decides recovery. Emits `brain.plan_step_executed`,
+  `brain.plan_step_failed`, and `brain.plan_replanned`.
+
 ### `xyberos.memory` / `xyberos.knowledge`
 
 #### `InMemoryMemory` / `InMemoryKnowledge` / `SqliteMemory` / `SqliteKnowledge`
@@ -408,10 +417,11 @@ while run.status == "paused":
 ### `xyberos.learning`
 
 - **What it owns:** `promote_successful(experience)`, `demote_failed(experience)`,
-  and `to_examples(episodes, field=...)` helpers.
+  `to_examples(episodes, field=...)` helpers, and `ExamplePromoter`.
 - **When to use it:** turning recorded episodes into training examples for the
-  trainable providers (e.g. feed `AdaptivePlanner.learn` or
-  `EmbeddingIntentEngine.learn`).
+  trainable providers. `ExamplePromoter(experience, intent_engine=..., planner=...)`
+  automates `promote()` — feeding successful episodes into the intent engine and
+  adaptive planner via `learn`.
 
 ### `xyberos.tools`
 
@@ -536,8 +546,10 @@ Canonical event names are exported from `xyberos.events` (e.g. `REQUEST_STARTED`
 `RESPONSE_PRODUCED`, `BRAIN_ERROR`); see `xyberos/events/names.py` for the full list.
 
 RFC-0016 adds `INTENT_CLASSIFIED` (`brain.intent_classified`, data: `intent`,
-`confidence`) and `EPISODE_RECORDED` (`brain.episode_recorded`), plus the
-future-facing `FEEDBACK_RECORDED`, `ENGINE_TRAINED`, and `ENGINE_REFRESHED`.
+`confidence`), `EPISODE_RECORDED` (`brain.episode_recorded`), `FEEDBACK_RECORDED`
+(`brain.feedback_recorded`), and the plan-loop events `PLAN_STEP_EXECUTED`,
+`PLAN_STEP_FAILED`, and `PLAN_REPLANNED`; `ENGINE_TRAINED`/`ENGINE_REFRESHED`
+remain future-facing.
 
 ```python
 from xyberos import create_app
@@ -578,9 +590,17 @@ tracing backend is just a function.
 - `with_timeout(seconds, func)` - run `func` with a best-effort timeout (daemon thread).
 - `RetryError` - raised when retries are exhausted.
 
+Evaluation helpers (RFC-0016, Phase 2):
+- `intent_accuracy(engine, dataset)` - top-1 intent classification accuracy over
+  `(prompt, expected_intent)` pairs.
+- `retrieval_recall_at_k(store, embedder, dataset, k=5)` - fraction of
+  `(query, expected_id)` pairs where the expected id is in the top-k.
+- `plan_success_rate(executor, dataset)` - fraction of `(context, plan)` pairs
+  executed without an unrecoverable error.
+
 **When to use it:** wrapping LLM or tool calls for resilience, or via the Brain
 config keys (`brain.max_attempts`, `brain.retry_backoff`, `brain.rate_limit`,
-`brain.timeout`).
+`brain.timeout`); evaluating whether the trainable engines actually improve.
 
 ## Common Patterns
 

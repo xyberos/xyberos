@@ -5,8 +5,9 @@ from xyberos.contracts import Episode, Intent
 from xyberos.events import FEEDBACK_RECORDED
 from xyberos.experience import InMemoryExperience
 from xyberos.intent import EmbeddingIntentEngine
-from xyberos.learning import demote_failed, promote_successful, to_examples
+from xyberos.learning import ExamplePromoter, demote_failed, promote_successful, to_examples
 from xyberos.llm import CallableLLM
+from xyberos.planner import AdaptivePlanner
 from xyberos.runtime.context import CognitiveContext
 from xyberos.vector import CosineVectorStore
 
@@ -83,3 +84,33 @@ def test_feedback_promotion_feeds_intent_engine_learning_loop():
 
     assert intent.name == "refund"
     assert intent.confidence > 0.0
+
+
+def test_example_promoter_feeds_intent_engine_and_planner():
+    experience = InMemoryExperience()
+    store = CosineVectorStore()
+    intent_engine = EmbeddingIntentEngine(store, embedder=_embedder)
+    planner = AdaptivePlanner(CallableLLM(lambda prompt: "step"), store=store, embedder=_embedder)
+    promoter = ExamplePromoter(experience, intent_engine=intent_engine, planner=planner)
+
+    episode = experience.record(
+        Episode(
+            prompt="I need a refund",
+            intent=Intent(name="refund"),
+            plan=["check order", "process refund"],
+            outcome="success",
+        )
+    )
+    experience.feedback(episode.id, 1.0)
+
+    assert promoter.promote() == 2
+    assert intent_engine.classify(CognitiveContext("refund please")).name == "refund"
+
+
+def test_example_promoter_with_no_learners_is_safe():
+    experience = InMemoryExperience()
+    promoter = ExamplePromoter(experience)
+    episode = experience.record(Episode(prompt="x", outcome="success"))
+
+    assert promoter.promote() == 0
+    assert episode.prompt == "x"

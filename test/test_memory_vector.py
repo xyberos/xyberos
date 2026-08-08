@@ -82,3 +82,15 @@ def test_consolidating_memory_validates_arguments():
 
     with pytest.raises(ValueError):
         ConsolidatingMemory(interval=2, keep=5)
+
+
+def test_consolidating_memory_consolidate_now():
+    memory = ConsolidatingMemory(interval=100, keep=1)
+    for index in range(3):
+        memory.store(CognitiveContext(f"q{index}", response=f"a{index}"))
+
+    memory.consolidate_now()
+
+    entries = memory.retrieve(CognitiveContext("x"))
+    assert len(entries) == 2
+    assert any(getattr(entry, "prompt", None) == "[consolidated]" for entry in entries)

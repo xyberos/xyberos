@@ -401,14 +401,14 @@ One `_contract.py` + one `_provider.py` per new subsystem, plus integration:
 - [x] `ToolRunner.choose` intent-aware; `app.feedback()` API; promote/demote loop;
       integration + learning tests.
 
-### Phase 2 — Closed-loop planning & evaluation
-- [ ] `PlanExecutor` — execute plan steps via tools, verify, **re-plan on failure**
+### Phase 2 — Closed-loop planning & evaluation ✅
+- [x] `PlanExecutor` — execute plan steps via tools, verify, **re-plan on failure**
       (RFC-Roadmap §6); bounded loop with events.
-- [ ] Outcome-driven example promotion into `ExampleStore`; automatic consolidation
-      scheduling for memory.
-- [ ] Evaluation harness: `xyberos/utils/eval.py` or `xyberos[eval]` with datasets,
-      metrics (intent top-1 accuracy, plan success rate, retrieval recall@k) and a
-      `test_learning.py` regression gate.
+- [x] Outcome-driven example promotion into `ExamplePromoter`; automatic consolidation
+      scheduling for memory (`ConsolidatingMemory.consolidate_now`).
+- [x] Evaluation harness: `xyberos/utils/eval.py` with datasets,
+      metrics (intent top-1 accuracy, plan success rate, retrieval recall@k) and
+      regression tests.
 
 ### Phase 3 — Optional offline fine-tuning (distillation, plugin)
 - [ ] `Trainer` plugin: export dataset from `ExperienceStore` → optional `sklearn`/`torch`
