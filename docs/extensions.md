@@ -539,5 +539,16 @@ app.chat("hello")          # records an episode
 app.experience.stats()     # {"total": 1, "by_outcome": {...}, "by_intent": {...}}
 ```
 
-Phase 1 builds trainable providers (LLM/embedding intent engines, semantic
-memory/knowledge, adaptive/reflective planners) on top of these seams.
+Phase 1 ships those trainable providers: `LLMIntentEngine`, `EmbeddingIntentEngine`,
+`CascadeIntentEngine`, `VectorMemory`, `ConsolidatingMemory`, `VectorKnowledge`,
+`IngestingKnowledge`, `AdaptivePlanner`, and `ReflectivePlanner`, plus an
+`app.feedback()` API and the `xyberos.learning` promote/demote helpers. A minimal
+learning loop:
+
+```python
+from xyberos.learning import promote_successful, to_examples
+
+# after requests were rated via app.feedback(...), promote the good episodes:
+for prompt, response in to_examples(promote_successful(app.experience)):
+    intent_engine.learn("helpful", prompt)
+```

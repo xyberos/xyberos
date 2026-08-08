@@ -13,7 +13,7 @@ from .contracts.memory import MemoryProvider
 from .contracts.planner import Planner
 from .contracts.plugin import Plugin
 from .contracts.workflow import Workflow
-from .events import EventBus
+from .events import FEEDBACK_RECORDED, EventBus
 from .experience import InMemoryExperience
 from .intent import HeuristicIntentEngine
 from .kernel.config import Config
@@ -232,6 +232,15 @@ class Xyberos:
         """Run all or selected registered agents against a fresh context."""
         context = CognitiveContext(prompt=prompt, metadata=dict(metadata or {}))
         return self.agents.run(context, agent_names=agent_names)
+
+    def feedback(self, episode_id: str, rating: float, *, note: str | None = None) -> None:
+        """Attach a rating (-1.0..1.0) to a recorded episode (RFC-0016).
+
+        Ratings become the training signal for the learning layer; the
+        ``brain.feedback_recorded`` event is emitted on the event bus.
+        """
+        self.experience.feedback(episode_id, rating, note=note)
+        self.events.emit(FEEDBACK_RECORDED, episode_id=episode_id, rating=rating)
 
 
 def create_app(

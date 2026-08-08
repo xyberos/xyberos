@@ -95,9 +95,10 @@ Status: SQLite implemented in v0.9.0.
 - [x] Existing `contracts/memory.py` and `contracts/knowledge.py` interfaces unchanged.
 - [x] Configure via `create_app(memory=SqliteMemory("chat.db"),
       knowledge=SqliteKnowledge("facts.db"))` or plugin registration.
-- [ ] Redis (`redis.py`) and vector (`vector.py`) providers — deferred: they
-      require optional third-party dependencies and a retrieval/embedding
-      strategy. The existing contracts already allow them.
+- [x] Vector providers (`vector.py`) — shipped in RFC-0016: `CosineVectorStore`
+      (dependency-free) plus optional `ChromaVectorStore`/`PgVectorStore`
+      adapters (`xyberos[vectors]`). Redis (`redis.py`) remains deferred: it
+      requires an optional third-party dependency.
 
 ## 3. Branching workflows and state graphs
 

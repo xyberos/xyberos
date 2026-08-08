@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from hashlib import blake2b
+from typing import Any
 
 from ..exceptions.provider import ProviderError
 from .llm import EchoLLM, LLMProvider
@@ -74,4 +75,27 @@ class HashEmbedder:
         return [value / norm for value in vector]
 
 
-__all__ = ["Embedder", "EmbeddingLLM", "HashEmbedder"]
+def embed_text(embedder: Any, text: str) -> list[float]:
+    """Embed ``text`` using a callable or any object exposing ``embed(text)``.
+
+    Accepts either a plain ``str -> Sequence[float]`` callable (e.g. a
+    :class:`HashEmbedder`) or a duck-typed embedder such as an
+    :class:`EmbeddingLLM` / ``OpenAIEmbeddingLLM`` with an ``embed`` method.
+    Raises :class:`~exceptions.provider.ProviderError` when embedding is not
+    possible or returns an empty vector.
+    """
+    if embedder is None:
+        raise ProviderError("an embedder is required to embed text")
+    if callable(embedder):
+        vector = embedder(text)
+    else:
+        embed = getattr(embedder, "embed", None)
+        if not callable(embed):
+            raise ProviderError("embedder must be callable or expose embed(text)")
+        vector = embed(text)
+    if not vector:
+        raise ProviderError("embedder returned an empty vector")
+    return [float(value) for value in vector]
+
+
+__all__ = ["Embedder", "EmbeddingLLM", "HashEmbedder", "embed_text"]

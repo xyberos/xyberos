@@ -301,6 +301,20 @@ while run.status == "paused":
 - **Note:** combine with `config={"brain.inject_plan": True}` to have the Brain
   append the plan to the model prompt.
 
+#### `AdaptivePlanner`
+
+- **What it owns:** an LLM planner plus an optional `VectorStore`/embedder of
+  past `request -> plan` examples.
+- **When to use it:** few-shot planning that mirrors how similar requests were
+  handled; `learn(request, plan)` records new examples so it improves by
+  accumulation.
+
+#### `ReflectivePlanner`
+
+- **What it owns:** a base planner and an optional reflection LLM.
+- **When to use it:** scoring plan confidence (recorded on
+  `context.metadata["plan.confidence"]`) and revising the plan before execution.
+
 ### `xyberos.memory` / `xyberos.knowledge`
 
 #### `InMemoryMemory` / `InMemoryKnowledge` / `SqliteMemory` / `SqliteKnowledge`
@@ -310,6 +324,15 @@ while run.status == "paused":
 - **When to use them:** in-memory for dev/tests; SQLite for durable storage —
   pass them to `create_app(memory=..., knowledge=...)`. Metadata, plans, and
   values are JSON-encoded, so any JSON-serializable payload round-trips.
+
+#### `VectorMemory` / `ConsolidatingMemory` / `VectorKnowledge` / `IngestingKnowledge`
+
+- **What they own:** semantic/hybrid memory (`VectorMemory`), LLM-summarizing
+  memory (`ConsolidatingMemory`), embedding-retrieved knowledge
+  (`VectorKnowledge`), and chunked document ingestion (`IngestingKnowledge`).
+- **When to use them:** retrieval-based, "learn by accumulation" memory and
+  knowledge over a `VectorStore`; pass an `embedder` (callable or any object
+  with `embed(text)`).
 
 ### `xyberos.intent`
 
@@ -327,6 +350,25 @@ while run.status == "paused":
 - **When to use it:** deterministic intent routing without an LLM; the first
   matching rule wins with full confidence, otherwise a fallback intent is
   returned. Enable via `create_app(intent=..., config={"brain.intent": True})`.
+
+#### `LLMIntentEngine`
+
+- **What it owns:** an `LLMProvider` and structured-JSON intent parsing.
+- **When to use it:** open-ended intent classification; returns
+  `{name, confidence, params, target}` and falls back to a configured label on
+  parse failure so it composes safely in a cascade.
+
+#### `EmbeddingIntentEngine`
+
+- **What it owns:** a `VectorStore` plus an embedder of labeled examples.
+- **When to use it:** intent that "learns by accumulation" — `learn(name,
+  example)` adds an example, `classify` returns the nearest neighbor.
+
+#### `CascadeIntentEngine`
+
+- **What it owns:** an ordered list of `IntentEngine`s and a confidence threshold.
+- **When to use it:** cheap engines first, stronger engines on low confidence,
+  with a deterministic fallback.
 
 ### `xyberos.vector`
 
@@ -362,6 +404,14 @@ while run.status == "paused":
 - **What they own:** in-memory vs. SQLite-persisted episode stores.
 - **When to use them:** in-memory for dev/tests; SQLite for durable learning
   data across restarts.
+
+### `xyberos.learning`
+
+- **What it owns:** `promote_successful(experience)`, `demote_failed(experience)`,
+  and `to_examples(episodes, field=...)` helpers.
+- **When to use it:** turning recorded episodes into training examples for the
+  trainable providers (e.g. feed `AdaptivePlanner.learn` or
+  `EmbeddingIntentEngine.learn`).
 
 ### `xyberos.tools`
 

@@ -393,12 +393,12 @@ One `_contract.py` + one `_provider.py` per new subsystem, plus integration:
       (+ episode recording in the Brain + `brain.episode_recorded`).
 - [x] Events, config keys, contract/provider tests, docs.
 
-### Phase 1 — Runtime-adaptive providers (the "trainable" engines)
-- [ ] `LLMIntentEngine` + `EmbeddingIntentEngine` + `CascadeIntentEngine` (+ `learn()`).
-- [ ] `VectorMemory` (hybrid retrieval) + `ConsolidatingMemory` (LLM summarization).
-- [ ] `VectorKnowledge` + `IngestingKnowledge`.
-- [ ] `AdaptivePlanner` (few-shot) + `ReflectivePlanner` (confidence/reflection).
-- [ ] `ToolRunner.choose` intent-aware; `app.feedback()` API; promote/demote loop;
+### Phase 1 — Runtime-adaptive providers (the "trainable" engines) ✅
+- [x] `LLMIntentEngine` + `EmbeddingIntentEngine` + `CascadeIntentEngine` (+ `learn()`).
+- [x] `VectorMemory` (hybrid retrieval) + `ConsolidatingMemory` (LLM summarization).
+- [x] `VectorKnowledge` + `IngestingKnowledge`.
+- [x] `AdaptivePlanner` (few-shot) + `ReflectivePlanner` (confidence/reflection).
+- [x] `ToolRunner.choose` intent-aware; `app.feedback()` API; promote/demote loop;
       integration + learning tests.
 
 ### Phase 2 — Closed-loop planning & evaluation
