@@ -70,6 +70,15 @@ you omit is filled in with an in-memory default (`intent` defaults to an empty
 `HeuristicIntentEngine`, `experience` to `InMemoryExperience`; both are inactive
 unless enabled via config).
 
+### `create_semantic_app(config=None, llm=None, embedder=None, store=None, ...)`
+
+One-line persistent setup for the RFC-0016 trainable engines: intent, memory,
+knowledge, and planner share a single `SqliteVectorStore` (`learning.db` by
+default), so everything learned survives restarts with zero extra configuration.
+Pass `embedder=` (any `embed(text)` object; defaults to `HashEmbedder` for
+development) and optionally swap `store=` for `ChromaVectorStore`/
+`PgVectorStore` or a plugin-provided `VectorStore`.
+
 ### `chat(prompt, config=None, llm=None, ...)`
 
 One-shot helper for the common case where you only need a response string. It
@@ -207,6 +216,9 @@ Every step is optional. A bare `Brain` behaves like a plain LLM wrapper, and
   endpoint over stdlib HTTP.
 - `OpenAIEmbeddingLLM(model, base_url, api_key)` — any OpenAI-compatible
   `/embeddings` endpoint over stdlib HTTP (exposes `embed`).
+- `FallbackLLM(primary, *fallbacks, retry_on=...)` — tries the primary model,
+  falling back to the next provider on `ProviderError` (e.g. a cloud outage
+  degrades to a local Ollama model); RFC-0017.
 
 All are `LLMProvider`s. The SDK-based adapters raise a clear `ProviderError`
 when the underlying package is not installed, keeping the core dependency-free.
@@ -394,6 +406,13 @@ while run.status == "paused":
   similarity; `query` returns hits ranked best-first.
 - **When to use it:** local development and tests.
 
+#### `SqliteVectorStore`
+
+- **What it owns:** a dependency-free persistent store (stdlib `sqlite3`) using
+  exact cosine similarity; `start`/`stop` join the kernel lifecycle.
+- **When to use it:** persisting runtime-learned examples (intent, planner,
+  memory, knowledge indexes) across restarts with no extra dependencies.
+
 `ChromaVectorStore` and `PgVectorStore` adapters are optional (install
 `xyberos[vectors]`); they lazy-import their backend and raise a clear
 `ProviderError` when it is missing.
@@ -422,6 +441,16 @@ while run.status == "paused":
   trainable providers. `ExamplePromoter(experience, intent_engine=..., planner=...)`
   automates `promote()` — feeding successful episodes into the intent engine and
   adaptive planner via `learn`.
+
+### `xyberos.trainer`
+
+- **What it owns:** `export_dataset(experience)`, `Trainer` (embedding/sklearn
+  distillation + `save`/`load` artifact registry), and `engine_from_config(config)`.
+- **When to use it:** offline training/distillation. `export_dataset` pulls
+  `(prompt, intent)` rows from successful episodes; `Trainer(...).train_intent_embedding(embedder)`
+  is dependency-free, while `train_intent_sklearn(embedder)` requires
+  `pip install xyberos[train]`. Load a saved model at startup via the
+  `learning.model` / `learning.algorithm` config keys.
 
 ### `xyberos.tools`
 
@@ -575,6 +604,25 @@ A listener that raises is logged and isolated — it never breaks the pipeline.
 
 Any callable `event -> None` can be an `Exporter`, so integrating a metrics or
 tracing backend is just a function.
+
+### `xyberos.security`
+
+#### `Security`
+
+- **What it owns:** the kill switch, content guardrails, and the audit log.
+- **When to use it:** gating every request; reachable as `app.security`. Audit
+  events (kill engagements, guardrail triggers, blocked requests) are recorded
+  in the configured audit store, accessible via `security.audit_log`.
+
+#### `SqliteAuditStore` / `InMemoryAuditStore` / `AuditStore`
+
+- **What they own:** the audit destination behind `Security.audit_log`.
+  `InMemoryAuditStore` is the default; `SqliteAuditStore` (stdlib `sqlite3`)
+  persists the audit trail across restarts with no extra dependencies.
+- **When to use them:** enable persistence with
+  `create_app(config={"security.audit_path": "audit.db"})`, or construct
+  `Security(audit_store=SqliteAuditStore("audit.db"))` directly. Any object
+  with `append(entry)` / `entries()` can be a custom store (plugin or remote).
 
 ### `xyberos.diagnostics`
 

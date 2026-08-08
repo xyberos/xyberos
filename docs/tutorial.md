@@ -13,6 +13,7 @@ This tutorial shows how to build a small Xyberos application using the features 
 - async and streaming
 - structured outputs and LLM-driven planning
 - production hardening
+- training the system — capture, feedback, promote, evaluate, and distill (see the [Training Tutorial](training-tutorial.md))
 
 The codebase does not currently include a first-class automatic tool-calling or `skills` subsystem. In this repository, those responsibilities are covered by tools, workflows, planners, agents, and plugins.
 

@@ -3,14 +3,13 @@
 from collections.abc import Callable, Mapping
 from typing import Any, TypeVar
 
-from .config import Config
-from .logger import Logger
-from .registry import ServiceRegistry
 from ..events import EventBus
 from ..events.names import KERNEL_STARTED, KERNEL_STOPPED
 from ..plugins.loader import PluginLoader
-from ..security import Security
-
+from ..security import Security, SqliteAuditStore
+from .config import Config
+from .logger import Logger
+from .registry import ServiceRegistry
 
 T = TypeVar("T")
 
@@ -32,7 +31,13 @@ class Kernel:
         self.register("events", self.events)
         self.plugins = PluginLoader(self)
         self.register("plugins", self.plugins)
-        self.security = Security()
+        audit_path = self.config.get("security.audit_path")
+        if audit_path:
+            audit_store = SqliteAuditStore(audit_path)
+            self.security = Security(audit_store=audit_store)
+            self.register("security.audit_store", audit_store)
+        else:
+            self.security = Security()
         self.security._events = self.events
         self.register("security", self.security)
 

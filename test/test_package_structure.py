@@ -20,6 +20,11 @@ import pytest
         "plugins",
         "workflows",
         "agents",
+        "experience",
+        "intent",
+        "learning",
+        "trainer",
+        "vector",
     ],
 )
 def test_public_subsystem_namespace_is_importable(subsystem):

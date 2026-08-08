@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
+| **Status** | Implemented |
 | **Version** | 1.x (stable line) — this RFC extends it additively |
 | **Owner** | Core |
 | **Scope** | Intent, Planning, Memory, Knowledge + a shared Learning/Experience layer |
@@ -410,12 +410,13 @@ One `_contract.py` + one `_provider.py` per new subsystem, plus integration:
       metrics (intent top-1 accuracy, plan success rate, retrieval recall@k) and
       regression tests.
 
-### Phase 3 — Optional offline fine-tuning (distillation, plugin)
-- [ ] `Trainer` plugin: export dataset from `ExperienceStore` → optional `sklearn`/`torch`
-      backend (`xyberos[train]` extras) → produce artifact (small intent/planner model or
-      refreshed embedding index / optimized prompt).
-- [ ] Artifact registry + `learning.model` config load; keep fine-tuned engines behind the
-      same `IntentEngine`/`Planner`/`Memory` contracts so nothing in core changes.
+### Phase 3 — Optional offline fine-tuning (distillation, plugin) ✅
+- [x] `Trainer` (`xyberos/trainer/`): export dataset from `ExperienceStore` →
+      optional `sklearn` backend (`xyberos[train]` extra) or a dependency-free
+      embedding index → produce an artifact (intent engine).
+- [x] Artifact registry (`save`/`load`) + `learning.model`/`learning.algorithm`
+      config load (`engine_from_config`); fine-tuned engines stay behind the
+      `IntentEngine` contract so nothing in core changes.
 
 Each phase is independently shippable and default-off, so current behavior and the 98%
 coverage suite remain green at every step.

@@ -241,12 +241,31 @@ line and is **extended additively** — new contracts and providers may be added
 without changing existing ones, while plugins remain the primary way to ship
 capabilities (see RFC-0016).
 
-> **RFC-0016 (Draft)** — *Trainable Cognitive Engines*: adds small additive seams for
+> **RFC-0016 (Implemented)** — *Trainable Cognitive Engines*: adds small additive seams for
 > an **intent engine**, **embeddings/vector retrieval**, and an **experience/learning
 > layer**, then implements trainable (few-shot / semantic / outcome-based) providers for
 > intent, planner, memory, and knowledge. Runtime adaptation is the default "training";
-> fine-tuning is an optional Phase-3 plugin. See
+> fine-tuning is an optional Phase-3 plugin. Phases 0–3 complete. See
 > `docs/RFCs/RFC-0016-trainable-cognitive-engines.md`.
+
+> **RFC-0017 (Draft)** — *LLM-as-Fallback & Self-Routing*: a confidence-gated chain of
+> responders — rules/policies → knowledge → memory → distilled cache → local model →
+> cloud LLM → degrade — so the LLM becomes the last resort and teacher instead of the
+> primary generator. Adds `Responder`/`Router` contracts, `FallbackLLM` (cloud → local),
+> a response cache, and escalation learning, all default-off. See
+> `docs/RFCs/RFC-0017-llm-fallback-router.md`.
+
+> **RFC-0018 (Draft)** — *Smarter Learning*: auto-outcome signals, a first-class eval
+> workflow, immediate reinforcement, schema-driven tool calling, self-expanding knowledge,
+> memory stratification, grounding/reflection, and reranking/confidence calibration. Ships
+> before RFC-0017 to populate and measure the stores the router routes over. See
+> `docs/RFCs/RFC-0018-smarter-learning.md`.
+
+> **Build order (RFC-0017 + RFC-0018)** — one shared, ordered milestone sequence
+> **M0 → M12** lives in both RFCs (identical). Follow it in order to avoid missteps:
+> M0 done (`FallbackLLM`) → M1–M3 signals & measurement → M4 router skeleton
+> (inactive) → M5–M7 store-filling/capability → M8 activate routing → M9–M10 quality &
+> calibration → M11–M12 escalation learning & degrade.
 
 ---
 

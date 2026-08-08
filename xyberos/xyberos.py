@@ -12,23 +12,25 @@ from .contracts.knowledge import KnowledgeProvider
 from .contracts.memory import MemoryProvider
 from .contracts.planner import Planner
 from .contracts.plugin import Plugin
+from .contracts.vector import VectorStore
 from .contracts.workflow import Workflow
 from .events import FEEDBACK_RECORDED, EventBus
 from .experience import InMemoryExperience
-from .intent import HeuristicIntentEngine
+from .intent import EmbeddingIntentEngine, HeuristicIntentEngine
 from .kernel.config import Config
 from .kernel.kernel import Kernel
 from .kernel.logger import Logger
 from .kernel.registry import ServiceRegistry
-from .knowledge import InMemoryKnowledge
-from .llm import EchoLLM, LLMProvider
-from .memory import InMemoryMemory
-from .planner import SequentialPlanner
+from .knowledge import InMemoryKnowledge, VectorKnowledge
+from .llm import EchoLLM, HashEmbedder, LLMProvider
+from .memory import InMemoryMemory, VectorMemory
+from .planner import AdaptivePlanner, SequentialPlanner
 from .plugins.loader import PluginLoader
 from .runtime.context import CognitiveContext
 from .runtime.runtime import Runtime
 from .security import Security
 from .tools import ToolRegistry, ToolRunner
+from .vector import SqliteVectorStore
 from .workflows import SequentialWorkflow
 
 T = TypeVar("T")
@@ -266,6 +268,48 @@ def create_app(
         planner=planner,
         workflow=workflow,
         intent=intent,
+        experience=experience,
+    )
+
+
+def create_semantic_app(
+    config: Mapping[str, Any] | None = None,
+    llm: LLMProvider | None = None,
+    embedder: Any | None = None,
+    store: VectorStore | None = None,
+    *,
+    experience: ExperienceStore | None = None,
+    tools: ToolRegistry | None = None,
+    workflow: Workflow | None = None,
+    tool_runner: ToolRunner | None = None,
+) -> Xyberos:
+    """Build a ready-to-use app backed by one shared, persistent VectorStore.
+
+    This is the one-line persistent setup for the RFC-0016 trainable engines:
+    intent, memory, and knowledge all share a single
+    :class:`~vector.sqlite.SqliteVectorStore` (``learning.db`` by default), so
+    everything learned survives restarts with zero extra configuration.
+
+    ``embedder`` is any ``embed(text)`` object (e.g. ``OpenAIEmbeddingLLM``); it
+    defaults to a deterministic :class:`~llm.HashEmbedder` for development.
+    Swap ``store`` for any other ``VectorStore`` (``ChromaVectorStore``,
+    ``PgVectorStore``, or a plugin-provided one) to change the backend without
+    touching the engines.
+    """
+    embedder = embedder or HashEmbedder()
+    store = store or SqliteVectorStore("learning.db")
+    effective_config = dict(config or {})
+    effective_config.setdefault("brain.intent", True)
+    return create_app(
+        config=effective_config,
+        llm=llm,
+        memory=VectorMemory(store, embedder=embedder),
+        knowledge=VectorKnowledge(store, embedder=embedder),
+        intent=EmbeddingIntentEngine(store, embedder=embedder),
+        planner=AdaptivePlanner(llm, store=store, embedder=embedder),
+        tools=tools,
+        tool_runner=tool_runner,
+        workflow=workflow,
         experience=experience,
     )
 

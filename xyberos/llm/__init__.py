@@ -9,6 +9,7 @@ from .adapters import (
     OpenAILLM,
 )
 from .embeddings import EmbeddingLLM, HashEmbedder
+from .fallback import FallbackLLM
 from .llm import AsyncLLM, CallableLLM, ChatModel, EchoLLM, LLMProvider, StreamingLLM
 from .structured import StructuredLLM, extract_json, structured
 
@@ -19,6 +20,7 @@ __all__ = [
     "ChatModel",
     "EchoLLM",
     "EmbeddingLLM",
+    "FallbackLLM",
     "GeminiLLM",
     "HashEmbedder",
     "LLMProvider",

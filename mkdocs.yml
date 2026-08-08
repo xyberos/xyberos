@@ -62,6 +62,7 @@ plugins:
 nav:
   - Home: README.md
   - Tutorial: tutorial.md
+  - Training Tutorial: training-tutorial.md
   - Guides:
       - Configuring Services: configuring-services.md
       - Extension Surfaces: extensions.md
@@ -85,3 +86,5 @@ nav:
       - RFC-0014 Events: RFCs/RFC-0014-events.md
       - RFC-0015 Security: RFCs/RFC-0015-security.md
       - RFC-0016 Trainable Cognitive Engines: RFCs/RFC-0016-trainable-cognitive-engines.md
+      - RFC-0017 LLM-as-Fallback & Self-Routing: RFCs/RFC-0017-llm-fallback-router.md
+      - RFC-0018 Smarter Learning: RFCs/RFC-0018-smarter-learning.md

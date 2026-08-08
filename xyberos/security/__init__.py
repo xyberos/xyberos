@@ -19,13 +19,14 @@ Example::
 
 from __future__ import annotations
 
+import json
+import sqlite3
 import time
-from collections.abc import Callable, Sequence
-from typing import Any
+from collections.abc import Callable, Mapping
+from typing import Any, Protocol, runtime_checkable
 
 from ..contracts.service import Service
 from ..events.names import (
-    SECURITY_GUARDRAIL_TRIGGERED,
     SECURITY_KILL_DISENGAGED,
     SECURITY_KILL_ENGAGED,
     SECURITY_REQUEST_BLOCKED,
@@ -139,6 +140,110 @@ class Guardrail:
         return f"Guardrail({self.name!r})"
 
 
+# -- audit log stores --------------------------------------------------------
+
+@runtime_checkable
+class AuditStore(Protocol):
+    """Append-only audit destination (duck-typed).
+
+    Any writer exposing ``append``/``entries`` can back the :class:`Security`
+    audit log — in-memory, SQLite, or a remote service.
+    """
+
+    def append(self, entry: Mapping[str, Any]) -> None: ...
+
+    def entries(self) -> tuple[dict[str, Any], ...]: ...
+
+
+class InMemoryAuditStore:
+    """Default in-memory audit store (matches historical Security behavior)."""
+
+    def __init__(self) -> None:
+        self._entries: list[dict[str, Any]] = []
+
+    def append(self, entry: Mapping[str, Any]) -> None:
+        self._entries.append(dict(entry))
+
+    def entries(self) -> tuple[dict[str, Any], ...]:
+        return tuple(self._entries)
+
+    def clear(self) -> None:
+        """Drop every recorded entry."""
+        self._entries = []
+
+
+class SqliteAuditStore:
+    """SQLite-backed persistent audit store (stdlib ``sqlite3``, no deps).
+
+    Every appended entry is inserted immediately, so security events survive
+    process restarts as an append-only audit trail. ``start``/``stop`` join the
+    kernel lifecycle when the store is registered as a service, so ``app.stop()``
+    releases the database handle.
+    """
+
+    def __init__(self, path: str = ":memory:") -> None:
+        self._path = path
+        self._connection: sqlite3.Connection | None = None
+        self._ensure_connection()
+
+    def _ensure_connection(self) -> sqlite3.Connection:
+        if self._connection is None:
+            connection = sqlite3.connect(self._path)
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS security_audit (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    event TEXT NOT NULL,
+                    payload TEXT NOT NULL,
+                    timestamp REAL NOT NULL
+                )
+                """
+            )
+            connection.commit()
+            self._connection = connection
+        return self._connection
+
+    def start(self) -> None:
+        """Open the database connection (kernel lifecycle hook)."""
+        self._ensure_connection()
+
+    def stop(self) -> None:
+        """Close the database connection (kernel lifecycle hook)."""
+        self.close()
+
+    def close(self) -> None:
+        """Close the underlying database connection."""
+        if self._connection is not None:
+            self._connection.close()
+            self._connection = None
+
+    def append(self, entry: Mapping[str, Any]) -> None:
+        connection = self._ensure_connection()
+        payload = json.dumps(dict(entry), default=str)
+        connection.execute(
+            "INSERT INTO security_audit (event, payload, timestamp) VALUES (?, ?, ?)",
+            (
+                entry.get("event", ""),
+                payload,
+                entry.get("timestamp", time.time()),
+            ),
+        )
+        connection.commit()
+
+    def entries(self) -> tuple[dict[str, Any], ...]:
+        connection = self._ensure_connection()
+        rows = connection.execute(
+            "SELECT payload FROM security_audit ORDER BY id ASC"
+        ).fetchall()
+        return tuple(json.loads(payload) for (payload,) in rows)
+
+    def clear(self) -> None:
+        """Drop every recorded audit entry."""
+        connection = self._ensure_connection()
+        connection.execute("DELETE FROM security_audit")
+        connection.commit()
+
+
 class Security(Service):
     """Kernel-level security service: kill switch, guardrails, and audit log.
 
@@ -150,10 +255,10 @@ class Security(Service):
         security.guard(context)
     """
 
-    def __init__(self) -> None:
+    def __init__(self, audit_store: AuditStore | None = None) -> None:
         self.kill_switch = KillSwitch()
         self._guardrails: dict[str, Guardrail] = {}
-        self._audit_log: list[dict[str, Any]] = []
+        self._audit_store = audit_store or InMemoryAuditStore()
         self._events: object = None  # set by Kernel after registration
 
     # -- guardrails -----------------------------------------------------------
@@ -201,12 +306,17 @@ class Security(Service):
             "kill_switch_active": self.kill_switch.active,
             **extra,
         }
-        self._audit_log.append(entry)
+        self._audit_store.append(entry)
 
     @property
     def audit_log(self) -> tuple[dict[str, Any], ...]:
         """All recorded security audit entries, in order."""
-        return tuple(self._audit_log)
+        return self._audit_store.entries()
+
+    @property
+    def audit_store(self) -> AuditStore:
+        """The configured audit destination (in-memory or persistent)."""
+        return self._audit_store
 
     # -- kill switch event helpers --------------------------------------------
 
@@ -242,4 +352,7 @@ class Security(Service):
 
     def __repr__(self) -> str:
         guards = len(self._guardrails)
-        return f"Security(kill={self.kill_switch}, guardrails={guards}, audit_entries={len(self._audit_log)})"
+        return (
+            f"Security(kill={self.kill_switch}, guardrails={guards}, "
+            f"audit_entries={len(self.audit_log)})"
+        )

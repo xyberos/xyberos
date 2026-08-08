@@ -506,8 +506,9 @@ honors `context.intent.target` first.
 ### Vector stores
 
 Implement `VectorStore.upsert/query/delete/clear` over namespaces. The bundled
-`CosineVectorStore` is dependency-free; `ChromaVectorStore` and `PgVectorStore`
-are optional adapters (`pip install xyberos[vectors]`).
+`CosineVectorStore` is dependency-free (in-memory) and `SqliteVectorStore`
+persists to a SQLite file with no extra dependencies; `ChromaVectorStore` and
+`PgVectorStore` are optional adapters (`pip install xyberos[vectors]`).
 
 ```python
 from xyberos.vector import CosineVectorStore

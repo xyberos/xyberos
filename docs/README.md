@@ -7,6 +7,7 @@ This directory contains the project documentation beyond the package code itself
 - [Using Extension Surfaces](extensions.md)
 - [Configuring Services](configuring-services.md) — explicit, factory, and plugin approaches
 - [Tutorial](tutorial.md)
+- [Training Tutorial](training-tutorial.md) — capture, feedback, learn, evaluate, and distill
 - [API Reference](api-reference.md)
 - [Lifecycle and Service Behavior](lifecycle.md)
 - [Architecture RFCs](RFCs/RFC-Roadmap.md)
@@ -38,6 +39,9 @@ The RFCs describe the current architecture and the reasoning behind the core lay
 - `RFC-0014-events.md` - event bus and observability
 - `RFC-0015-security.md` - kill switch, guardrails, and audit log
 - `RFC-Roadmap.md` - roadmap, current status, and future enhancement backlog
+- `RFC-0016-trainable-cognitive-engines.md` - trainable engines and the learning layer
+- `RFC-0017-llm-fallback-router.md` - LLM-as-fallback tiered routing
+- `RFC-0018-smarter-learning.md` - smarter learning: outcomes, eval, self-expanding knowledge
 
 ## Public API Map
 
@@ -56,11 +60,15 @@ Useful supporting modules:
 - `xyberos.workflows` - sequential workflows, state graphs, and checkpoints
 - `xyberos.plugins` - plugin loading and auto-discovery (entry points + convention scan)
 - `xyberos.llm` - model providers, streaming/async, structured output, and adapters
-- `xyberos.memory` / `xyberos.knowledge` - in-memory and SQLite providers
-- `xyberos.planner` - fixed and LLM-driven planners
+- `xyberos.memory` / `xyberos.knowledge` - in-memory, SQLite, vector, and consolidating providers
+- `xyberos.planner` - fixed, LLM, adaptive, reflective planners, and plan execution
+- `xyberos.intent` - heuristic, LLM, embedding, and cascade intent engines
+- `xyberos.vector` - vector store contract and providers (cosine, chroma, pgvector)
+- `xyberos.experience` / `xyberos.learning` - episode store, promote/demote, example promotion
+- `xyberos.trainer` - offline training/distillation and artifact registry
 - `xyberos.tools` - registries, runners, and typed function tools
 - `xyberos.events` - event bus, tracing, and exporters
-- `xyberos.utils` - resilience helpers (retry, rate limiting, timeouts)
+- `xyberos.utils` - resilience helpers (retry, rate limiting, timeouts) + evaluation metrics
 - `xyberos.contracts` - extension contracts
 - `xyberos.exceptions` - typed domain exceptions
 

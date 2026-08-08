@@ -5,15 +5,13 @@ from __future__ import annotations
 import pytest
 
 from xyberos import Security, create_app
-from xyberos.security import Guardrail, KillSwitch
-from xyberos.exceptions.security import GuardrailTriggeredError, SecurityHaltError, SecurityError
 from xyberos.events.names import (
-    SECURITY_KILL_ENGAGED,
     SECURITY_KILL_DISENGAGED,
-    SECURITY_REQUEST_BLOCKED,
-    SECURITY_GUARDRAIL_TRIGGERED,
+    SECURITY_KILL_ENGAGED,
 )
-
+from xyberos.exceptions.security import GuardrailTriggeredError, SecurityHaltError
+from xyberos.kernel import Kernel
+from xyberos.security import Guardrail, InMemoryAuditStore, KillSwitch, SqliteAuditStore
 
 # ---------------------------------------------------------------------------
 # KillSwitch
@@ -230,6 +228,45 @@ class TestSecurityFacade:
         )
         result = app.chat("hello")
         assert result == "hello"
+
+
+# ---------------------------------------------------------------------------
+# Audit store
+# ---------------------------------------------------------------------------
+
+class TestAuditStore:
+    def test_security_with_sqlite_audit_store_persists(self, tmp_path):
+        path = str(tmp_path / "audit.db")
+        store = SqliteAuditStore(path)
+        security = Security(audit_store=store)
+        security.engage_kill_switch("maintenance")
+        security.disengage_kill_switch()
+        store.close()
+
+        reopened = SqliteAuditStore(path)
+        assert [entry["event"] for entry in reopened.entries()] == [
+            "kill_engaged",
+            "kill_disengaged",
+        ]
+        reopened.close()
+
+    def test_kernel_config_wires_persistent_audit_store(self, tmp_path):
+        path = str(tmp_path / "audit.db")
+        kernel = Kernel({"security.audit_path": path})
+        assert isinstance(kernel.security.audit_store, SqliteAuditStore)
+        kernel.security.engage_kill_switch("test")
+        kernel.start()
+        kernel.stop()
+
+        reopened = SqliteAuditStore(path)
+        assert any(entry["event"] == "kill_engaged" for entry in reopened.entries())
+        reopened.close()
+
+    def test_security_audit_store_property_exposes_backend(self):
+        store = InMemoryAuditStore()
+        security = Security(audit_store=store)
+
+        assert security.audit_store is store
 
 
 # ---------------------------------------------------------------------------

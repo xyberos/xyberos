@@ -7,8 +7,9 @@
 
 **Xyberos** is a complete, layered platform for building AI applications —
 agents, tools, workflows, multi-agent collaboration, streaming, memory,
-knowledge, planning, plugins, observability, and security. Every subsystem
-is swappable through stable contracts. The core has **zero runtime dependencies**.
+knowledge, planning, trainable intent/learning engines, plugins,
+observability, and security. Every subsystem is swappable through stable
+contracts. The core has **zero runtime dependencies**.
 
 ```text
                  ┌──────────────────────────────┐
@@ -36,11 +37,13 @@ pipeline, the memory, the planning, the tools, the agents, the guardrails.
 |---|---|
 | **Kernel** | Config, logging, DI, lifecycle, event bus, plugin loader, security |
 | **Runtime** | Executes cognitive requests — sync and async |
-| **Brain** | Automated pipeline: workflow → memory → knowledge → plan → tools → LLM |
-| **LLM** | OpenAI, Anthropic, Gemini, Ollama, any OpenAI-compatible endpoint |
-| **Memory** | In-memory and SQLite providers — swap for Redis or vectors |
-| **Knowledge** | Fact injection from in-memory dicts or SQLite |
-| **Planner** | Sequential or LLM-driven plan generation |
+| **Brain** | Automated pipeline: workflow → memory → knowledge → intent → plan → tools → LLM |
+| **LLM** | OpenAI, Anthropic, Gemini, Ollama, any OpenAI-compatible endpoint + embeddings |
+| **Memory** | In-memory, SQLite, and vector providers; semantic + consolidating memory |
+| **Knowledge** | Fact injection from dicts, SQLite, or vector retrieval |
+| **Planner** | Sequential, LLM, adaptive (few-shot), reflective, and plan execution |
+| **Intent** | Heuristic, LLM, embedding, and cascade engines with confidence routing |
+| **Learning** | Experience store, feedback, example promotion, offline training (Trainer) |
 | **Tools** | Typed function tools with JSON-schema signatures |
 | **Workflows** | Sequential + graph-based with branches, loops, pause/resume |
 | **Agents** | Multi-agent runtime with messaging, handoffs, roles |

@@ -40,6 +40,16 @@ app = create_app(
     experience=SqliteExperience("experience.db"),
     config={"brain.intent": True, "experience.enabled": True},
 )
+
+# One-line persistent semantic app (RFC-0016) — intent/memory/knowledge/planner
+# share a SqliteVectorStore("learning.db") by default; swap store= for Chroma/PgVector.
+from xyberos import create_semantic_app
+
+semantic = create_semantic_app(llm=CallableLLM(lambda prompt: f"answer: {prompt}"), embedder=embedder)
+
+# Persistent security audit trail — one config key
+secure = create_app(config={"security.audit_path": "audit.db"})
+secure.security.engage_kill_switch("maintenance")   # recorded to audit.db
 ```
 
 ### Pros and cons

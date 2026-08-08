@@ -50,6 +50,10 @@ dev = [
     "pytest",
     "pytest-cov",
 ]
+train = [
+    "scikit-learn",
+    "joblib",
+]
 vectors = [
     "chromadb",
     "pgvector",
