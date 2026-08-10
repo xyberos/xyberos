@@ -60,7 +60,7 @@ plugins:
   - search
 
 nav:
-  - Home: README.md
+  - Home: index.md
   - Tutorial: tutorial.md
   - Training Tutorial: training-tutorial.md
   - Guides:

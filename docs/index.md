@@ -1,6 +1,7 @@
-# Documentation Index
+# Documentation
 
-This directory contains the project documentation beyond the package code itself.
+This is the documentation index for **Xyberos**. For the project overview, install
+instructions, and quick start, see the [repository README](https://github.com/xyberos/xyberos/blob/main/README.md).
 
 ## Start Here
 
@@ -18,6 +19,7 @@ This directory contains the project documentation beyond the package code itself
 - [Chat App](https://github.com/xyberos/xyberos/blob/main/examples/chat_app/README.md) - a real FastAPI + SQLAlchemy backend with pluggable auto-discovery
 - [`examples/minimal_chat.py`](https://github.com/xyberos/xyberos/blob/main/examples/minimal_chat.py) - the shortest possible chat
 - [`examples/extended_app.py`](https://github.com/xyberos/xyberos/blob/main/examples/extended_app.py) - a broad walkthrough of the app API
+- [`examples/support_assistant/`](https://github.com/xyberos/xyberos/blob/main/examples/support_assistant/README.md) - every subsystem in one service
 
 ## RFC Set
 
@@ -63,6 +65,7 @@ Useful supporting modules:
 - `xyberos.memory` / `xyberos.knowledge` - in-memory, SQLite, vector, and consolidating providers
 - `xyberos.planner` - fixed, LLM, adaptive, reflective planners, and plan execution
 - `xyberos.intent` - heuristic, LLM, embedding, and cascade intent engines
+- `xyberos.router` - hybrid responder chain (templates, tools, knowledge, memory, cache, LLM, degrade)
 - `xyberos.vector` - vector store contract and providers (cosine, chroma, pgvector)
 - `xyberos.experience` / `xyberos.learning` - episode store, promote/demote, example promotion
 - `xyberos.trainer` - offline training/distillation and artifact registry
@@ -76,7 +79,7 @@ Useful supporting modules:
 
 If you are new to the project, read these in order:
 
-1. `README.md`
+1. `README.md` (the repository README)
 2. `extensions.md`
 3. `tutorial.md`
 4. `api-reference.md`

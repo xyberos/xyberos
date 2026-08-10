@@ -37,18 +37,19 @@ pipeline, the memory, the planning, the tools, the agents, the guardrails.
 |---|---|
 | **Kernel** | Config, logging, DI, lifecycle, event bus, plugin loader, security |
 | **Runtime** | Executes cognitive requests — sync and async |
-| **Brain** | Automated pipeline: workflow → memory → knowledge → intent → plan → tools → LLM |
+| **Brain** | Automated pipeline: workflow → cheap-first router → memory → knowledge → intent → plan → router → tools → LLM |
 | **LLM** | OpenAI, Anthropic, Gemini, Ollama, any OpenAI-compatible endpoint + embeddings (incl. local `OllamaEmbeddingLLM`) |
 | **Memory** | In-memory, SQLite, and vector providers; semantic + consolidating memory |
 | **Knowledge** | Fact injection from dicts, SQLite, or vector retrieval |
 | **Planner** | Sequential, LLM, adaptive (few-shot), reflective, and plan execution |
 | **Intent** | Heuristic, LLM, embedding, and cascade engines with confidence routing |
+| **Router** | Confidence-gated responder tiers — template → tool → knowledge → memory → cache → LLM |
 | **Learning** | Experience store, feedback, example promotion, offline training (Trainer) |
 | **Tools** | Typed function tools with JSON-schema signatures |
 | **Workflows** | Sequential + graph-based with branches, loops, pause/resume |
 | **Agents** | Multi-agent runtime with messaging, handoffs, roles |
 | **Plugins** | Auto-discovery via entry points or package scanning |
-| **Events** | Pub/sub bus with 19 canonical events, tracing, and exporters |
+| **Events** | Pub/sub bus with 32 canonical events, tracing, and exporters |
 | **Security** | Kill switch, content guardrails, audit logging |
 
 ---
@@ -271,26 +272,77 @@ pip install xyberos[dev]
 pytest
 ```
 
-242 tests, 95% coverage. The test suite is the authoritative reference for
+533 tests, 89% coverage. The test suite is the authoritative reference for
 current behavior.
 
 ---
 
 ## Documentation
 
-Full documentation at **[xyberos-docs.pages.dev](https://xyberos-docs.pages.dev)** (or `mkdocs serve` locally):
+The full docs are hosted at **[xyberos-docs.pages.dev](https://xyberos-docs.pages.dev)** and live in [`docs/`](docs/). Start here:
 
-- [Tutorial](https://xyberos-docs.pages.dev/tutorial/)
-- [API Reference](https://xyberos-docs.pages.dev/api-reference/)
-- [Roadmap & Vision](https://xyberos-docs.pages.dev/RFCs/RFC-Roadmap/)
-- [15 Architecture RFCs](https://xyberos-docs.pages.dev/RFCs/RFC-0001-architecture/)
+- [Tutorial](docs/tutorial.md) — build your first app
+- [Training Tutorial](docs/training-tutorial.md) — capture, feedback, learn, evaluate, and distill
+- [Configuring Services](docs/configuring-services.md) — explicit, factory, and plugin wiring
+- [Extension Surfaces](docs/extensions.md) — contracts, plugins, and customization
+- [Lifecycle & Services](docs/lifecycle.md) — start/stop and service behavior
+- [API Reference](docs/api-reference.md)
+- [Roadmap & Vision](docs/RFCs/RFC-Roadmap.md)
 
-Run locally:
+Architecture RFCs — the reasoning behind every layer, all in [`docs/RFCs/`](docs/RFCs/):
+
+- [RFC-0001 Architecture](docs/RFCs/RFC-0001-architecture.md) through [RFC-0018 Smarter Learning](docs/RFCs/RFC-0018-smarter-learning.md)
+
+Run the docs locally:
 
 ```bash
 pip install mkdocs mkdocs-material
 mkdocs serve
 ```
+
+---
+
+## Public API Map
+
+Import the main facade from the package root:
+
+```python
+from xyberos import Xyberos, achat, chat, create_app
+```
+
+Useful supporting modules:
+
+- `xyberos.kernel` — configuration, logging, registry, lifecycle, event bus
+- `xyberos.runtime` — cognitive context and runtime execution (sync + async)
+- `xyberos.brain` — automated cognitive pipeline
+- `xyberos.agents` — multi-agent runtime, roles, messaging, and handoffs
+- `xyberos.workflows` — sequential workflows, state graphs, and checkpoints
+- `xyberos.plugins` — plugin loading and auto-discovery (entry points + convention scan)
+- `xyberos.llm` — model providers (incl. local `OllamaLLM` + `OllamaEmbeddingLLM`), streaming/async, structured output, and adapters
+- `xyberos.memory` / `xyberos.knowledge` — in-memory, SQLite, vector, and consolidating providers
+- `xyberos.planner` — fixed, LLM, adaptive, reflective planners, and plan execution
+- `xyberos.intent` — heuristic, LLM, embedding, and cascade intent engines
+- `xyberos.vector` — vector store contract and providers (cosine, chroma, pgvector)
+- `xyberos.experience` / `xyberos.learning` — episode store, promote/demote, example promotion
+- `xyberos.trainer` — offline training/distillation and artifact registry
+- `xyberos.tools` — registries, runners, and typed function tools
+- `xyberos.events` — event bus, tracing, and exporters
+- `xyberos.utils` — resilience helpers (retry, rate limiting, timeouts) + evaluation metrics
+- `xyberos.contracts` — extension contracts
+- `xyberos.exceptions` — typed domain exceptions
+
+---
+
+## Reading Order
+
+New to the project? Read the docs in this order:
+
+1. This README
+2. [`docs/extensions.md`](docs/extensions.md)
+3. [`docs/tutorial.md`](docs/tutorial.md)
+4. [`docs/api-reference.md`](docs/api-reference.md)
+5. [`docs/lifecycle.md`](docs/lifecycle.md)
+6. [`docs/RFCs/RFC-0001-architecture.md`](docs/RFCs/RFC-0001-architecture.md), then the remaining RFCs in [`docs/RFCs/`](docs/RFCs/)
 
 ---
 

@@ -41,6 +41,13 @@ lists what the class is, **what it owns**, and **when to use it**.
 | `OpenAICompatibleLLM` | stdlib HTTP | any /chat/completions endpoint |
 | `OllamaEmbeddingLLM` | stdlib HTTP | local Ollama `/api/embed` (exposes `embed`) |
 | `FunctionTool` | a typed callable + schema | typed, validated tool results |
+| `SchemaToolCaller` | an LLM + tool registry | schema-driven LLM tool selection |
+| `Router` / `ResponderChain` | confidence-gated responder tiers | LLM-free fast answers with escalation |
+| `CacheResponder` / `CacheTeacher` | taught prompt→answer cache | answering repeated requests without the LLM |
+| `PlanExecutor` | plan steps, verify, replan | closing the plan→execution loop |
+| `Trainer` | offline distillation | training intent engines from recorded episodes |
+| `StratifiedMemory` | durable facts + episodic history | separating what to remember from what to recall |
+| `GroundingCheck` | reference-knowledge verification | keeping responses grounded in facts |
 | `EventBus` | subscribers and published events | observing and extending the pipeline |
 
 ## Package Root
@@ -48,7 +55,14 @@ lists what the class is, **what it owns**, and **when to use it**.
 Import the facade helpers from the package root:
 
 ```python
-from xyberos import Xyberos, chat, create_app
+from xyberos import (
+    Xyberos,
+    achat,
+    chat,
+    create_app,
+    create_semantic_app,
+    doctor,
+)
 ```
 
 ### `Xyberos`
@@ -64,21 +78,26 @@ from xyberos import Xyberos, chat, create_app
   request execution. Prefer `create_app()` unless you need to keep a reference
   around.
 
-### `create_app(config=None, llm=None, memory=None, knowledge=None, tools=None, planner=None, workflow=None, tool_runner=None, intent=None, experience=None)`
+### `create_app(config=None, llm=None, memory=None, knowledge=None, tools=None, planner=None, workflow=None, tool_runner=None, intent=None, experience=None, router=None)`
 
 Convenience constructor for a ready-to-use `Xyberos` application. Any provider
 you omit is filled in with an in-memory default (`intent` defaults to an empty
 `HeuristicIntentEngine`, `experience` to `InMemoryExperience`; both are inactive
-unless enabled via config).
+unless enabled via config). Pass `router=` a `Router` (e.g. from `build_router`)
+to add a confidence-gated responder chain that answers cheap tiers before the
+LLM (see [xyberos.router](#xyberosrouter)).
 
-### `create_semantic_app(config=None, llm=None, embedder=None, store=None, ...)`
+### `create_semantic_app(config=None, llm=None, embedder=None, store=None, *, experience=None, tools=None, workflow=None, tool_runner=None, router=None, templates=None)`
 
 One-line persistent setup for the RFC-0016 trainable engines: intent, memory,
 knowledge, and planner share a single `SqliteVectorStore` (`learning.db` by
 default), so everything learned survives restarts with zero extra configuration.
 Pass `embedder=` (any `embed(text)` object; defaults to `HashEmbedder` for
 development) and optionally swap `store=` for `ChromaVectorStore`/
-`PgVectorStore` or a plugin-provided `VectorStore`.
+`PgVectorStore` or a plugin-provided `VectorStore`. Pass `router="hybrid"` (or a
+`Router`) to also wire the hybrid responder chain with a self-teaching cache;
+`templates=` pre-seeds the router's template tier. The embedding→LLM intent
+cascade's confidence gate is set via `intent.threshold` (default `0.9`).
 
 > **Tip — real semantic matching:** the default `HashEmbedder` is deterministic
 > and dependency-free but only matches near-identical text. For real paraphrase
@@ -91,6 +110,24 @@ development) and optionally swap `store=` for `ChromaVectorStore`/
 
 One-shot helper for the common case where you only need a response string. It
 accepts the same provider arguments as `create_app`.
+
+### `Xyberos` facade methods
+
+Beyond the properties listed above, the facade exposes the full platform:
+
+- **Lifecycle** — `start()`, `stop()`, and the `started` property.
+- **Service registration / DI** — `register(name, service, replace=False)`,
+  `register_factory(name, factory, singleton=True, replace=False)`,
+  `resolve(name)`, `inject(target, **overrides)`.
+- **Plugins** — `load_plugin(plugin)`, `unload_plugin(name)`,
+  `load_entry_points(group="xyberos.plugins")`, `load_plugins_from(package)`.
+- **Agents** — `register_agent(agent)`, `remove_agent(name)`, and
+  `run_agents(prompt, *, metadata=None, agent_names=None)` which runs all (or a
+  selected subset of) registered agents over a fresh context.
+- **Requests** — `run(prompt, metadata=None)`, `arun(...)`, `chat(prompt)`,
+  `achat(prompt)` (see [Common Patterns](#common-patterns)).
+- **Learning** — `feedback(episode_id, rating, *, note=None)` attaches a rating
+  (−1.0..1.0) to a recorded episode and emits `FEEDBACK_RECORDED`.
 
 ## Core Classes
 
@@ -143,7 +180,8 @@ accepts the same provider arguments as `create_app`.
 #### `Brain`
 
 - **What it owns:** an `LLMProvider`, and optional `ToolRunner`, memory,
-  knowledge, planner, and workflow providers.
+  knowledge, planner, workflow, intent, experience, router, and security
+  providers.
 - **When to use it:** validating input and generating a response; the brain
   orchestrates the automated pipeline. See [The cognitive pipeline](#the-cognitive-pipeline)
   below for the exact order.
@@ -154,12 +192,20 @@ For each request, `Brain.chat()` runs the configured subsystems in order:
 
 1. **Workflow** — if configured, its steps run first; a step that sets the
    response short-circuits the pipeline.
-2. **Memory** — past turns are retrieved and injected into the prompt.
-3. **Knowledge** — matching facts are queried and injected into the prompt.
-4. **Planner** — the plan is computed and recorded on `context.plan`.
-5. **Tools** — a matching tool is dispatched via the `ToolRunner`.
-6. **LLM** — the enriched prompt is sent to the model.
-7. **Memory** — the completed turn is stored for future requests.
+2. **Cheap-first router** — when a router is installed and `brain.cheap_first`
+   is on (the default for LLM-free routers), its LLM-free tiers
+   (template → tool → knowledge → memory → cache) may answer before any LLM
+   call is spent on intent/planning.
+3. **Memory** — past turns are retrieved and injected into the prompt.
+4. **Knowledge** — matching facts are queried and injected into the prompt.
+5. **Intent** — if enabled (`brain.intent`), the request is classified and the
+   result recorded on `context.intent` (may steer tool dispatch).
+6. **Planner** — the plan is computed and recorded on `context.plan`.
+7. **Router** — a configured `Router` gets a chance to answer; a confident tier
+   short-circuits, otherwise processing falls through.
+8. **Tools** — a matching tool is dispatched via the `ToolRunner`.
+9. **LLM** — the enriched prompt is sent to the model.
+10. **Memory** — the completed turn is stored for future requests.
 
 Every step is optional. A bare `Brain` behaves like a plain LLM wrapper, and
 `create_app()` wires all of the in-memory defaults automatically.
@@ -216,19 +262,15 @@ Every step is optional. A bare `Brain` behaves like a plain LLM wrapper, and
 
 #### Provider adapters
 
-- `OpenAILLM(model, api_key, base_url, timeout, client)` — official OpenAI SDK (lazy import).
-- `AnthropicLLM(model, api_key, client)` — official Anthropic SDK (lazy import).
-- `GeminiLLM(model, api_key, client)` — official Google Gemini SDK (lazy import).
-- `OllamaLLM(model, base_url)` — local Ollama server over stdlib HTTP.
-- `OllamaEmbeddingLLM(model, base_url)` — local Ollama `/api/embed` over stdlib
-  HTTP (exposes `embed`; pairs with `OllamaLLM` for a fully-local semantic stack).
-- `OpenAICompatibleLLM(model, base_url, api_key)` — any `/chat/completions`
-  endpoint over stdlib HTTP.
-- `OpenAIEmbeddingLLM(model, base_url, api_key)` — any OpenAI-compatible
-  `/embeddings` endpoint over stdlib HTTP (exposes `embed`).
-- `FallbackLLM(primary, *fallbacks, retry_on=...)` — tries the primary model,
-  falling back to the next provider on `ProviderError` (e.g. a cloud outage
-  degrades to a local Ollama model); RFC-0017.
+- `OpenAILLM(model="gpt-4o-mini", *, api_key=None, base_url=None, timeout=60.0, client=None)` — official OpenAI SDK (lazy import).
+- `AnthropicLLM(model="claude-3-5-sonnet-latest", *, api_key=None, client=None)` — official Anthropic SDK (lazy import).
+- `GeminiLLM(model="gemini-1.5-flash", *, api_key=None, client=None)` — official Google Gemini SDK (lazy import).
+- `OllamaLLM(model="llama3.2", *, base_url="http://localhost:11434", timeout=60.0, post=None)` — local Ollama server over stdlib HTTP. The `timeout` bounds every socket operation, so an unreachable server fails fast instead of hanging.
+- `OllamaEmbeddingLLM(model="nomic-embed-text", *, base_url="http://localhost:11434", timeout=60.0, post=None)` — local Ollama `/api/embed` over stdlib HTTP (exposes `embed`; pairs with `OllamaLLM` for a fully-local semantic stack).
+- `OpenAICompatibleLLM(model, *, base_url, api_key=None, timeout=60.0, post=None)` — any `/chat/completions` endpoint over stdlib HTTP.
+- `OpenAIEmbeddingLLM(model, *, base_url, api_key=None, timeout=60.0, post=None)` — any OpenAI-compatible `/embeddings` endpoint over stdlib HTTP (exposes `embed`).
+- `FallbackLLM(primary, *fallbacks, retry_on=...)` — tries the primary model, falling back to the next provider on `ProviderError` (e.g. a cloud outage degrades to a local Ollama model); RFC-0017.
+- `SentenceTransformerEmbedder(model_name)` — real semantic embedder backed by `sentence-transformers` (install `xyberos[embeddings]`).
 
 All are `LLMProvider`s. The SDK-based adapters raise a clear `ProviderError`
 when the underlying package is not installed, keeping the core dependency-free.
@@ -356,14 +398,19 @@ while run.status == "paused":
   pass them to `create_app(memory=..., knowledge=...)`. Metadata, plans, and
   values are JSON-encoded, so any JSON-serializable payload round-trips.
 
-#### `VectorMemory` / `ConsolidatingMemory` / `VectorKnowledge` / `IngestingKnowledge`
+#### `VectorMemory` / `ConsolidatingMemory` / `StratifiedMemory` / `VectorKnowledge` / `IngestingKnowledge`
 
-- **What they own:** semantic/hybrid memory (`VectorMemory`), LLM-summarizing
-  memory (`ConsolidatingMemory`), embedding-retrieved knowledge
-  (`VectorKnowledge`), and chunked document ingestion (`IngestingKnowledge`).
+- **What they own:** semantic/hybrid memory (`VectorMemory`, with
+  `retrieve_scored`), LLM-summarizing memory (`ConsolidatingMemory`, with
+  `consolidate_now`), durable-facts-plus-episodes memory (`StratifiedMemory`,
+  separating `facts` from conversational history), embedding-retrieved
+  knowledge (`VectorKnowledge`, with `query_scored`), and chunked document
+  ingestion (`IngestingKnowledge`).
 - **When to use them:** retrieval-based, "learn by accumulation" memory and
   knowledge over a `VectorStore`; pass an `embedder` (callable or any object
-  with `embed(text)`).
+  with `embed(text)`). `StratifiedMemory` pairs with
+  `extract_facts_deterministic(prompt, response)` (RFC-0018 M7) to lift durable
+  facts out of a conversation.
 
 ### `xyberos.intent`
 
@@ -425,7 +472,15 @@ while run.status == "paused":
 
 `ChromaVectorStore` and `PgVectorStore` adapters are optional (install
 `xyberos[vectors]`); they lazy-import their backend and raise a clear
-`ProviderError` when it is missing.
+`ProviderError` when it is missing. All cosine stores expose `clear_all()` to
+drop every namespace and vector.
+
+#### Rerankers
+
+- `Reranker` — the abstract `rerank(query, hits)` contract.
+- `ScoreReranker` — a no-op reranker that preserves similarity order.
+- `LexicalReranker` — an optional TF-IDF reranker (install `xyberos[rerank]`)
+  that boosts hits sharing lexical terms with the query.
 
 ### `xyberos.experience`
 
@@ -446,11 +501,68 @@ while run.status == "paused":
 ### `xyberos.learning`
 
 - **What it owns:** `promote_successful(experience)`, `demote_failed(experience)`,
-  `to_examples(episodes, field=...)` helpers, and `ExamplePromoter`.
+  `to_examples(episodes, field=...)` helpers, `ExamplePromoter`, and
+  `KnowledgePromoter`.
 - **When to use it:** turning recorded episodes into training examples for the
   trainable providers. `ExamplePromoter(experience, intent_engine=..., planner=...)`
   automates `promote()` — feeding successful episodes into the intent engine and
-  adaptive planner via `learn`.
+  adaptive planner via `learn`. `KnowledgePromoter(experience, knowledge)`
+  auto-ingests positively-rated `prompt → response` pairs into a
+  `VectorKnowledge` (idempotent per episode).
+
+### `xyberos.router`
+
+The hybrid responder chain (RFC-0017): a confidence-gated sequence of tiers
+that answers cheap requests without the LLM and escalates the rest. It is a
+pure optimization layer — when every tier declines, the Brain falls through to
+its normal LLM path.
+
+#### `build_router(llm=None, tool_runner=None, knowledge=None, memory=None, cache=None, cache_store=None, cache_embedder=None, templates=None, fallback=None, degrade="refusal", capabilities=None)`
+
+Assembles a `ResponderChain` from whatever dependencies you supply — a tier is
+only added when its provider is present. Cheapest tier first: template → tool →
+knowledge → memory → cache → LLM, with a `DegradedResponder` fallback when no
+LLM tier exists.
+
+#### `ResponderChain`
+
+- **What it owns:** an ordered list of `Responder`s, a confidence threshold,
+  and an optional fallback.
+- **When to use it:** routing a request through the tiers — `respond(context)`
+  returns the first confident answer, `respond_cheap(context)` runs only the
+  LLM-free tiers, and `is_llm_free` reports whether any tier needs a model.
+  `get_threshold(name)` / `set_threshold(name, value)` tune per-tier gates.
+
+#### Responders
+
+- `TemplateResponder` — pattern/template matches, zero model calls.
+- `ToolResponder` — a genuine tool match (intent target or name in prompt).
+- `KnowledgeResponder` — a top knowledge fact clearing a confidence gate.
+- `MemoryResponder` — the most-similar past Q→A clearing a gate.
+- `CacheResponder(store=None, embedder=None, threshold=0.9, top_k=1)` — answers
+  near-identical taught `prompt → answer` pairs; `teach` / `teach_batch` grow
+  the cache, `size` reports it.
+- `LLMResponder` — enriched-prompt LLM generation (always answers).
+- `DegradedResponder` — final fallback with `"offline"` / `"refusal"` /
+  `"human"` policies when no LLM tier is present.
+
+#### Learning & tuning
+
+- `CacheTeacher(cache, events=None)` — warms the cache from `RESPONSE_PRODUCED`
+  and LLM `RESPONDER_HIT` events (`cache`, `taught`).
+- `TierMonitor(events=None, tuner=None, window=100)` — per-tier hit/escalation
+  dashboard (`summary`, `hit_rate`, `cheap_hit_rate`).
+- `TuningLoop(monitor, experience, interval=30.0)` — background gate tuning from
+  recorded feedback (`start` / `stop`).
+- `EscalationTuner(chain, ...)` — bandit-style gate tuning (`record_hit`, `tune`).
+- `CalibratedResponder(responder, calibrator)` — calibrates a tier's confidence
+  (RFC-0018 M13).
+- `GroundingResponder(responder, checker)` — escalates ungrounded answers
+  (RFC-0018 M12).
+
+Wire it with `create_app(router=build_router(...))` or
+`create_semantic_app(router="hybrid")` (the string form also wires a
+`CacheTeacher`).
 
 ### `xyberos.trainer`
 
@@ -480,7 +592,17 @@ while run.status == "paused":
 - **What it owns:** a typed callable, its JSON schema, and argument coercion.
 - **When to use it:** wrapping a plain typed function as a `Tool`. `schema`
   describes the parameters; `execute` validates/coerces arguments and raises
-  `ToolArgumentError` for missing, unknown, or mistyped arguments.
+  `ToolArgumentError` for missing, unknown, or mistyped arguments. The helpers
+  `build_json_schema(func)` and `coerce_arguments(func, arguments)` expose the
+  schema generation and coercion directly.
+
+#### `SchemaToolCaller`
+
+- **What it owns:** an `LLMProvider` and a `ToolRegistry`.
+- **When to use it:** schema-driven LLM tool selection (RFC-0018 M9) — the LLM
+  picks a tool and arguments from the registered tools' JSON schemas, then the
+  caller validates and executes it (`select(prompt, context)`, `run(prompt,
+  context)`).
 
 ### `xyberos.plugins`
 
@@ -588,7 +710,9 @@ RFC-0016 adds `INTENT_CLASSIFIED` (`brain.intent_classified`, data: `intent`,
 `confidence`), `EPISODE_RECORDED` (`brain.episode_recorded`), `FEEDBACK_RECORDED`
 (`brain.feedback_recorded`), and the plan-loop events `PLAN_STEP_EXECUTED`,
 `PLAN_STEP_FAILED`, and `PLAN_REPLANNED`; `ENGINE_TRAINED`/`ENGINE_REFRESHED`
-remain future-facing.
+remain future-facing. RFC-0017 adds the router events `RESPONDER_HIT`
+(`brain.responder_hit`), `ESCALATED` (`brain.escalated`), `DEGRADED`
+(`brain.degraded`), and `CACHE_HIT` (`brain.cache_hit`).
 
 ```python
 from xyberos import create_app
@@ -630,9 +754,13 @@ tracing backend is just a function.
   `InMemoryAuditStore` is the default; `SqliteAuditStore` (stdlib `sqlite3`)
   persists the audit trail across restarts with no extra dependencies.
 - **When to use them:** enable persistence with
-  `create_app(config={"security.audit_path": "audit.db"})`, or construct
-  `Security(audit_store=SqliteAuditStore("audit.db"))` directly. Any object
-  with `append(entry)` / `entries()` can be a custom store (plugin or remote).
+  `create_app(config={"security.audit_path": "audit.db"})` (registers the store
+  as the `"security.audit_store"` service, so `app.stop()` closes it), or
+  construct `Security(audit_store=SqliteAuditStore("audit.db"))` directly and
+  inspect it via the `Security.audit_store` property. Any object with
+  `append(entry)` / `entries()` can be a custom store (plugin or remote). The
+  `Security` facade also exposes `engage_kill_switch(reason, mode=...)` and
+  `disengage_kill_switch()` helpers that audit and emit `security.*` events.
 
 ### `xyberos.diagnostics`
 
@@ -641,12 +769,35 @@ tracing backend is just a function.
 
 **When to use it:** debugging an app or inspecting its runtime state.
 
+`DiagnosticReport` is a frozen dataclass with `package_version`,
+`python_version`, `app_created`, `kernel_started`, `kernel_services` (a tuple
+of registered service names), and `plugin_names` (loaded plugins);
+`report.as_dict()` returns a JSON-serializable mapping for logging or
+submitting to support.
+
+### Optional extras
+
+The core is dependency-free, but optional capabilities install via extras:
+
+- `pip install xyberos[train]` — scikit-learn + joblib (sklearn intent training).
+- `pip install xyberos[vectors]` — chromadb, pgvector, psycopg (optional stores).
+- `pip install xyberos[rerank]` — scikit-learn (TF-IDF reranking).
+- `pip install xyberos[embeddings]` — sentence-transformers (`SentenceTransformerEmbedder`).
+- `pip install xyberos[dev]` — pytest + coverage.
+
+The package ships a `py.typed` marker, so type checkers see the inline types.
+
 ### `xyberos.utils`
 
 - `retry(func, max_attempts=3, backoff=0.1, retry_on=Exception, on_retry=None)` - call `func` with exponential backoff.
 - `RateLimiter(calls_per_second, burst=1)` - a token-bucket limiter with `acquire()` / `try_acquire()`.
 - `with_timeout(seconds, func)` - run `func` with a best-effort timeout (daemon thread).
 - `RetryError` - raised when retries are exhausted.
+- `GroundingCheck(reference, ...)` / `GroundingResult` - verify a response
+  against reference knowledge (`verify(prompt, response)` returns
+  `GroundingResult(grounded, confidence, reason)`); RFC-0018 M12.
+- `ScoreCalibrator` - Platt-scale score→confidence calibration
+  (`fit`, `calibrate`, `is_fitted`, `coefficients`); RFC-0018 M13.
 
 Evaluation helpers (RFC-0016, Phase 2):
 - `intent_accuracy(engine, dataset)` - top-1 intent classification accuracy over
@@ -659,6 +810,9 @@ Evaluation helpers (RFC-0016, Phase 2):
 **When to use it:** wrapping LLM or tool calls for resilience, or via the Brain
 config keys (`brain.max_attempts`, `brain.retry_backoff`, `brain.rate_limit`,
 `brain.timeout`); evaluating whether the trainable engines actually improve.
+All SQLite-backed providers use `utils.sqlite.ThreadLocalSQLite` under the hood,
+which keeps one `sqlite3` connection per thread so they are safe to call from
+FastAPI/thread pools.
 
 ## Common Patterns
 

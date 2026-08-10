@@ -31,19 +31,26 @@ v1.0
 
 ---
 
-# Current Implementation Status (v0.9.0)
+# Current Implementation Status (v1.0.x)
 
-All subsystems from v0.1–v0.9 are implemented. The `Brain` orchestrates them
-through an automated pipeline for every request:
+All subsystems from v0.1–v1.0 (RFC-0001…RFC-0015) are implemented, and the
+RFC-0016 trainable engines and RFC-0017/0018 hybrid router are shipped on top.
+The `Brain` orchestrates them through an automated pipeline for every request:
 
 ```text
 Workflow (optional)
+  ↓
+Cheap-first router tiers (template → tool → knowledge → memory → cache)
   ↓
 Memory (retrieve)
   ↓
 Knowledge (query)
   ↓
+Intent (classify, if enabled)
+  ↓
 Planner (record plan)
+  ↓
+Router (confident tier short-circuits)
   ↓
 Tools (dispatch)
   ↓
@@ -55,7 +62,7 @@ Memory (store)
 The default `create_app()` wires in-memory providers for every subsystem, so a
 default app remembers conversations, grounds prompts in knowledge, records a
 plan on the context, and dispatches tools automatically. The repository test
-suite (105 tests, 98% coverage) is the authoritative description of current
+suite (533 tests, 89% coverage) is the authoritative description of current
 behavior.
 
 ---
@@ -116,8 +123,9 @@ Status: implemented in v0.9.0.
 - [x] The existing `contracts/workflow.py` contract is unchanged;
       `GraphWorkflow` implements it (`run` returns the final context and raises
       `WorkflowPaused` on pause).
-- [ ] Optional: automatic checkpoints that persist paused runs to disk and
-      resume across processes (build on the SQLite providers from item 2).
+- [x] Automatic checkpoints that persist paused runs to disk and resume across
+      processes — `WorkflowCheckpoint` + `GraphWorkflow.resume_from_checkpoint(...)`
+      (builds on the SQLite providers from item 2).
 
 ## 4. Streaming and async
 
@@ -182,8 +190,9 @@ Status: implemented in v0.9.0.
       and raises `ToolArgumentError` for missing/unknown/mistyped arguments.
 - [x] Typed exceptions — `LLMOutputError`/`StructuredOutputError` and
       `ToolArgumentError` exported from `xyberos.exceptions`.
-- [ ] Optional: schema-driven LLM function calling (auto-generate tool calls
-      from `FunctionTool.schema`) and async structured output.
+- [x] Schema-driven LLM function calling — `SchemaToolCaller` auto-generates
+      tool calls from registered `FunctionTool.schema`s (RFC-0018 M9).
+- [ ] Optional: async structured output.
 
 ## 8. Production hardening
 
@@ -236,6 +245,9 @@ tested, and integrated:
 | RFC-0013 | Plugins | ✅ |
 | RFC-0014 | Events | ✅ |
 | RFC-0015 | Security | ✅ |
+| RFC-0016 | Trainable Cognitive Engines | ✅ |
+| RFC-0017 | LLM-as-Fallback & Self-Routing | ✅ |
+| RFC-0018 | Smarter Learning | ✅ |
 
 The public API, contracts, and event names are stable. The core stays on the 1.x
 line and is **extended additively** — new contracts and providers may be added
@@ -249,17 +261,20 @@ capabilities (see RFC-0016).
 > fine-tuning is an optional Phase-3 plugin. Phases 0–3 complete. See
 > `docs/RFCs/RFC-0016-trainable-cognitive-engines.md`.
 
-> **RFC-0017 (Draft)** — *LLM-as-Fallback & Self-Routing*: a confidence-gated chain of
-> responders — rules/policies → knowledge → memory → distilled cache → local model →
-> cloud LLM → degrade — so the LLM becomes the last resort and teacher instead of the
-> primary generator. Adds `Responder`/`Router` contracts, `FallbackLLM` (cloud → local),
-> a response cache, and escalation learning, all default-off. See
-> `docs/RFCs/RFC-0017-llm-fallback-router.md`.
+> **RFC-0017 (Implemented)** — *LLM-as-Fallback & Self-Routing*: a confidence-gated
+> `xyberos.router` package — `ResponderChain`, `build_router`, the template/tool/
+> knowledge/memory/cache/LLM/degraded responders, `CacheTeacher`, `TierMonitor`,
+> `TuningLoop`, `EscalationTuner`, `CalibratedResponder`, and `GroundingResponder` —
+> so the LLM becomes the last resort and teacher instead of the primary generator.
+> Wire it with `create_app(router=...)` or `create_semantic_app(router="hybrid")`;
+> all default-off. See `docs/RFCs/RFC-0017-llm-fallback-router.md`.
 
-> **RFC-0018 (Draft)** — *Smarter Learning*: auto-outcome signals, a first-class eval
-> workflow, immediate reinforcement, schema-driven tool calling, self-expanding knowledge,
-> memory stratification, grounding/reflection, and reranking/confidence calibration. Ships
-> before RFC-0017 to populate and measure the stores the router routes over. See
+> **RFC-0018 (Implemented)** — *Smarter Learning*: auto-outcome signals and the eval
+> workflow (`xyberos.utils.eval`), immediate reinforcement (`ExamplePromoter`,
+> `KnowledgePromoter`), schema-driven tool calling (`SchemaToolCaller`), self-expanding
+> knowledge, memory stratification (`StratifiedMemory`, `extract_facts_deterministic`),
+> grounding (`GroundingCheck`, `GroundingResponder`), reranking (`LexicalReranker`), and
+> confidence calibration (`ScoreCalibrator`, `CalibratedResponder`). See
 > `docs/RFCs/RFC-0018-smarter-learning.md`.
 
 > **Build order (RFC-0017 + RFC-0018)** — one shared, ordered milestone sequence
