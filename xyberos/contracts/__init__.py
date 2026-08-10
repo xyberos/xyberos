@@ -8,6 +8,8 @@ from .llm import LLMProvider
 from .memory import Memory, MemoryProvider
 from .planner import Planner
 from .plugin import Plugin
+from .responder import Responder, Template
+from .router import Router
 from .service import Service
 from .tool import Tool
 from .vector import ScoredHit, VectorStore
@@ -28,8 +30,11 @@ __all__ = [
     "MemoryProvider",
     "Planner",
     "Plugin",
+    "Responder",
+    "Router",
     "ScoredHit",
     "Service",
+    "Template",
     "Tool",
     "VectorStore",
     "Workflow",

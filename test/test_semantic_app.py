@@ -1,7 +1,7 @@
 """Tests for create_semantic_app — the one-line persistent setup (RFC-0016)."""
 
 from xyberos import create_semantic_app
-from xyberos.intent import EmbeddingIntentEngine
+from xyberos.intent import CascadeIntentEngine
 from xyberos.knowledge import VectorKnowledge
 from xyberos.llm import CallableLLM
 from xyberos.memory import VectorMemory
@@ -27,7 +27,7 @@ def test_create_semantic_app_wires_vector_engines():
         store=CosineVectorStore(),
     )
 
-    assert isinstance(app.intent, EmbeddingIntentEngine)
+    assert isinstance(app.intent, CascadeIntentEngine)
     assert isinstance(app.memory, VectorMemory)
     assert isinstance(app.knowledge, VectorKnowledge)
     assert isinstance(app.planner, AdaptivePlanner)

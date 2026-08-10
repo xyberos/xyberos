@@ -10,6 +10,7 @@ from ..contracts.intent import IntentEngine
 from ..contracts.knowledge import KnowledgeProvider
 from ..contracts.memory import MemoryProvider
 from ..contracts.planner import Planner
+from ..contracts.router import Router
 from ..contracts.workflow import Workflow
 from ..events import EventBus
 from ..events.names import (
@@ -73,6 +74,7 @@ class Brain:
         security: Security | None = None,
         intent: IntentEngine | None = None,
         experience: ExperienceStore | None = None,
+        router: Router | None = None,
     ) -> None:
         self.llm = llm or EchoLLM()
         self.logger = logger
@@ -86,6 +88,7 @@ class Brain:
         self.security = security
         self.intent = intent
         self.experience = experience
+        self.router = router
         self._inject_plan = bool(config.get("brain.inject_plan", False)) if config is not None else False
         self._intent_enabled = (
             bool(config.get("brain.intent", False)) if config is not None else False
@@ -187,6 +190,17 @@ class Brain:
             context = result
 
         enriched = self._enrich_prompt(context, prompt)
+
+        # A configured router gets the next crack: run the cheapest confident
+        # tier (template → rules → tools → knowledge → memory → cache →
+        # local → cloud → degrade). A router hit short-circuits exactly like a
+        # workflow or tool response today; when the router declines (None), the
+        # pipeline falls through to the normal tool dispatch and LLM path, so
+        # the router is a pure optimization layer (RFC-0017).
+        if self.router is not None:
+            response = self.router.respond(context)
+            if response is not None:
+                return _Prepared(context=context, prompt=enriched, short_response=response)
 
         if self.tool_runner is not None:
             try:

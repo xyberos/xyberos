@@ -12,11 +12,12 @@ from .contracts.knowledge import KnowledgeProvider
 from .contracts.memory import MemoryProvider
 from .contracts.planner import Planner
 from .contracts.plugin import Plugin
+from .contracts.router import Router
 from .contracts.vector import VectorStore
 from .contracts.workflow import Workflow
 from .events import FEEDBACK_RECORDED, EventBus
 from .experience import InMemoryExperience
-from .intent import EmbeddingIntentEngine, HeuristicIntentEngine
+from .intent import HeuristicIntentEngine, build_intent_cascade
 from .kernel.config import Config
 from .kernel.kernel import Kernel
 from .kernel.logger import Logger
@@ -51,6 +52,7 @@ class Xyberos:
         tool_runner: ToolRunner | None = None,
         intent: IntentEngine | None = None,
         experience: ExperienceStore | None = None,
+        router: Router | None = None,
     ) -> None:
         self.kernel = Kernel(config)
         self.kernel.register("llm", llm or EchoLLM())
@@ -63,6 +65,8 @@ class Xyberos:
         self.kernel.register("workflow", workflow or SequentialWorkflow())
         self.kernel.register("intent", intent or HeuristicIntentEngine())
         self.kernel.register("experience", experience or InMemoryExperience())
+        if router is not None:
+            self.kernel.register("router", router)
         self.brain = self.kernel.inject(Brain, security=self.kernel.security)
         self.kernel.register("brain", self.brain)
         self.runtime = self.kernel.inject(Runtime, security=self.kernel.security)
@@ -256,6 +260,7 @@ def create_app(
     tool_runner: ToolRunner | None = None,
     intent: IntentEngine | None = None,
     experience: ExperienceStore | None = None,
+    router: Router | None = None,
 ) -> Xyberos:
     """Build a ready-to-use Xyberos application."""
     return Xyberos(
@@ -269,6 +274,7 @@ def create_app(
         workflow=workflow,
         intent=intent,
         experience=experience,
+        router=router,
     )
 
 
@@ -282,6 +288,7 @@ def create_semantic_app(
     tools: ToolRegistry | None = None,
     workflow: Workflow | None = None,
     tool_runner: ToolRunner | None = None,
+    router: Router | None = None,
 ) -> Xyberos:
     """Build a ready-to-use app backed by one shared, persistent VectorStore.
 
@@ -305,12 +312,18 @@ def create_semantic_app(
         llm=llm,
         memory=VectorMemory(store, embedder=embedder),
         knowledge=VectorKnowledge(store, embedder=embedder),
-        intent=EmbeddingIntentEngine(store, embedder=embedder),
+        intent=build_intent_cascade(
+            store=store,
+            embedder=embedder,
+            llm=llm,
+            threshold=float(effective_config.get("intent.threshold", 0.9)),
+        ),
         planner=AdaptivePlanner(llm, store=store, embedder=embedder),
         tools=tools,
         tool_runner=tool_runner,
         workflow=workflow,
         experience=experience,
+        router=router,
     )
 
 

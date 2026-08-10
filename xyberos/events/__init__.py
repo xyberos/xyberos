@@ -13,9 +13,12 @@ Subscribe to pipeline and lifecycle events to observe or extend Xyberos::
 from .bus import Event, EventBus
 from .names import (
     BRAIN_ERROR,
+    CACHE_HIT,
+    DEGRADED,
     ENGINE_REFRESHED,
     ENGINE_TRAINED,
     EPISODE_RECORDED,
+    ESCALATED,
     FEEDBACK_RECORDED,
     INTENT_CLASSIFIED,
     KERNEL_STARTED,
@@ -32,6 +35,7 @@ from .names import (
     REQUEST_COMPLETED,
     REQUEST_FAILED,
     REQUEST_STARTED,
+    RESPONDER_HIT,
     RESPONSE_PRODUCED,
     SECURITY_GUARDRAIL_TRIGGERED,
     SECURITY_KILL_DISENGAGED,
@@ -45,9 +49,12 @@ from .tracing import EventRecorder, Exporter, LoggingExporter
 
 __all__ = [
     "BRAIN_ERROR",
+    "CACHE_HIT",
+    "DEGRADED",
     "ENGINE_REFRESHED",
     "ENGINE_TRAINED",
     "EPISODE_RECORDED",
+    "ESCALATED",
     "Event",
     "EventBus",
     "EventRecorder",
@@ -69,6 +76,7 @@ __all__ = [
     "REQUEST_COMPLETED",
     "REQUEST_FAILED",
     "REQUEST_STARTED",
+    "RESPONDER_HIT",
     "RESPONSE_PRODUCED",
     "SECURITY_GUARDRAIL_TRIGGERED",
     "SECURITY_KILL_DISENGAGED",

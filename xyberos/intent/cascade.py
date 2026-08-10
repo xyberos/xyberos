@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from typing import Any
+
 from ..contracts.intent import Intent, IntentEngine
 
 
@@ -10,7 +13,9 @@ class CascadeIntentEngine(IntentEngine):
 
     Engines that return low confidence are skipped so a cheap heuristic or
     embedding engine can hand off to a stronger LLM engine, with a deterministic
-    fallback when nothing is confident.
+    fallback when nothing is confident. ``learn`` is forwarded to every
+    sub-engine that supports it, so ``app.intent.learn(...)`` keeps working when
+    a cascade is installed (RFC-0017, M8).
     """
 
     def __init__(
@@ -38,3 +43,22 @@ class CascadeIntentEngine(IntentEngine):
             if intent.confidence >= self._threshold:
                 return intent
         return Intent(name=self._fallback, confidence=0.0, target=self._default_target)
+
+    def learn(
+        self,
+        name: str,
+        example: str,
+        *,
+        target: str | None = None,
+        params: Mapping[str, Any] | None = None,
+    ) -> None:
+        """Forward ``learn`` to every sub-engine that supports it.
+
+        The embedding engine learns labeled examples by accumulation; this keeps
+        ``app.intent.learn(...)`` working when a cascade is installed.
+        Engines without a ``learn`` method are skipped.
+        """
+        for engine in self._engines:
+            learn = getattr(engine, "learn", None)
+            if callable(learn):
+                learn(name, example, target=target, params=params)

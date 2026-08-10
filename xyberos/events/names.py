@@ -37,6 +37,12 @@ FEEDBACK_RECORDED = "brain.feedback_recorded"
 ENGINE_TRAINED = "engine.trained"
 ENGINE_REFRESHED = "engine.refreshed"
 
+# Hybrid-router events (RFC-0017)
+RESPONDER_HIT = "brain.responder_hit"
+ESCALATED = "brain.escalated"
+DEGRADED = "brain.degraded"
+CACHE_HIT = "brain.cache_hit"
+
 # Security lifecycle
 SECURITY_KILL_ENGAGED = "security.kill_engaged"
 SECURITY_KILL_DISENGAGED = "security.kill_disengaged"
