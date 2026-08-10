@@ -12,13 +12,13 @@ observability, and security. Every subsystem is swappable through stable
 contracts. The core has **zero runtime dependencies**.
 
 ```text
-                 ┌──────────────────────────────┐
-                 │          Kernel               │
-                 │  Config · Logger · Registry   │
+                 ┌────────────────────────────────┐
+                 │          Kernel                │
+                 │  Config · Logger · Registry    │
                  │  EventBus · Plugins · Security │
-                 └──────────────┬───────────────┘
+                 └──────────────┬─────────────────┘
                                 │
-    ┌───────────────┐  ┌────────┴────────┐  ┌───────────────┐
+    ┌───────────────┐  ┌────────┴─────────┐  ┌───────────────┐
     │    Runtime    │  │     Brain        │  │   Contracts   │
     │  sync · async │  │  Pipeline Engine │  │ 15 interfaces │
     └───────┬───────┘  └────────┬─────────┘  └───────────────┘

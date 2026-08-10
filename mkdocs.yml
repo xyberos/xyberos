@@ -63,6 +63,7 @@ nav:
   - Home: index.md
   - Tutorial: tutorial.md
   - Training Tutorial: training-tutorial.md
+  - Knowledge Ingestion: knowledge-ingestion.md
   - Guides:
       - Configuring Services: configuring-services.md
       - Extension Surfaces: extensions.md

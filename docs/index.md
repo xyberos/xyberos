@@ -1,7 +1,7 @@
 # Documentation
 
 This is the documentation index for **Xyberos**. For the project overview, install
-instructions, and quick start, see the [repository README](https://github.com/xyberos/xyberos/blob/main/README.md).
+instructions, and quick start, see the [repository README](https://github.com/xyberos/xyberos/blob/master/README.md).
 
 ## Start Here
 
@@ -9,17 +9,18 @@ instructions, and quick start, see the [repository README](https://github.com/xy
 - [Configuring Services](configuring-services.md) — explicit, factory, and plugin approaches
 - [Tutorial](tutorial.md)
 - [Training Tutorial](training-tutorial.md) — capture, feedback, learn, evaluate, and distill
+- [Knowledge Ingestion](knowledge-ingestion.md) — index documents, files, and URLs
 - [API Reference](api-reference.md)
 - [Lifecycle and Service Behavior](lifecycle.md)
 - [Architecture RFCs](RFCs/RFC-Roadmap.md)
 
 ## Examples
 
-- [Hello World to Full Stack](https://github.com/xyberos/xyberos/blob/main/examples/hello_world_to_full_stack/README.md) - one runnable script that grows from a one-liner into a full-stack app
-- [Chat App](https://github.com/xyberos/xyberos/blob/main/examples/chat_app/README.md) - a real FastAPI + SQLAlchemy backend with pluggable auto-discovery
-- [`examples/minimal_chat.py`](https://github.com/xyberos/xyberos/blob/main/examples/minimal_chat.py) - the shortest possible chat
-- [`examples/extended_app.py`](https://github.com/xyberos/xyberos/blob/main/examples/extended_app.py) - a broad walkthrough of the app API
-- [`examples/support_assistant/`](https://github.com/xyberos/xyberos/blob/main/examples/support_assistant/README.md) - every subsystem in one service
+- [Hello World to Full Stack](https://github.com/xyberos/xyberos/blob/master/examples/hello_world_to_full_stack/README.md) - one runnable script that grows from a one-liner into a full-stack app
+- [Chat App](https://github.com/xyberos/xyberos/blob/master/examples/chat_app/README.md) - a real FastAPI + SQLAlchemy backend with pluggable auto-discovery
+- [`examples/minimal_chat.py`](https://github.com/xyberos/xyberos/blob/master/examples/minimal_chat.py) - the shortest possible chat
+- [`examples/extended_app.py`](https://github.com/xyberos/xyberos/blob/master/examples/extended_app.py) - a broad walkthrough of the app API
+- [`examples/support_assistant/`](https://github.com/xyberos/xyberos/blob/master/examples/support_assistant/README.md) - every subsystem in one service
 
 ## RFC Set
 

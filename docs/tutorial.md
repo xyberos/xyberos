@@ -538,7 +538,7 @@ print(app.run("build a report").plan)      # ['research', 'draft', 'review']
 - **Run the finished example.** The repo ships a complete, runnable version of
   exactly this app — a FastAPI support assistant with order lookup, refund
   approval, escalation, streaming, events, and hardening — in
-  [`examples/support_assistant/`](https://github.com/xyberos/xyberos/blob/main/examples/support_assistant/README.md).
+  [`examples/support_assistant/`](https://github.com/xyberos/xyberos/blob/master/examples/support_assistant/README.md).
   Try its zero-setup smoke test (`python smoke_test.py`).
 - **Make it learn.** Turn successful conversations into training data and let
   the bot improve over time — see the [Training Tutorial](training-tutorial.md).
@@ -654,4 +654,4 @@ print(app.run_agents("help", agent_names=["supervisor", "support_worker"]).respo
 
 > The full, production-shaped version of this file — FastAPI server, streaming,
 > events, checkpointing across restarts — is in
-> [`examples/support_assistant/`](https://github.com/xyberos/xyberos/blob/main/examples/support_assistant/README.md).
+> [`examples/support_assistant/`](https://github.com/xyberos/xyberos/blob/master/examples/support_assistant/README.md).

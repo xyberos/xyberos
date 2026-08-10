@@ -3,7 +3,7 @@
 Three approaches to wire up services (LLM, tools, knowledge, memory, etc.) in
 Xyberos, from simplest to most decoupled.
 
-The runnable version lives at [`examples/configuring_services.py`](https://github.com/xyberos/xyberos/blob/main/examples/configuring_services.py).
+The runnable version lives at [`examples/configuring_services.py`](https://github.com/xyberos/xyberos/blob/master/examples/configuring_services.py).
 
 ---
 
