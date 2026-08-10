@@ -304,16 +304,28 @@ class Brain:
         return sink
 
     def _resilient_llm(self, func: Any) -> Any:
-        """Apply rate limiting, timeout, and retries around an LLM call."""
+        """Apply rate limiting, timeout, and retries around an LLM call.
+
+        The timeout is applied as a *global deadline around the whole retry
+        loop* (``with_timeout`` is the outermost wrapper): all retry attempts
+        share one budget and at most one background worker thread is spawned
+        per LLM call.
+
+        Each wrapper captures its predecessor via a default argument (``_f=…``)
+        so the lambdas *compose* instead of recursively capturing the mutable
+        ``wrapped`` variable — a late-binding bug that previously made the
+        wrappers call themselves, spawning unbounded threads (or recursing)
+        whenever both ``brain.timeout`` and ``brain.max_attempts`` were set.
+        """
         if self._rate_limiter is not None:
             self._rate_limiter.acquire()
         wrapped = func
-        if self._timeout > 0:
-            inner = wrapped
-            wrapped = lambda: with_timeout(self._timeout, inner)  # noqa: E731
         if self._max_attempts > 1:
-            inner = wrapped
-            wrapped = lambda: retry(inner, max_attempts=self._max_attempts, backoff=self._retry_backoff)  # noqa: E731
+            wrapped = lambda _f=wrapped: retry(  # noqa: E731
+                _f, max_attempts=self._max_attempts, backoff=self._retry_backoff
+            )
+        if self._timeout > 0:
+            wrapped = lambda _f=wrapped: with_timeout(self._timeout, _f)  # noqa: E731
         return wrapped()
 
     def _resilient_tool(self, func: Any) -> Any:

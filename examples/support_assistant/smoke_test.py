@@ -81,6 +81,10 @@ if importlib.util.find_spec("httpx") is not None:
     check("health", client.get("/health").json()["status"] == "ok")
     chat = client.post("/chat", json={"prompt": "status of A-100"}).json()
     check("chat tool", chat["tool"] == "lookup_order" and "shipped" in chat["response"])
+    # A prompt with no order id runs the full pipeline, emitting a
+    # brain.response_produced event that the /events endpoint counts.
+    plain = client.post("/chat", json={"prompt": "what are your hours?"}).json()
+    check("chat pipeline", plain.get("tool") is None and plain["response_events"] >= 1)
     refund = client.post("/refund", json={"prompt": "refund A-200"}).json()
     check("refund paused via api", refund["status"] == "paused")
     approved = client.post(

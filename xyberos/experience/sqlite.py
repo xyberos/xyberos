@@ -11,6 +11,7 @@ from uuid import uuid4
 
 from ..contracts.experience import Episode, ExperienceStore
 from ..contracts.intent import Intent
+from ..utils.sqlite import ThreadLocalSQLite
 
 
 def _dump(value: Any) -> str | None:
@@ -25,60 +26,55 @@ def _load(raw: str | None) -> Any:
     return json.loads(raw)
 
 
+def _create_experience_schema(connection: sqlite3.Connection) -> None:
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS experience_episodes (
+            id TEXT PRIMARY KEY,
+            prompt TEXT NOT NULL,
+            intent TEXT,
+            intent_confidence REAL,
+            plan TEXT,
+            tool_calls TEXT,
+            response TEXT,
+            outcome TEXT,
+            feedback REAL,
+            metadata TEXT,
+            created_at REAL NOT NULL
+        )
+        """
+    )
+    connection.commit()
+
+
 class SqliteExperience(ExperienceStore):
     """Persist experience episodes in a SQLite database.
 
     One row per ``record`` call; episodes survive process restarts when a file
-    path is used instead of ``:memory:``. The connection opens lazily, and
-    ``start``/``stop`` participate in the kernel lifecycle so ``app.stop()``
-    releases the database handle (mirrors :class:`~memory.sqlite.SqliteMemory`).
+    path is used instead of ``:memory:``. Connections open lazily, one per
+    thread, and ``start``/``stop`` participate in the kernel lifecycle so
+    ``app.stop()`` releases the handle (mirrors
+    :class:`~memory.sqlite.SqliteMemory`).
     """
 
     def __init__(self, path: str = ":memory:") -> None:
-        self._path = path
-        self._connection: sqlite3.Connection | None = None
-        self._ensure_connection()
-
-    def _ensure_connection(self) -> sqlite3.Connection:
-        if self._connection is None:
-            connection = sqlite3.connect(self._path)
-            connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS experience_episodes (
-                    id TEXT PRIMARY KEY,
-                    prompt TEXT NOT NULL,
-                    intent TEXT,
-                    intent_confidence REAL,
-                    plan TEXT,
-                    tool_calls TEXT,
-                    response TEXT,
-                    outcome TEXT,
-                    feedback REAL,
-                    metadata TEXT,
-                    created_at REAL NOT NULL
-                )
-                """
-            )
-            connection.commit()
-            self._connection = connection
-        return self._connection
+        # One connection per thread (sqlite3 connections are thread-bound).
+        self._db = ThreadLocalSQLite(path, initialize=_create_experience_schema)
 
     def start(self) -> None:
         """Open the database connection (kernel lifecycle hook)."""
-        self._ensure_connection()
+        self._db.connection()
 
     def stop(self) -> None:
         """Close the database connection (kernel lifecycle hook)."""
         self.close()
 
     def close(self) -> None:
-        """Close the underlying database connection."""
-        if self._connection is not None:
-            self._connection.close()
-            self._connection = None
+        """Close the calling thread's database connection."""
+        self._db.close()
 
     def record(self, episode: Episode) -> Episode:
-        connection = self._ensure_connection()
+        connection = self._db.connection()
         episode_id = episode.id or uuid4().hex
         if not episode.id:
             episode.id = episode_id
@@ -111,7 +107,7 @@ class SqliteExperience(ExperienceStore):
         outcome: str | None = None,
         limit: int = 20,
     ) -> list[Episode]:
-        connection = self._ensure_connection()
+        connection = self._db.connection()
         clauses: list[str] = []
         params: list[Any] = []
         if intent is not None:
@@ -130,7 +126,7 @@ class SqliteExperience(ExperienceStore):
         return [_episode_from_row(row) for row in rows]
 
     def feedback(self, episode_id: str, rating: float, note: str | None = None) -> None:
-        connection = self._ensure_connection()
+        connection = self._db.connection()
         cursor = connection.execute(
             "UPDATE experience_episodes SET feedback = ? WHERE id = ?",
             (rating, episode_id),
@@ -151,7 +147,7 @@ class SqliteExperience(ExperienceStore):
         connection.commit()
 
     def stats(self) -> Mapping[str, Any]:
-        connection = self._ensure_connection()
+        connection = self._db.connection()
         total = connection.execute("SELECT COUNT(*) FROM experience_episodes").fetchone()[0]
         by_outcome = {
             row[0]: row[1]

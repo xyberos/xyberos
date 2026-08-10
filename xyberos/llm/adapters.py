@@ -14,6 +14,7 @@ import importlib
 import json
 import urllib.request
 from collections.abc import Callable
+from functools import partial
 from typing import Any
 
 from ..exceptions.provider import ProviderError
@@ -30,15 +31,27 @@ def require(package: str, pip_name: str | None = None) -> Any:
         ) from exc
 
 
-def _default_post(url: str, payload: dict[str, Any], headers: dict[str, Any]) -> dict[str, Any]:
-    """POST ``payload`` as JSON and return the parsed JSON response."""
+def _default_post(
+    url: str,
+    payload: dict[str, Any],
+    headers: dict[str, Any],
+    *,
+    timeout: float = 60.0,
+) -> dict[str, Any]:
+    """POST ``payload`` as JSON and return the parsed JSON response.
+
+    ``timeout`` bounds each blocking socket operation (connect/read), so an
+    unreachable or stalled server raises instead of blocking forever — which
+    otherwise turns a missing model server into a hung process and runaway
+    background threads.
+    """
     request = urllib.request.Request(
         url,
         data=json.dumps(payload).encode("utf-8"),
         headers=headers,
         method="POST",
     )
-    with urllib.request.urlopen(request) as response:
+    with urllib.request.urlopen(request, timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8"))
 
 
@@ -59,16 +72,20 @@ class OpenAICompatibleLLM:
         *,
         base_url: str,
         api_key: str | None = None,
+        timeout: float = 60.0,
         post: PostCallable | None = None,
     ) -> None:
         if not isinstance(model, str) or not model.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise ValueError("model must be a non-empty string")
         if not base_url:
             raise ValueError("base_url must be provided")
+        if timeout <= 0:
+            raise ValueError("timeout must be positive")
         self._model = model
         self._base_url = base_url.rstrip("/")
         self._api_key = api_key
-        self._post = post or _default_post
+        self._timeout = timeout
+        self._post = post or partial(_default_post, timeout=timeout)
 
     def generate(self, prompt: str) -> str:
         """Generate a chat completion for ``prompt``."""
@@ -91,13 +108,17 @@ class OllamaLLM:
         model: str = "llama3.2",
         *,
         base_url: str = "http://localhost:11434",
+        timeout: float = 60.0,
         post: PostCallable | None = None,
     ) -> None:
         if not isinstance(model, str) or not model.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise ValueError("model must be a non-empty string")
+        if timeout <= 0:
+            raise ValueError("timeout must be positive")
         self._model = model
         self._base_url = base_url.rstrip("/")
-        self._post = post or _default_post
+        self._timeout = timeout
+        self._post = post or partial(_default_post, timeout=timeout)
 
     def generate(self, prompt: str) -> str:
         """Generate text from the local Ollama server."""
@@ -119,7 +140,7 @@ class OllamaLLM:
             method="POST",
         )
         parts: list[str] = []
-        with urllib.request.urlopen(request) as response:
+        with urllib.request.urlopen(request, timeout=self._timeout) as response:
             for token in self._iter_tokens(response):
                 on_token(token)
                 parts.append(token)
@@ -266,16 +287,20 @@ class OpenAIEmbeddingLLM:
         *,
         base_url: str,
         api_key: str | None = None,
+        timeout: float = 60.0,
         post: PostCallable | None = None,
     ) -> None:
         if not isinstance(model, str) or not model.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise ValueError("model must be a non-empty string")
         if not base_url:
             raise ValueError("base_url must be provided")
+        if timeout <= 0:
+            raise ValueError("timeout must be positive")
         self._model = model
         self._base_url = base_url.rstrip("/")
         self._api_key = api_key
-        self._post = post or _default_post
+        self._timeout = timeout
+        self._post = post or partial(_default_post, timeout=timeout)
 
     def embed(self, text: str) -> list[float]:
         """Embed ``text`` into a float vector using the configured endpoint."""
@@ -302,13 +327,17 @@ class OllamaEmbeddingLLM:
         model: str = "nomic-embed-text",
         *,
         base_url: str = "http://localhost:11434",
+        timeout: float = 60.0,
         post: PostCallable | None = None,
     ) -> None:
         if not isinstance(model, str) or not model.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise ValueError("model must be a non-empty string")
+        if timeout <= 0:
+            raise ValueError("timeout must be positive")
         self._model = model
         self._base_url = base_url.rstrip("/")
-        self._post = post or _default_post
+        self._timeout = timeout
+        self._post = post or partial(_default_post, timeout=timeout)
 
     def embed(self, text: str) -> list[float]:
         """Embed ``text`` into a float vector using the local Ollama server."""

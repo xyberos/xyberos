@@ -8,7 +8,23 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from ..contracts.vector import ScoredHit, VectorStore
+from ..utils.sqlite import ThreadLocalSQLite
 from .cosine import cosine
+
+
+def _create_vector_schema(connection: sqlite3.Connection) -> None:
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS vector_entries (
+            namespace TEXT NOT NULL,
+            id TEXT NOT NULL,
+            vector TEXT NOT NULL,
+            payload TEXT,
+            PRIMARY KEY (namespace, id)
+        )
+        """
+    )
+    connection.commit()
 
 
 class SqliteVectorStore(VectorStore):
@@ -16,49 +32,28 @@ class SqliteVectorStore(VectorStore):
 
     One row per ``(namespace, id)``; vectors are stored as JSON arrays and
     scored with exact cosine similarity on query. Like the other SQLite
-    providers, the connection opens lazily and ``start``/``stop`` participate in
-    the kernel lifecycle so ``app.stop()`` releases the handle.
+    providers, connections open lazily, one per thread, and ``start``/``stop``
+    participate in the kernel lifecycle so ``app.stop()`` releases the handle.
 
     Use this instead of :class:`CosineVectorStore` so runtime-learned examples
     (intent, planner, memory, knowledge) survive process restarts.
     """
 
     def __init__(self, path: str = ":memory:") -> None:
-        self._path = path
-        self._connection: sqlite3.Connection | None = None
-        self._ensure_connection()
-
-    def _ensure_connection(self) -> sqlite3.Connection:
-        if self._connection is None:
-            connection = sqlite3.connect(self._path)
-            connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS vector_entries (
-                    namespace TEXT NOT NULL,
-                    id TEXT NOT NULL,
-                    vector TEXT NOT NULL,
-                    payload TEXT,
-                    PRIMARY KEY (namespace, id)
-                )
-                """
-            )
-            connection.commit()
-            self._connection = connection
-        return self._connection
+        # One connection per thread (sqlite3 connections are thread-bound).
+        self._db = ThreadLocalSQLite(path, initialize=_create_vector_schema)
 
     def start(self) -> None:
         """Open the database connection (kernel lifecycle hook)."""
-        self._ensure_connection()
+        self._db.connection()
 
     def stop(self) -> None:
         """Close the database connection (kernel lifecycle hook)."""
         self.close()
 
     def close(self) -> None:
-        """Close the underlying database connection."""
-        if self._connection is not None:
-            self._connection.close()
-            self._connection = None
+        """Close the calling thread's database connection."""
+        self._db.close()
 
     def upsert(
         self,
@@ -67,7 +62,7 @@ class SqliteVectorStore(VectorStore):
         vector: Sequence[float],
         payload: Mapping[str, Any] | None = None,
     ) -> None:
-        connection = self._ensure_connection()
+        connection = self._db.connection()
         connection.execute(
             "INSERT OR REPLACE INTO vector_entries (namespace, id, vector, payload) "
             "VALUES (?, ?, ?, ?)",
@@ -88,7 +83,7 @@ class SqliteVectorStore(VectorStore):
         top_k: int = 5,
         threshold: float | None = None,
     ) -> list[ScoredHit]:
-        connection = self._ensure_connection()
+        connection = self._db.connection()
         rows = connection.execute(
             "SELECT id, vector, payload FROM vector_entries WHERE namespace = ?",
             (namespace,),
@@ -104,7 +99,7 @@ class SqliteVectorStore(VectorStore):
         return scored[:top_k]
 
     def delete(self, namespace: str, id: str) -> None:
-        connection = self._ensure_connection()
+        connection = self._db.connection()
         connection.execute(
             "DELETE FROM vector_entries WHERE namespace = ? AND id = ?",
             (namespace, id),
@@ -112,7 +107,7 @@ class SqliteVectorStore(VectorStore):
         connection.commit()
 
     def clear(self, namespace: str) -> None:
-        connection = self._ensure_connection()
+        connection = self._db.connection()
         connection.execute(
             "DELETE FROM vector_entries WHERE namespace = ?",
             (namespace,),
@@ -121,7 +116,7 @@ class SqliteVectorStore(VectorStore):
 
     def clear_all(self) -> None:
         """Drop every namespace and every vector."""
-        connection = self._ensure_connection()
+        connection = self._db.connection()
         connection.execute("DELETE FROM vector_entries")
         connection.commit()
 

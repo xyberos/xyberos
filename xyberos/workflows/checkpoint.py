@@ -7,6 +7,7 @@ import sqlite3
 from typing import Any
 
 from ..runtime.context import CognitiveContext
+from ..utils.sqlite import ThreadLocalSQLite
 from .graph import WorkflowRun
 
 
@@ -49,6 +50,14 @@ def run_from_dict(data: dict[str, Any]) -> WorkflowRun:
     )
 
 
+def _create_checkpoint_schema(connection: sqlite3.Connection) -> None:
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS workflow_checkpoints "
+        "(run_id TEXT PRIMARY KEY, payload TEXT NOT NULL)"
+    )
+    connection.commit()
+
+
 class WorkflowCheckpoint:
     """Persist paused :class:`~workflows.graph.WorkflowRun` records to SQLite.
 
@@ -62,28 +71,25 @@ class WorkflowCheckpoint:
     """
 
     def __init__(self, path: str = ":memory:") -> None:
-        self._connection = sqlite3.connect(path)
-        self._connection.execute(
-            "CREATE TABLE IF NOT EXISTS workflow_checkpoints "
-            "(run_id TEXT PRIMARY KEY, payload TEXT NOT NULL)"
-        )
-        self._connection.commit()
+        # One connection per thread (sqlite3 connections are thread-bound).
+        self._db = ThreadLocalSQLite(path, initialize=_create_checkpoint_schema)
 
     def close(self) -> None:
-        """Close the underlying database connection."""
-        self._connection.close()
+        """Close the calling thread's database connection."""
+        self._db.close()
 
     def save(self, run_id: str, run: WorkflowRun) -> None:
         """Persist ``run`` under ``run_id``, replacing any existing record."""
-        self._connection.execute(
+        connection = self._db.connection()
+        connection.execute(
             "INSERT OR REPLACE INTO workflow_checkpoints (run_id, payload) VALUES (?, ?)",
             (run_id, json.dumps(run_to_dict(run), default=str)),
         )
-        self._connection.commit()
+        connection.commit()
 
     def load(self, run_id: str) -> WorkflowRun:
         """Return the run stored under ``run_id``."""
-        row = self._connection.execute(
+        row = self._db.connection().execute(
             "SELECT payload FROM workflow_checkpoints WHERE run_id = ?", (run_id,)
         ).fetchone()
         if row is None:
@@ -92,12 +98,13 @@ class WorkflowCheckpoint:
 
     def delete(self, run_id: str) -> None:
         """Remove the checkpoint stored under ``run_id``."""
-        self._connection.execute(
+        connection = self._db.connection()
+        connection.execute(
             "DELETE FROM workflow_checkpoints WHERE run_id = ?", (run_id,)
         )
-        self._connection.commit()
+        connection.commit()
 
     def list_ids(self) -> tuple[str, ...]:
         """Return all stored checkpoint ids."""
-        rows = self._connection.execute("SELECT run_id FROM workflow_checkpoints").fetchall()
+        rows = self._db.connection().execute("SELECT run_id FROM workflow_checkpoints").fetchall()
         return tuple(row[0] for row in rows)
