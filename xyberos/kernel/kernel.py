@@ -38,7 +38,7 @@ class Kernel:
             self.register("security.audit_store", audit_store)
         else:
             self.security = Security()
-        self.security._events = self.events
+        self.security.attach_events(self.events)
         self.register("security", self.security)
 
     @property

@@ -169,7 +169,7 @@ class SqliteExperience(ExperienceStore):
         return {"total": total, "by_outcome": by_outcome, "by_intent": by_intent}
 
 
-def _episode_from_row(row: tuple) -> Episode:
+def _episode_from_row(row: tuple[Any, ...]) -> Episode:
     (
         episode_id,
         prompt,

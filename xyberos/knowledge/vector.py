@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from ..contracts.knowledge import Knowledge
-from ..contracts.vector import VectorStore
+from ..contracts.vector import ScoredHit, VectorStore
 from ..llm.embeddings import embed_text
 
 
@@ -25,7 +25,7 @@ class VectorKnowledge(Knowledge):
         namespace: str = "knowledge",
         top_k: int = 5,
     ) -> None:
-        if not isinstance(store, VectorStore):
+        if not isinstance(store, VectorStore):  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise TypeError("store must be a VectorStore")
         if top_k <= 0:
             raise ValueError("top_k must be a positive integer")
@@ -53,11 +53,24 @@ class VectorKnowledge(Knowledge):
         hits = self._store.query(self._namespace, vector, top_k=self._top_k)
         if not hits:
             return ""
-        lines = []
+        lines: list[str] = []
         for hit in hits:
             payload = hit.payload or {}
             lines.append(f"- {payload.get('key', hit.id)}: {payload.get('value')}")
         return "\n".join(lines)
+
+    def query_scored(self, context: object, *, top_k: int = 1) -> list[ScoredHit]:
+        """Return the top matching facts as scored hits for confidence gating.
+
+        Unlike :meth:`query` (which formats facts for prompt injection), this
+        exposes the raw similarity scores so callers — e.g. the hybrid router's
+        ``KnowledgeResponder`` — can gate on retrieval confidence (RFC-0017).
+        """
+        prompt = getattr(context, "prompt", None)
+        if not isinstance(prompt, str) or not prompt or self._embedder is None:
+            return []
+        vector = embed_text(self._embedder, prompt)
+        return self._store.query(self._namespace, vector, top_k=top_k)
 
     def clear(self) -> None:
         """Drop every indexed fact."""

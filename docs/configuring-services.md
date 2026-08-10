@@ -43,9 +43,16 @@ app = create_app(
 
 # One-line persistent semantic app (RFC-0016) — intent/memory/knowledge/planner
 # share a SqliteVectorStore("learning.db") by default; swap store= for Chroma/PgVector.
+# Pass a real embedder for semantic matching (default HashEmbedder only matches
+# near-identical text). OllamaEmbeddingLLM = fully local, no cloud, no SDK.
 from xyberos import create_semantic_app
+from xyberos.llm import OllamaLLM, OllamaEmbeddingLLM
 
-semantic = create_semantic_app(llm=CallableLLM(lambda prompt: f"answer: {prompt}"), embedder=embedder)
+semantic = create_semantic_app(
+    llm=OllamaLLM(model="llama3.2"),
+    embedder=OllamaEmbeddingLLM(model="nomic-embed-text"),
+    router="hybrid",
+)
 
 # Persistent security audit trail — one config key
 secure = create_app(config={"security.audit_path": "audit.db"})

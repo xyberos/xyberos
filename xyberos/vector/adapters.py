@@ -9,10 +9,10 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping, Sequence
-from typing import Any
+from typing import Any, cast
 
 from ..contracts.vector import ScoredHit, VectorStore
-from ..llm.adapters import _require
+from ..llm.adapters import require
 
 
 class ChromaVectorStore(VectorStore):
@@ -33,7 +33,7 @@ class ChromaVectorStore(VectorStore):
     def _get_client(self) -> Any:
         if self._client is not None:
             return self._client
-        chromadb = _require("chromadb")
+        chromadb = require("chromadb")
         if self._persist_directory:
             self._client = chromadb.PersistentClient(path=self._persist_directory)
         else:
@@ -68,9 +68,9 @@ class ChromaVectorStore(VectorStore):
         if collection.count() == 0:
             return []
         result = collection.query(query_embeddings=[list(vector)], n_results=max(top_k, 1))
-        ids = result.get("ids") or [[]]
-        distances = result.get("distances") or [[]]
-        metadatas = result.get("metadatas") or [[]]
+        ids = cast(list[list[str]], result.get("ids") or [[]])
+        distances = cast(list[list[float]], result.get("distances") or [[]])
+        metadatas = cast(list[list[Mapping[str, Any] | None]], result.get("metadatas") or [[]])
         hits: list[ScoredHit] = []
         for item_id, distance, metadata in zip(ids[0], distances[0], metadatas[0]):
             # Chroma returns a distance (L2 by default); invert it to a similarity.
@@ -117,8 +117,8 @@ class PgVectorStore(VectorStore):
     def _get_connection(self) -> Any:
         if self._connection is not None:
             return self._connection
-        psycopg = _require("psycopg")
-        register_vector = _require("pgvector.psycopg").register_vector
+        psycopg = require("psycopg")
+        register_vector = require("pgvector.psycopg").register_vector
         connection = psycopg.connect(self._dsn)
         register_vector(connection)
         with connection.cursor() as cursor:

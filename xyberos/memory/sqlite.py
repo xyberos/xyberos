@@ -9,13 +9,18 @@ from typing import Any
 from ..contracts.memory import Memory
 
 
+def _empty_metadata() -> dict[str, Any]:
+    """Typed factory so Pylance infers ``dict[str, Any]``, not ``Unknown``."""
+    return {}
+
+
 @dataclass
 class MemoryEntry:
     """A reconstructable snapshot of one stored execution context."""
 
     prompt: str | None = None
     response: str | None = None
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=_empty_metadata)
     plan: Any | None = None
     error: str | None = None
     created_at: str = ""

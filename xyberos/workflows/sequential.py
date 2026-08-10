@@ -43,7 +43,7 @@ class SequentialWorkflow(Workflow):
             result = step(current)
             if result is None:
                 continue
-            if not isinstance(result, CognitiveContext):
+            if not isinstance(result, CognitiveContext):  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
                 raise TypeError("workflow steps must return a CognitiveContext or None")
             current = result
         return current

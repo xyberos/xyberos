@@ -105,6 +105,10 @@ intent_engine.learn("refund", "please refund my order")
 intent_engine.classify("I want my money back")   # -> Intent(name='refund', ...)
 ```
 
+> **Local alternative:** for a fully-local, no-cloud embedder, use
+> `OllamaEmbeddingLLM(model="nomic-embed-text")` (stdlib HTTP to Ollama's
+> `/api/embed`, no SDK). It is a drop-in replacement for any `embedder=` slot.
+
 > **Persistence:** everything learned at runtime lives in the `VectorStore`.
 > `CosineVectorStore` is in-memory only, so use `SqliteVectorStore` (stdlib
 > `sqlite3`, no extra dependencies) to keep learned examples across restarts:

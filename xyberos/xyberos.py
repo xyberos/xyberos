@@ -12,6 +12,7 @@ from .contracts.knowledge import KnowledgeProvider
 from .contracts.memory import MemoryProvider
 from .contracts.planner import Planner
 from .contracts.plugin import Plugin
+from .contracts.responder import Template
 from .contracts.router import Router
 from .contracts.vector import VectorStore
 from .contracts.workflow import Workflow
@@ -27,6 +28,7 @@ from .llm import EchoLLM, HashEmbedder, LLMProvider
 from .memory import InMemoryMemory, VectorMemory
 from .planner import AdaptivePlanner, SequentialPlanner
 from .plugins.loader import PluginLoader
+from .router import CacheResponder, CacheTeacher, ResponderChain, build_router
 from .runtime.context import CognitiveContext
 from .runtime.runtime import Runtime
 from .security import Security
@@ -288,7 +290,8 @@ def create_semantic_app(
     tools: ToolRegistry | None = None,
     workflow: Workflow | None = None,
     tool_runner: ToolRunner | None = None,
-    router: Router | None = None,
+    router: Router | str | None = None,
+    templates: Iterable[Template] | None = None,
 ) -> Xyberos:
     """Build a ready-to-use app backed by one shared, persistent VectorStore.
 
@@ -302,29 +305,56 @@ def create_semantic_app(
     Swap ``store`` for any other ``VectorStore`` (``ChromaVectorStore``,
     ``PgVectorStore``, or a plugin-provided one) to change the backend without
     touching the engines.
+
+    ``router`` may be a ready-made :class:`~contracts.router.Router`, the string
+    ``"hybrid"`` to auto-build the recommended responder chain (RFC-0017) and
+    wire a warm-up :class:`~router.CacheTeacher`, or ``None`` for no router.
+    ``templates`` pre-seeds the hybrid router's template tier.
     """
     embedder = embedder or HashEmbedder()
     store = store or SqliteVectorStore("learning.db")
     effective_config = dict(config or {})
     effective_config.setdefault("brain.intent", True)
-    return create_app(
+
+    memory = VectorMemory(store, embedder=embedder)
+    knowledge = VectorKnowledge(store, embedder=embedder)
+    intent = build_intent_cascade(
+        store=store,
+        embedder=embedder,
+        llm=llm,
+        threshold=float(effective_config.get("intent.threshold", 0.9)),
+    )
+
+    resolved_router: Router | None = router if isinstance(router, Router) else None
+    cache: CacheResponder | None = None
+    if router == "hybrid":
+        cache = CacheResponder(store, embedder=embedder)
+        resolved_router = build_router(
+            llm=llm,
+            tool_runner=tool_runner,
+            knowledge=knowledge,
+            memory=memory,
+            cache=cache,
+            templates=templates,
+        )
+
+    app = create_app(
         config=effective_config,
         llm=llm,
-        memory=VectorMemory(store, embedder=embedder),
-        knowledge=VectorKnowledge(store, embedder=embedder),
-        intent=build_intent_cascade(
-            store=store,
-            embedder=embedder,
-            llm=llm,
-            threshold=float(effective_config.get("intent.threshold", 0.9)),
-        ),
+        memory=memory,
+        knowledge=knowledge,
+        intent=intent,
         planner=AdaptivePlanner(llm, store=store, embedder=embedder),
         tools=tools,
         tool_runner=tool_runner,
         workflow=workflow,
         experience=experience,
-        router=router,
+        router=resolved_router,
     )
+    if cache is not None and isinstance(resolved_router, ResponderChain):
+        resolved_router.attach_events(app.events)
+        CacheTeacher(cache, app.events)
+    return app
 
 
 def chat(

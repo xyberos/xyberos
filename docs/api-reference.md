@@ -39,6 +39,7 @@ lists what the class is, **what it owns**, and **when to use it**.
 | `OpenAILLM` / `AnthropicLLM` / `GeminiLLM` | lazy SDK clients | official provider adapters |
 | `OllamaLLM` | stdlib HTTP | local Ollama server |
 | `OpenAICompatibleLLM` | stdlib HTTP | any /chat/completions endpoint |
+| `OllamaEmbeddingLLM` | stdlib HTTP | local Ollama `/api/embed` (exposes `embed`) |
 | `FunctionTool` | a typed callable + schema | typed, validated tool results |
 | `EventBus` | subscribers and published events | observing and extending the pipeline |
 
@@ -78,6 +79,13 @@ default), so everything learned survives restarts with zero extra configuration.
 Pass `embedder=` (any `embed(text)` object; defaults to `HashEmbedder` for
 development) and optionally swap `store=` for `ChromaVectorStore`/
 `PgVectorStore` or a plugin-provided `VectorStore`.
+
+> **Tip — real semantic matching:** the default `HashEmbedder` is deterministic
+> and dependency-free but only matches near-identical text. For real paraphrase
+> matching (so knowledge/memory/cache tiers answer without the LLM), pass a
+> semantic embedder — a fully-local option is `OllamaEmbeddingLLM` (no cloud, no
+> SDK), or `SentenceTransformerEmbedder` / `OpenAIEmbeddingLLM` for other
+> backends. See the [tutorial](tutorial.md#fully-local-semantic-stack).
 
 ### `chat(prompt, config=None, llm=None, ...)`
 
@@ -212,6 +220,8 @@ Every step is optional. A bare `Brain` behaves like a plain LLM wrapper, and
 - `AnthropicLLM(model, api_key, client)` — official Anthropic SDK (lazy import).
 - `GeminiLLM(model, api_key, client)` — official Google Gemini SDK (lazy import).
 - `OllamaLLM(model, base_url)` — local Ollama server over stdlib HTTP.
+- `OllamaEmbeddingLLM(model, base_url)` — local Ollama `/api/embed` over stdlib
+  HTTP (exposes `embed`; pairs with `OllamaLLM` for a fully-local semantic stack).
 - `OpenAICompatibleLLM(model, base_url, api_key)` — any `/chat/completions`
   endpoint over stdlib HTTP.
 - `OpenAIEmbeddingLLM(model, base_url, api_key)` — any OpenAI-compatible

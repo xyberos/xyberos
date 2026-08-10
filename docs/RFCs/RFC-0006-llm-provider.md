@@ -15,7 +15,9 @@ Optional capabilities (detected at runtime):
 - ``agenerate(prompt)`` — async generation
 
 Bundled adapters (``xyberos/llm/adapters.py``): ``OpenAILLM``, ``AnthropicLLM``,
-and ``GeminiLLM`` (lazy SDK imports), plus ``OllamaLLM`` and
-``OpenAICompatibleLLM`` (stdlib HTTP).
+and ``GeminiLLM`` (lazy SDK imports), plus ``OllamaLLM``, ``OllamaEmbeddingLLM``
+and ``OpenAICompatibleLLM`` (stdlib HTTP). ``OllamaEmbeddingLLM`` exposes the
+duck-typed ``embed(text)`` capability against Ollama's ``/api/embed`` endpoint,
+so a local server can power real semantic embeddings with no SDK.
 
 The Brain depends only on this interface.

@@ -52,7 +52,7 @@ class InMemoryExperience(ExperienceStore):
             episode.metadata = {**episode.metadata, "feedback_note": note}
 
     def stats(self) -> Mapping[str, Any]:
-        by_outcome: dict[str, int] = {}
+        by_outcome: dict[str | None, int] = {}
         by_intent: dict[str, int] = {}
         for episode in self._episodes:
             by_outcome[episode.outcome] = by_outcome.get(episode.outcome, 0) + 1

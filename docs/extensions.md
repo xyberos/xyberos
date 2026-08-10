@@ -428,15 +428,30 @@ app = create_app(config={
 
 ## 12. Model adapters
 
-`xyberos.llm` ships dependency-light adapters: `OllamaLLM` and
-`OpenAICompatibleLLM` use stdlib HTTP; `OpenAILLM`, `AnthropicLLM`, and
+`xyberos.llm` ships dependency-light adapters: `OllamaLLM`, `OllamaEmbeddingLLM`,
+and `OpenAICompatibleLLM` use stdlib HTTP; `OpenAILLM`, `AnthropicLLM`, and
 `GeminiLLM` lazy-import their SDKs and raise a clear `ProviderError` when one
 is missing:
 
 ```python
-from xyberos.llm import OllamaLLM
+from xyberos.llm import OllamaLLM, OllamaEmbeddingLLM
 
 app = create_app(llm=OllamaLLM(model="llama3.2"))
+```
+
+`OllamaEmbeddingLLM` calls Ollama's `/api/embed` over stdlib HTTP (no SDK), so a
+single local server can provide both chat and real semantic embeddings. For a
+fully-local, LLM-free-in-practice semantic app:
+
+```python
+from xyberos import create_semantic_app
+from xyberos.llm import OllamaLLM, OllamaEmbeddingLLM
+
+app = create_semantic_app(
+    llm=OllamaLLM(model="llama3.2"),
+    embedder=OllamaEmbeddingLLM(model="nomic-embed-text"),  # real semantic matching
+    router="hybrid",                                        # template → tool → knowledge → memory → cache → LLM
+)
 ```
 
 ## 13. Putting It Together
@@ -520,8 +535,8 @@ hits = store.query("intents", [1.0, 0.0], top_k=3)
 
 Embeddings are a duck-typed LLM capability (`embed(text) -> list[float]`), like
 `stream`/`agenerate`. Use `EmbeddingLLM` to combine a generator with an
-embedder, or `OpenAIEmbeddingLLM` for an OpenAI-compatible `/embeddings`
-endpoint.
+embedder, `OllamaEmbeddingLLM` for a local Ollama `/api/embed` server, or
+`OpenAIEmbeddingLLM` for an OpenAI-compatible `/embeddings` endpoint.
 
 ### Experience / learning layer
 

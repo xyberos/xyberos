@@ -205,7 +205,8 @@ Status: implemented in v0.9.0.
 
 - [x] Dependency-light adapters in `xyberos/llm/adapters.py`:
       `OpenAICompatibleLLM` (any `/chat/completions` endpoint, stdlib HTTP),
-      `OllamaLLM` (local server, stdlib HTTP), and lazy-SDK `OpenAILLM`,
+      `OllamaLLM` (local server, stdlib HTTP), `OllamaEmbeddingLLM` (local
+      `/api/embed`, stdlib HTTP, exposes `embed`), and lazy-SDK `OpenAILLM`,
       `AnthropicLLM`, `GeminiLLM` (import the SDK only when used and raise a
       clear `ProviderError` if missing).
 - [x] The core package keeps zero runtime dependencies.

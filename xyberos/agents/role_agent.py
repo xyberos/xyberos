@@ -25,9 +25,11 @@ class RoleAgent(Agent):
         run: Callable[[CognitiveContext], CognitiveContext | None] | None = None,
         receive: Callable[[Message], None] | None = None,
     ) -> None:
-        if not isinstance(name, str) or not name.strip():
+        # Defensive runtime guards for untyped callers; the annotations already
+        # guarantee these types for type-checked callers.
+        if not isinstance(name, str) or not name.strip():  # type: ignore[unnecessary-isinstance]
             raise ValueError("agent name must be a non-empty string")
-        if not isinstance(role, str) or not role.strip():
+        if not isinstance(role, str) or not role.strip():  # type: ignore[unnecessary-isinstance]
             raise ValueError("agent role must be a non-empty string")
         if run is not None and not callable(run):
             raise TypeError("run must be callable")
@@ -57,7 +59,8 @@ class RoleAgent(Agent):
         result = self._run(context)
         if result is None:
             return context
-        if not isinstance(result, CognitiveContext):
+        # Defensive: a handler may ignore its return type at runtime.
+        if not isinstance(result, CognitiveContext):  # type: ignore[unnecessary-isinstance]
             raise TypeError("run handler must return a CognitiveContext or None")
         return result
 

@@ -70,7 +70,7 @@ class ConsolidatingMemory(Memory):
         recent = entries[-self._keep :]
         summary = self._summarize(old)
         if hasattr(self._inner, "clear"):
-            self._inner.clear()
+            getattr(self._inner, "clear")()
         self._inner.store(MemoryEntry(prompt="[consolidated]", response=summary))
         for entry in recent:
             self._inner.store(entry)
@@ -85,7 +85,7 @@ class ConsolidatingMemory(Memory):
 
     @staticmethod
     def _format_entries(entries: list[Any]) -> list[str]:
-        lines = []
+        lines: list[str] = []
         for entry in entries:
             user = getattr(entry, "prompt", None)
             assistant = getattr(entry, "response", None)

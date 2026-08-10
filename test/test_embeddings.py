@@ -3,7 +3,7 @@
 import pytest
 
 from xyberos.exceptions import ProviderError
-from xyberos.llm import CallableLLM, EmbeddingLLM, HashEmbedder, OpenAIEmbeddingLLM
+from xyberos.llm import CallableLLM, EmbeddingLLM, HashEmbedder, OllamaEmbeddingLLM, OpenAIEmbeddingLLM
 
 
 def test_embedding_llm_delegates_generate_and_embed():
@@ -71,3 +71,33 @@ def test_openai_embedding_llm_validates_constructor_inputs():
         OpenAIEmbeddingLLM("", base_url="https://api.example.com/v1")
     with pytest.raises(ValueError, match="base_url"):
         OpenAIEmbeddingLLM("model", base_url="")
+
+
+def test_ollama_embedding_llm_posts_to_embed_endpoint():
+    captured = {}
+
+    def fake_post(url, payload, headers):
+        captured["url"] = url
+        captured["payload"] = payload
+        return {"embeddings": [[1.0, 2.0, 3.0]]}
+
+    adapter = OllamaEmbeddingLLM("nomic-embed-text", post=fake_post)
+
+    assert adapter.embed("hi") == [1.0, 2.0, 3.0]
+    assert captured["url"] == "http://localhost:11434/api/embed"
+    assert captured["payload"] == {"model": "nomic-embed-text", "input": "hi"}
+
+
+def test_ollama_embedding_llm_uses_custom_base_url_and_validates_model():
+    captured = {}
+
+    def fake_post(url, payload, headers):
+        captured["url"] = url
+        return {"embeddings": [[0.5, 0.25]]}
+
+    adapter = OllamaEmbeddingLLM("mxbai-embed-large", base_url="http://ollama:11434/", post=fake_post)
+
+    assert adapter.embed("hello") == [0.5, 0.25]
+    assert captured["url"] == "http://ollama:11434/api/embed"
+    with pytest.raises(ValueError, match="model"):
+        OllamaEmbeddingLLM("", post=fake_post)

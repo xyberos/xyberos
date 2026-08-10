@@ -38,9 +38,9 @@ class PluginLoader:
 
     def load(self, plugin: Plugin) -> Plugin:
         """Register and retain one plugin instance."""
-        if not isinstance(plugin, Plugin):
+        if not isinstance(plugin, Plugin):  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise TypeError("plugin must implement the Plugin contract")
-        if not isinstance(plugin.name, str) or not plugin.name.strip():
+        if not isinstance(plugin.name, str) or not plugin.name.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise PluginLoadError("plugin name must be a non-empty string")
         if plugin.name in self._plugins:
             raise PluginAlreadyLoadedError(f"Plugin is already loaded: {plugin.name}")

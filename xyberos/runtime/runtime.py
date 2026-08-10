@@ -23,7 +23,7 @@ class Runtime:
 
     def run(self, context: CognitiveContext) -> CognitiveContext:
         """Populate and return ``context`` after asking the brain to respond."""
-        if not isinstance(context, CognitiveContext):
+        if not isinstance(context, CognitiveContext):  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise TypeError("context must be a CognitiveContext")
 
         # ---- security gate --------------------------------------------------
@@ -53,7 +53,7 @@ class Runtime:
 
     async def arun(self, context: CognitiveContext) -> CognitiveContext:
         """Async variant of :meth:`run`, awaiting the brain's async pipeline."""
-        if not isinstance(context, CognitiveContext):
+        if not isinstance(context, CognitiveContext):  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise TypeError("context must be a CognitiveContext")
 
         # ---- security gate --------------------------------------------------

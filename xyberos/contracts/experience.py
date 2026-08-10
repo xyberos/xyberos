@@ -17,6 +17,16 @@ from uuid import uuid4
 from .intent import Intent
 
 
+def _empty_tool_calls() -> list[Mapping[str, Any]]:
+    """A fresh tool-call list for each Episode."""
+    return []
+
+
+def _empty_metadata() -> Mapping[str, Any]:
+    """A fresh metadata mapping for each Episode."""
+    return {}
+
+
 @dataclass
 class Episode:
     """One recorded request/response cycle through the Brain pipeline."""
@@ -25,11 +35,11 @@ class Episode:
     id: str = field(default_factory=lambda: uuid4().hex)
     intent: Intent | None = None
     plan: Any = None
-    tool_calls: list[Mapping[str, Any]] = field(default_factory=list)
+    tool_calls: list[Mapping[str, Any]] = field(default_factory=_empty_tool_calls)
     response: str | None = None
     outcome: str | None = None  # "success" | "failure" | None
     feedback: float | None = None  # -1.0..1.0, set via ExperienceStore.feedback
-    metadata: Mapping[str, Any] = field(default_factory=dict)
+    metadata: Mapping[str, Any] = field(default_factory=_empty_metadata)
     created_at: float = field(default_factory=time.time)
 
 

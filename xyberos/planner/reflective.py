@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any
+from collections.abc import Sequence
+from typing import Any, cast
 
 from ..contracts.planner import Planner
 from ..exceptions.llm import StructuredOutputError
@@ -51,11 +52,12 @@ class ReflectivePlanner(Planner):
             except StructuredOutputError:
                 reflection = {}
             if isinstance(reflection, dict):
+                reflection_dict = cast(dict[str, Any], reflection)
                 try:
-                    confidence = float(reflection.get("confidence", 1.0))
+                    confidence = float(reflection_dict.get("confidence", 1.0))
                 except (TypeError, ValueError):
                     confidence = 1.0
-                revised = reflection.get("revised_plan")
+                revised = reflection_dict.get("revised_plan")
                 if revised is not None:
                     plan = revised
         metadata = getattr(context, "metadata", None)
@@ -68,5 +70,5 @@ def _render_plan(plan: Any) -> str:
     if isinstance(plan, str):
         return plan
     if isinstance(plan, (list, tuple)):
-        return "\n".join(f"- {step}" for step in plan)
+        return "\n".join(f"- {step}" for step in cast(Sequence[Any], plan))
     return str(plan)

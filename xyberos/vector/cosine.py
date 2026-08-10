@@ -45,7 +45,7 @@ class CosineVectorStore(VectorStore):
         query_vector = list(vector)
         scored: list[ScoredHit] = []
         for item_id, (stored, payload) in bucket.items():
-            similarity = _cosine(query_vector, stored)
+            similarity = cosine(query_vector, stored)
             if threshold is not None and similarity < threshold:
                 continue
             scored.append(ScoredHit(id=item_id, score=similarity, payload=payload))
@@ -66,7 +66,7 @@ class CosineVectorStore(VectorStore):
         self._namespaces.clear()
 
 
-def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
+def cosine(a: Sequence[float], b: Sequence[float]) -> float:
     """Return cosine similarity in [-1.0, 1.0]; zero for empty/zero vectors."""
     if not a or not b:
         return 0.0

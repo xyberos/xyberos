@@ -59,7 +59,7 @@ Useful supporting modules:
 - `xyberos.agents` - multi-agent runtime, roles, messaging, and handoffs
 - `xyberos.workflows` - sequential workflows, state graphs, and checkpoints
 - `xyberos.plugins` - plugin loading and auto-discovery (entry points + convention scan)
-- `xyberos.llm` - model providers, streaming/async, structured output, and adapters
+- `xyberos.llm` - model providers (incl. local `OllamaLLM` + `OllamaEmbeddingLLM`), streaming/async, structured output, and adapters
 - `xyberos.memory` / `xyberos.knowledge` - in-memory, SQLite, vector, and consolidating providers
 - `xyberos.planner` - fixed, LLM, adaptive, reflective planners, and plan execution
 - `xyberos.intent` - heuristic, LLM, embedding, and cascade intent engines

@@ -30,7 +30,9 @@ class EmbeddingIntentEngine(IntentEngine):
         fallback: str = "general",
         default_target: str | None = None,
     ) -> None:
-        if not isinstance(store, VectorStore):
+        # Defensive runtime guard for untyped callers; the annotation already
+        # guarantees this type for type-checked callers.
+        if not isinstance(store, VectorStore):  # type: ignore[unnecessary-isinstance]
             raise TypeError("store must be a VectorStore")
         self._store = store
         self._embedder = embedder

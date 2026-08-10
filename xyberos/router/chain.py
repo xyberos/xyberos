@@ -3,16 +3,20 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
-from typing import Any
+from typing import Any, cast
 
 from ..contracts.responder import Responder
 from ..contracts.router import Router
 from ..events import EventBus
 from ..events.names import DEGRADED, ESCALATED, RESPONDER_HIT
+from .llm import LLMResponder
 
 # A responder can be passed as a plain Responder or as a (name, responder)
 # pair so the chain can attribute hits/escalations and apply per-tier gates.
 NamedResponder = tuple[str, Responder]
+
+# Tier names treated as model-generation tiers for the cheap-first pass.
+_LLM_TIER_NAMES = ("llm", "local", "cloud")
 
 
 class ResponderChain(Router):
@@ -66,27 +70,83 @@ class ResponderChain(Router):
         """The configured fallback policy."""
         return self._fallback
 
+    @property
+    def is_llm_free(self) -> bool:
+        """Whether the chain has no model-generation tier.
+
+        True when no responder is an :class:`~router.LLMResponder` and no tier
+        is named ``llm``/``local``/``cloud``. Lets the Brain default the
+        ``cheap_first`` fast path on for fully LLM-free chains (RFC-0017).
+        """
+        return all(
+            not isinstance(responder, LLMResponder) and name not in _LLM_TIER_NAMES
+            for name, responder in self._responders
+        )
+
+    def attach_events(self, events: EventBus | None) -> None:
+        """Attach an event bus after construction (e.g. from the app facade).
+
+        Lets a chain built before the app exists emit ``responder_hit`` /
+        ``escalated`` / ``degraded`` events once the app's bus is available
+        (RFC-0017, M11 warm-up).
+        """
+        self._events = events
+
+    def get_threshold(self, name: str | None = None) -> float:
+        """Return the effective confidence gate for ``name`` (or the global gate)."""
+        if name is None:
+            return self._threshold
+        return self._per_tier_threshold.get(name, self._threshold)
+
+    def set_threshold(self, name: str, value: float) -> None:
+        """Set the per-tier confidence gate for ``name`` (RFC-0017, M14 tuning)."""
+        if not 0.0 <= value <= 1.0:
+            raise ValueError("threshold must be between 0.0 and 1.0")
+        self._per_tier_threshold[name] = value
+
     def respond(self, context: object) -> Any:
         """Answer ``context`` with the first confident tier, or run the fallback."""
         for name, responder in self._responders:
-            gate = self._effective_threshold(name)
-            confidence = self._confidence(responder, context)
-            if confidence < gate:
-                self._emit_escalation(name, context, confidence, "below gate")
-                continue
-            try:
-                answer = responder.respond(context)
-            except Exception as exc:  # a failing tier escalates, never breaks the chain
-                self._record_error(context, name, exc)
-                self._emit_escalation(name, context, confidence, "raised")
-                continue
-            if answer is None:
-                self._emit_escalation(name, context, confidence, "declined")
-                continue
-            self._record_hit(context, name, confidence)
-            self._emit_hit(name, context, confidence)
-            return answer
+            answer = self._try_tier(name, responder, context)
+            if answer is not None:
+                return answer
         return self._run_fallback(context)
+
+    def respond_cheap(self, context: object) -> Any | None:
+        """Run only the LLM-free tiers; return ``None`` if none answer.
+
+        Enables the Brain's ``brain.cheap_first`` optimization: cheap tiers are
+        consulted before intent/planner LLM calls are spent, so cache/knowledge/
+        memory/template/tool answers cost zero LLM calls (RFC-0017). The
+        fallback is NOT run — ``None`` means "do the full pass" (RFC-0017).
+        """
+        for name, responder in self._responders:
+            if isinstance(responder, LLMResponder) or name in _LLM_TIER_NAMES:
+                break
+            answer = self._try_tier(name, responder, context)
+            if answer is not None:
+                return answer
+        return None
+
+    def _try_tier(self, name: str, responder: Responder, context: object) -> Any | None:
+        """Ask one tier; return its answer, or ``None`` to keep escalating."""
+        gate = self._effective_threshold(name)
+        confidence = self._confidence(responder, context)
+        if confidence < gate:
+            self._emit_escalation(name, context, confidence, "below gate")
+            return None
+        try:
+            answer = responder.respond(context)
+        except Exception as exc:  # a failing tier escalates, never breaks the chain
+            self._record_error(context, name, exc)
+            self._emit_escalation(name, context, confidence, "raised")
+            return None
+        if answer is None:
+            self._emit_escalation(name, context, confidence, "declined")
+            return None
+        self._record_hit(context, name, confidence)
+        self._emit_hit(name, context, confidence, answer)
+        return answer
 
     # ------------------------------------------------------------------ #
     # internals
@@ -95,7 +155,7 @@ class ResponderChain(Router):
     @staticmethod
     def _coerce(index: int, entry: NamedResponder | Responder) -> NamedResponder:
         """Normalize a responder entry to a ``(name, responder)`` pair."""
-        if isinstance(entry, tuple) and len(entry) == 2 and isinstance(entry[0], str):
+        if isinstance(entry, tuple) and len(entry) == 2 and isinstance(entry[0], str):  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             return (entry[0], entry[1])
         if not isinstance(entry, Responder):
             raise TypeError("each responder must be a Responder or a (name, Responder) pair")
@@ -112,7 +172,7 @@ class ResponderChain(Router):
             value = responder.confidence(context)
         except Exception:
             return 0.0
-        if value is None:
+        if value is None:  # type: ignore[comparison-overlap]  # defensive runtime guard
             return 0.0
         try:
             return float(value)
@@ -128,8 +188,8 @@ class ResponderChain(Router):
             return self._fallback.respond(context)
         return self._fallback(context)
 
-    def _emit_hit(self, name: str, context: object, confidence: float) -> None:
-        self._emit(RESPONDER_HIT, context=context, tier=name, confidence=confidence)
+    def _emit_hit(self, name: str, context: object, confidence: float, answer: Any) -> None:
+        self._emit(RESPONDER_HIT, context=context, tier=name, confidence=confidence, response=answer)
 
     def _emit_escalation(self, name: str, context: object, confidence: float, reason: str) -> None:
         self._emit(ESCALATED, context=context, tier=name, confidence=confidence, reason=reason)
@@ -150,5 +210,6 @@ class ResponderChain(Router):
     def _record_error(context: object, name: str, exc: Exception) -> None:
         metadata = getattr(context, "metadata", None)
         if isinstance(metadata, dict):
-            errors = metadata.setdefault("router.errors", [])
+            metadata_dict = cast(dict[str, Any], metadata)
+            errors = metadata_dict.setdefault("router.errors", [])
             errors.append({"tier": name, "error": repr(exc)})

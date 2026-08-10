@@ -12,6 +12,11 @@ from ..runtime.context import CognitiveContext
 MESSAGES_KEY = "xyberos.messages"
 
 
+def _empty_metadata() -> dict[str, Any]:
+    """A fresh metadata dict for each Message instance."""
+    return {}
+
+
 @dataclass(frozen=True)
 class Message:
     """An immutable message exchanged between agents.
@@ -25,7 +30,7 @@ class Message:
     recipient: str
     content: Any = None
     kind: str = "message"
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=_empty_metadata)
 
 
 def handoff(target: str, content: Any = None, *, sender: str = "") -> Message:

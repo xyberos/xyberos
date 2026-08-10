@@ -13,13 +13,18 @@ if TYPE_CHECKING:
 Listener = Callable[["Event"], None]
 
 
+def _empty_data() -> Mapping[str, Any]:
+    """A fresh data mapping for each Event."""
+    return {}
+
+
 @dataclass(frozen=True)
 class Event:
     """An immutable notification published to the event bus."""
 
     name: str
     context: object | None = None
-    data: Mapping[str, Any] = field(default_factory=dict)
+    data: Mapping[str, Any] = field(default_factory=_empty_data)
 
 
 class EventBus:
@@ -37,7 +42,9 @@ class EventBus:
 
     def subscribe(self, event: str, listener: Listener) -> Listener:
         """Register ``listener`` for ``event`` and return it unchanged."""
-        if not isinstance(event, str) or not event.strip():
+        # Defensive runtime guard for untyped callers; the annotation already
+        # guarantees this type for type-checked callers.
+        if not isinstance(event, str) or not event.strip():  # type: ignore[unnecessary-isinstance]
             raise ValueError("event name must be a non-empty string")
         if not callable(listener):
             raise TypeError("listener must be callable")

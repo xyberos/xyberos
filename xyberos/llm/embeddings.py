@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from hashlib import blake2b
-from typing import Any
+from typing import Any, cast
 
 from ..exceptions.provider import ProviderError
 from .llm import EchoLLM, LLMProvider
@@ -95,7 +95,9 @@ def embed_text(embedder: Any, text: str) -> list[float]:
         vector = embed(text)
     if not vector:
         raise ProviderError("embedder returned an empty vector")
-    return [float(value) for value in vector]
+    # cast: callable() narrowing leaves ``vector`` as ``object``; the embedder
+    # contract is ``str -> Sequence[float]`` (see the ``Embedder`` alias).
+    return [float(value) for value in cast(Sequence[float], vector)]
 
 
 __all__ = ["Embedder", "EmbeddingLLM", "HashEmbedder", "embed_text"]

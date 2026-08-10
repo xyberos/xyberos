@@ -9,10 +9,11 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 from ..events import EventBus
 from ..events.names import PLAN_REPLANNED, PLAN_STEP_EXECUTED, PLAN_STEP_FAILED
+from ..runtime.context import CognitiveContext
 from ..tools import ToolRunner
 
 # A verifier decides whether a step's result is acceptable: (step, result) -> bool.
@@ -23,12 +24,17 @@ Verifier = Callable[[Any, Any], bool]
 Replanner = Callable[[list[Any], Any, Any], list[Any] | None]
 
 
+def _empty_results() -> list[Any]:
+    """Typed factory so Pylance infers ``list[Any]``, not ``Unknown``."""
+    return []
+
+
 @dataclass
 class PlanResult:
     """The outcome of executing a plan."""
 
     steps: list[Any]
-    results: list[Any] = field(default_factory=list)
+    results: list[Any] = field(default_factory=_empty_results)
     error: Any | None = None
     replans: int = 0
     executed: int = 0
@@ -118,10 +124,11 @@ class PlanExecutor:
             if callable(step):
                 value = step(context)
             elif isinstance(step, dict):
-                name = step.get("tool")
+                step_dict = cast(dict[str, Any], step)
+                name = step_dict.get("tool")
                 if not name:
                     return _Outcome(ok=False, error=TypeError("step dict requires a 'tool' key"))
-                value = self._dispatch(name, context, step.get("args", {}) or {})
+                value = self._dispatch(name, context, step_dict.get("args", {}) or {})
             elif isinstance(step, str):
                 value = self._dispatch(step, context, {})
             else:
@@ -138,7 +145,7 @@ class PlanExecutor:
     def _dispatch(self, name: str, context: object, arguments: dict[str, Any]) -> Any:
         if self._tool_runner is None:
             raise ValueError(f"no tool runner configured for step {name!r}")
-        return self._tool_runner.run(name, context, **arguments)
+        return self._tool_runner.run(name, cast(CognitiveContext, context), **arguments)
 
     def _replan_steps(
         self, context: object, pending: list[Any], step: Any, error: Any
@@ -163,6 +170,7 @@ def _describe(step: Any) -> str:
     if isinstance(step, str):
         return step
     if isinstance(step, dict):
-        return str(step.get("tool", step))
+        step_dict = cast(dict[str, Any], step)
+        return str(step_dict.get("tool", step_dict))
     name = getattr(step, "__name__", None)
     return name if isinstance(name, str) else "callable"

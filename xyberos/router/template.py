@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, cast
 
 from ..contracts.responder import Responder, Template
 
@@ -51,7 +51,7 @@ class TemplateResponder(Responder):
     def load(self, templates: Iterable[Template]) -> None:
         """Register ``templates``; later registrations append."""
         for template in templates:
-            if not isinstance(template, Template):
+            if not isinstance(template, Template):  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
                 raise TypeError("each template must be a Template")
             if not template.variants:
                 raise ValueError("each template must provide at least one variant")
@@ -135,7 +135,8 @@ class TemplateResponder(Responder):
         metadata = getattr(context, "metadata", None)
         if not isinstance(metadata, dict):
             return variant
-        for key, value in metadata.items():
+        metadata_dict = cast(dict[str, Any], metadata)
+        for key, value in metadata_dict.items():
             placeholder = "{" + str(key) + "}"
             if placeholder in variant:
                 variant = variant.replace(placeholder, str(value))

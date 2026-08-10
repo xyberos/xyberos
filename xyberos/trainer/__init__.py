@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from ..contracts.experience import ExperienceStore
 from ..contracts.intent import IntentEngine
@@ -101,14 +101,14 @@ class Trainer:
     def save(self, path: str, *, algorithm: str = "embedding", embedder: Any | None = None) -> None:
         """Persist the trained artifact (embedding JSON or sklearn model)."""
         if algorithm == "embedding":
-            payload = {"algorithm": "embedding", "examples": self._dataset}
+            payload: dict[str, Any] = {"algorithm": "embedding", "examples": self._dataset}
             Path(path).write_text(json.dumps(payload), encoding="utf-8")
         elif algorithm == "sklearn":
             if embedder is None:
                 raise ValueError("embedder is required to save a sklearn artifact")
-            from .sklearn import _dump_engine
+            from .sklearn import dump_engine
 
-            _dump_engine(self.train_intent_sklearn(embedder), path)
+            dump_engine(self.train_intent_sklearn(embedder), path)
         else:
             raise ValueError(f"unknown algorithm: {algorithm!r}")
 
@@ -125,24 +125,27 @@ class Trainer:
         if algorithm == "embedding":
             if embedder is None:
                 raise ValueError("embedder is required to load an embedding artifact")
-            payload = json.loads(Path(path).read_text(encoding="utf-8"))
-            examples = payload.get("examples", []) if isinstance(payload, dict) else []
+            payload = cast(
+                dict[str, Any], json.loads(Path(path).read_text(encoding="utf-8"))
+            )
+            examples = payload.get("examples", [])
             rows = [(str(prompt), str(label)) for prompt, label in examples]
             return cls(rows).train_intent_embedding(embedder)
         if algorithm == "sklearn":
-            from .sklearn import _load_engine
+            from .sklearn import load_engine
 
-            return _load_engine(path)
+            return load_engine(path)
         raise ValueError(f"unknown algorithm: {algorithm!r}")
 
 
 def engine_from_config(config: Any, *, embedder: Any | None = None) -> IntentEngine | None:
     """Load an intent engine from the ``learning.model`` / ``learning.algorithm`` config keys."""
-    get = config.get if hasattr(config, "get") else (lambda key, default=None: default)
-    model = get("learning.model")
+    if not hasattr(config, "get"):
+        return None
+    model = config.get("learning.model")
     if not model:
         return None
-    return Trainer.load(model, embedder=embedder, algorithm=get("learning.algorithm"))
+    return Trainer.load(model, embedder=embedder, algorithm=config.get("learning.algorithm"))
 
 
 def _detect_algorithm(path: str) -> str:
@@ -151,5 +154,5 @@ def _detect_algorithm(path: str) -> str:
     except (OSError, UnicodeDecodeError, json.JSONDecodeError):
         return "sklearn"
     if isinstance(payload, dict):
-        return payload.get("algorithm", "embedding")
+        return cast(dict[str, Any], payload).get("algorithm", "embedding")
     return "embedding"

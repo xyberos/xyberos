@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
@@ -28,7 +29,7 @@ def _parse_time(value: Any) -> float:
     return 0.0
 
 
-def _entry_from_payload(payload: dict[str, Any] | None) -> MemoryEntry:
+def _entry_from_payload(payload: Mapping[str, Any] | None) -> MemoryEntry:
     payload = payload or {}
     return MemoryEntry(
         prompt=payload.get("prompt"),
@@ -57,7 +58,7 @@ class VectorMemory(Memory):
         top_k: int = 5,
         alpha: float = 0.7,
     ) -> None:
-        if not isinstance(store, VectorStore):
+        if not isinstance(store, VectorStore):  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise TypeError("store must be a VectorStore")
         if top_k <= 0:
             raise ValueError("top_k must be a positive integer")
@@ -104,6 +105,19 @@ class VectorMemory(Memory):
             return list(reversed(self._entries[-self._top_k :]))
         ranked = _hybrid_rank(hits, self._alpha)
         return [_entry_from_payload(hit.payload) for hit in ranked]
+
+    def retrieve_scored(self, context: object, *, top_k: int = 1) -> list[ScoredHit]:
+        """Return the top matching turns as scored hits for confidence gating.
+
+        Unlike :meth:`retrieve` (which blends similarity with recency), this
+        exposes raw similarity scores so the hybrid router's ``MemoryResponder``
+        can gate on how well a past turn actually matches (RFC-0017).
+        """
+        prompt = getattr(context, "prompt", None)
+        if not isinstance(prompt, str) or not prompt or self._embedder is None:
+            return []
+        vector = embed_text(self._embedder, prompt)
+        return self._store.query(self._namespace, vector, top_k=top_k)
 
     def clear(self) -> None:
         """Drop every stored turn, both vectors and insertion history."""

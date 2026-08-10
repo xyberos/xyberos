@@ -9,3 +9,4 @@ class LLMProvider(Protocol):
 
     def generate(self, prompt: str) -> str:
         """Generate a text response for ``prompt``."""
+        ...

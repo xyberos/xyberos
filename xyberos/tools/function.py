@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Callable, Mapping
-from typing import Any, get_args, get_origin
+from typing import Any, cast, get_args, get_origin
 
 from ..contracts.tool import Tool
 from ..exceptions.tool import ToolArgumentError
 
 
-_TYPE_MAP = {
+_TYPE_MAP: dict[type, dict[str, str]] = {
     str: {"type": "string"},
     int: {"type": "integer"},
     float: {"type": "number"},
@@ -120,7 +120,7 @@ def _coerce(value: Any, annotation: Any, name: str) -> Any:
     if target in (list, dict):
         if not isinstance(value, target):
             raise ToolArgumentError(f"argument '{name}' must be a {target.__name__}")
-    return value
+    return cast(Any, value)
 
 
 class FunctionTool(Tool):
@@ -143,7 +143,7 @@ class FunctionTool(Tool):
         *,
         description: str = "",
     ) -> None:
-        if not isinstance(name, str) or not name.strip():
+        if not isinstance(name, str) or not name.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise ValueError("tool name must be a non-empty string")
         if not callable(func):
             raise TypeError("func must be callable")

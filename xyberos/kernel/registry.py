@@ -141,5 +141,5 @@ class ServiceRegistry:
 
     @staticmethod
     def _validate_name(name: str) -> None:
-        if not isinstance(name, str) or not name.strip():
+        if not isinstance(name, str) or not name.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise InvalidServiceNameError("service name must be a non-empty string")

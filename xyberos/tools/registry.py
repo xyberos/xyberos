@@ -21,9 +21,9 @@ class ToolRegistry:
 
     def register(self, tool: Tool) -> Tool:
         """Register a tool for subsequent execution."""
-        if not isinstance(tool, Tool):
+        if not isinstance(tool, Tool):  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise TypeError("tool must implement the Tool contract")
-        if not isinstance(tool.name, str) or not tool.name.strip():
+        if not isinstance(tool.name, str) or not tool.name.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise ValueError("tool name must be a non-empty string")
         if tool.name in self._tools:
             raise ToolAlreadyRegisteredError(f"Tool is already registered: {tool.name}")

@@ -13,7 +13,9 @@ class RuntimeAgent(Agent):
     """Run one existing Runtime as an agent in a multi-agent pipeline."""
 
     def __init__(self, name: str, runtime: "Runtime") -> None:
-        if not isinstance(name, str) or not name.strip():
+        # Defensive runtime guard for untyped callers; the annotation already
+        # guarantees this type for type-checked callers.
+        if not isinstance(name, str) or not name.strip():  # type: ignore[unnecessary-isinstance]
             raise ValueError("agent name must be a non-empty string")
         self._name = name
         self._runtime = runtime

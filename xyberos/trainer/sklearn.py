@@ -7,17 +7,18 @@ drops into ``create_app(intent=...)`` exactly like any other engine.
 
 from __future__ import annotations
 
-from typing import Any
+from collections.abc import Sequence
+from typing import Any, cast
 
 from ..contracts.intent import Intent, IntentEngine
-from ..llm.adapters import _require
+from ..llm.adapters import require
 from ..llm.embeddings import embed_text
 
 __all__ = ["SkLearnIntentEngine"]
 
 
 def _sklearn() -> Any:
-    return _require("sklearn")
+    return require("sklearn")
 
 
 class SkLearnIntentEngine(IntentEngine):
@@ -56,7 +57,7 @@ def _confidence(classifier: Any, vector: list[float], name: str) -> float:
     classes = getattr(classifier, "classes_", None)
     if callable(predict_proba) and classes is not None:
         try:
-            probabilities = predict_proba([vector])[0]
+            probabilities = cast(Sequence[Any], predict_proba([vector]))[0]
             index = list(classes).index(name)
             return float(probabilities[index])
         except (ValueError, TypeError):
@@ -64,11 +65,11 @@ def _confidence(classifier: Any, vector: list[float], name: str) -> float:
     return 1.0
 
 
-def _dump_engine(engine: Any, path: str) -> None:
-    joblib = _require("joblib")
+def dump_engine(engine: Any, path: str) -> None:
+    joblib = require("joblib")
     joblib.dump(engine, path)
 
 
-def _load_engine(path: str) -> Any:
-    joblib = _require("joblib")
+def load_engine(path: str) -> Any:
+    joblib = require("joblib")
     return joblib.load(path)

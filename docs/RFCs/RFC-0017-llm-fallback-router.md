@@ -41,8 +41,13 @@ The revised design addresses three critical gaps identified in the v1.x analysis
 All seams are additive and **off by default**, so existing behavior is unchanged
 until a router is installed.
 
-**Implemented so far:** `FallbackLLM` (M0 — cloud → local model cascade) ships in
-`xyberos/llm/fallback.py`. Everything else is planned.
+**Implementation status:** the full milestone plan (M0–M14) is implemented — the
+`xyberos/router` package ships `ResponderChain`, every responder tier
+(Template → Tool → Knowledge → Memory → Cache → LLM → Degrade), the
+`build_router` factory, warm-up `CacheTeacher`, confidence `CalibratedResponder`,
+grounding, and the escalation `EscalationTuner`/`TierMonitor`. The semantic tiers
+pair with a real embedder for paraphrase matching — e.g. `OllamaEmbeddingLLM`
+(local Ollama `/api/embed`, stdlib HTTP) or `SentenceTransformerEmbedder`.
 
 ---
 

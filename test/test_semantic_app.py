@@ -93,3 +93,41 @@ def test_create_semantic_app_persists_learned_examples(tmp_path):
     assert len(hits) == 1
     assert hits[0].payload.get("name") == "refund"
     reopened.close()
+
+
+def test_create_semantic_app_hybrid_router_serves_repeat_from_cache():
+    calls = []
+
+    def generate(prompt):
+        calls.append(prompt)
+        return f"answer-{len(calls)}"
+
+    app = create_semantic_app(
+        llm=CallableLLM(generate),
+        embedder=_embedder,
+        store=CosineVectorStore(),
+        router="hybrid",
+    )
+
+    first = app.chat("what is the refund policy")
+    second = app.chat("what is the refund policy")
+
+    # The second request must return the SAME (cached) response — a fresh LLM
+    # call would produce a higher-numbered unique string.
+    assert first == second
+    assert second.startswith("answer-")
+
+
+def test_create_semantic_app_hybrid_router_uses_templates():
+    from xyberos.contracts import Template
+
+    app = create_semantic_app(
+        llm=CallableLLM(lambda prompt: "llm"),
+        embedder=_embedder,
+        store=CosineVectorStore(),
+        router="hybrid",
+        templates=[Template(pattern=r"\bhello\b", variants=("Hello there!",))],
+    )
+
+    assert app.chat("hello") == "Hello there!"
+    assert app.chat("novel question") == "llm"

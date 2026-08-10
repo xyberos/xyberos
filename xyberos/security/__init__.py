@@ -121,7 +121,7 @@ class Guardrail:
     """
 
     def __init__(self, name: str, check: Callable[[object], bool]) -> None:
-        if not isinstance(name, str) or not name.strip():
+        if not isinstance(name, str) or not name.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise ValueError("guardrail name must be a non-empty string")
         if not callable(check):
             raise TypeError("guardrail check must be callable")
@@ -259,13 +259,17 @@ class Security(Service):
         self.kill_switch = KillSwitch()
         self._guardrails: dict[str, Guardrail] = {}
         self._audit_store = audit_store or InMemoryAuditStore()
-        self._events: object = None  # set by Kernel after registration
+        self._events: object = None  # set via attach_events() by Kernel
+
+    def attach_events(self, events: object) -> None:
+        """Attach an event bus for security event emission (set by Kernel)."""
+        self._events = events
 
     # -- guardrails -----------------------------------------------------------
 
     def add_guardrail(self, guardrail: Guardrail) -> Guardrail:
         """Register a content guardrail."""
-        if not isinstance(guardrail, Guardrail):
+        if not isinstance(guardrail, Guardrail):  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise TypeError("guardrail must be a Guardrail instance")
         self._guardrails[guardrail.name] = guardrail
         return guardrail
@@ -300,7 +304,7 @@ class Security(Service):
     # -- audit log ------------------------------------------------------------
 
     def _audit(self, event: str, **extra: object) -> None:
-        entry = {
+        entry: dict[str, Any] = {
             "event": event,
             "timestamp": time.time(),
             "kill_switch_active": self.kill_switch.active,

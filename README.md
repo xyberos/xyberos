@@ -38,7 +38,7 @@ pipeline, the memory, the planning, the tools, the agents, the guardrails.
 | **Kernel** | Config, logging, DI, lifecycle, event bus, plugin loader, security |
 | **Runtime** | Executes cognitive requests — sync and async |
 | **Brain** | Automated pipeline: workflow → memory → knowledge → intent → plan → tools → LLM |
-| **LLM** | OpenAI, Anthropic, Gemini, Ollama, any OpenAI-compatible endpoint + embeddings |
+| **LLM** | OpenAI, Anthropic, Gemini, Ollama, any OpenAI-compatible endpoint + embeddings (incl. local `OllamaEmbeddingLLM`) |
 | **Memory** | In-memory, SQLite, and vector providers; semantic + consolidating memory |
 | **Knowledge** | Fact injection from dicts, SQLite, or vector retrieval |
 | **Planner** | Sequential, LLM, adaptive (few-shot), reflective, and plan execution |
@@ -92,6 +92,25 @@ from xyberos.llm import OllamaLLM
 
 app = create_app(llm=OllamaLLM(model="qwen2.5:1.5b"))
 print(app.chat("Explain quantum computing in one sentence."))
+```
+
+### Fully-local, LLM-free-in-practice
+
+One local Ollama server can provide both chat and real semantic embeddings
+(`OllamaEmbeddingLLM` calls `/api/embed` over stdlib HTTP — no SDK). Plug both
+into the hybrid router and common requests are answered by the LLM-free tiers
+(template → tool → knowledge → memory → cache), with the LLM reserved for the
+novel tail and teaching the cache:
+
+```python
+from xyberos import create_semantic_app
+from xyberos.llm import OllamaLLM, OllamaEmbeddingLLM
+
+app = create_semantic_app(
+    llm=OllamaLLM(model="qwen2.5:1.5b"),
+    embedder=OllamaEmbeddingLLM(model="nomic-embed-text"),  # ollama pull nomic-embed-text
+    router="hybrid",
+)
 ```
 
 ---

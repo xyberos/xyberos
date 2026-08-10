@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Any
+from collections.abc import Callable, Sequence
+from typing import Any, cast
 from uuid import uuid4
 
 from ..contracts.planner import Planner
@@ -40,7 +40,7 @@ class AdaptivePlanner(Planner):
         if top_k <= 0:
             raise ValueError("top_k must be a positive integer")
         self._llm = llm or EchoLLM()
-        self._parse = parse or LLMPlanner._default_parse
+        self._parse = parse or LLMPlanner.default_parse
         self._store = store
         self._embedder = embedder
         self._namespace = namespace
@@ -56,7 +56,7 @@ class AdaptivePlanner(Planner):
             )
         instruction += f"Request: {request}"
         response = self._llm.generate(instruction)
-        if not isinstance(response, str):
+        if not isinstance(response, str):  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise TypeError("LLM must return a string")
         return self._parse(response)
 
@@ -77,12 +77,12 @@ class AdaptivePlanner(Planner):
             return ""
         vector = embed_text(self._embedder, request)
         hits = self._store.query(self._namespace, vector, top_k=self._top_k)
-        lines = []
+        lines: list[str] = []
         for hit in hits:
             payload = hit.payload or {}
             plan = payload.get("plan")
             plan_text = (
-                "\n".join(f"- {step}" for step in plan)
+                "\n".join(f"- {step}" for step in cast(Sequence[Any], plan))
                 if isinstance(plan, (list, tuple))
                 else str(plan)
             )

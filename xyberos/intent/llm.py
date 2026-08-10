@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
 
 from ..contracts.intent import Intent, IntentEngine
 from ..exceptions.llm import StructuredOutputError
@@ -59,13 +59,19 @@ class LLMIntentEngine(IntentEngine):
             return Intent(name=self._fallback, confidence=0.0, target=self._default_target)
         if not isinstance(data, dict):
             return Intent(name=self._fallback, confidence=0.0, target=self._default_target)
-        name = data.get("name") or data.get("intent") or self._fallback
+        data_dict = cast(dict[str, Any], data)
+        name = data_dict.get("name") or data_dict.get("intent") or self._fallback
         try:
-            confidence = float(data.get("confidence", 0.0))
+            confidence = float(data_dict.get("confidence", 0.0))
         except (TypeError, ValueError):
             confidence = 0.0
-        params = data.get("params") or {}
+        params: Any = data_dict.get("params") or {}
         if not isinstance(params, dict):
             params = {}
-        target = data.get("target") or self._default_target
-        return Intent(name=name, confidence=confidence, params=params, target=target)
+        target = data_dict.get("target") or self._default_target
+        return Intent(
+            name=name,
+            confidence=confidence,
+            params=cast(dict[str, Any], params),
+            target=target,
+        )

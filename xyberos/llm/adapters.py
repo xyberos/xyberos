@@ -1,10 +1,11 @@
 """LLM adapters for common model providers.
 
 All adapters are dependency-light: the HTTP-based ones (``OllamaLLM``,
-``OpenAICompatibleLLM``) use only the standard library, while the SDK-based ones
-(``OpenAILLM``, ``AnthropicLLM``, ``GeminiLLM``) import their SDK lazily on
-first use and raise a clear :class:`~exceptions.provider.ProviderError` when it
-is not installed. This keeps the core package free of runtime dependencies.
+``OllamaEmbeddingLLM``, ``OpenAICompatibleLLM``, ``OpenAIEmbeddingLLM``) use
+only the standard library, while the SDK-based ones (``OpenAILLM``,
+``AnthropicLLM``, ``GeminiLLM``) import their SDK lazily on first use and raise
+a clear :class:`~exceptions.provider.ProviderError` when it is not installed.
+This keeps the core package free of runtime dependencies.
 """
 
 from __future__ import annotations
@@ -18,7 +19,7 @@ from typing import Any
 from ..exceptions.provider import ProviderError
 
 
-def _require(package: str, pip_name: str | None = None) -> Any:
+def require(package: str, pip_name: str | None = None) -> Any:
     """Import ``package`` or raise a clear :class:`ProviderError`."""
     try:
         return importlib.import_module(package)
@@ -29,7 +30,7 @@ def _require(package: str, pip_name: str | None = None) -> Any:
         ) from exc
 
 
-def _default_post(url: str, payload: dict, headers: dict) -> dict:
+def _default_post(url: str, payload: dict[str, Any], headers: dict[str, Any]) -> dict[str, Any]:
     """POST ``payload`` as JSON and return the parsed JSON response."""
     request = urllib.request.Request(
         url,
@@ -42,7 +43,7 @@ def _default_post(url: str, payload: dict, headers: dict) -> dict:
 
 
 # A callable that POSTs JSON and returns the parsed response; injectable for tests.
-PostCallable = Callable[[str, dict, dict], dict]
+PostCallable = Callable[[str, dict[str, Any], dict[str, Any]], dict[str, Any]]
 
 
 class OpenAICompatibleLLM:
@@ -60,7 +61,7 @@ class OpenAICompatibleLLM:
         api_key: str | None = None,
         post: PostCallable | None = None,
     ) -> None:
-        if not isinstance(model, str) or not model.strip():
+        if not isinstance(model, str) or not model.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise ValueError("model must be a non-empty string")
         if not base_url:
             raise ValueError("base_url must be provided")
@@ -74,7 +75,7 @@ class OpenAICompatibleLLM:
         headers = {"Content-Type": "application/json"}
         if self._api_key:
             headers["Authorization"] = f"Bearer {self._api_key}"
-        payload = {
+        payload: dict[str, Any] = {
             "model": self._model,
             "messages": [{"role": "user", "content": prompt}],
         }
@@ -92,7 +93,7 @@ class OllamaLLM:
         base_url: str = "http://localhost:11434",
         post: PostCallable | None = None,
     ) -> None:
-        if not isinstance(model, str) or not model.strip():
+        if not isinstance(model, str) or not model.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise ValueError("model must be a non-empty string")
         self._model = model
         self._base_url = base_url.rstrip("/")
@@ -100,7 +101,7 @@ class OllamaLLM:
 
     def generate(self, prompt: str) -> str:
         """Generate text from the local Ollama server."""
-        payload = {"model": self._model, "prompt": prompt, "stream": False}
+        payload: dict[str, Any] = {"model": self._model, "prompt": prompt, "stream": False}
         data = self._post(
             f"{self._base_url}/api/generate",
             payload,
@@ -110,7 +111,7 @@ class OllamaLLM:
 
     def stream(self, prompt: str, on_token: Callable[[str], None]) -> str:
         """Stream tokens from the local Ollama server (NDJSON ``/api/generate``)."""
-        payload = {"model": self._model, "prompt": prompt, "stream": True}
+        payload: dict[str, Any] = {"model": self._model, "prompt": prompt, "stream": True}
         request = urllib.request.Request(
             self._base_url + "/api/generate",
             data=json.dumps(payload).encode("utf-8"),
@@ -152,7 +153,7 @@ class OpenAILLM:
         timeout: float = 60.0,
         client: Any | None = None,
     ) -> None:
-        if not isinstance(model, str) or not model.strip():
+        if not isinstance(model, str) or not model.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise ValueError("model must be a non-empty string")
         self._model = model
         self._api_key = api_key
@@ -163,7 +164,7 @@ class OpenAILLM:
     def _get_client(self) -> Any:
         if self._client is not None:
             return self._client
-        openai = _require("openai")
+        openai = require("openai")
         kwargs: dict[str, Any] = {"timeout": self._timeout}
         if self._api_key:
             kwargs["api_key"] = self._api_key
@@ -192,7 +193,7 @@ class AnthropicLLM:
         api_key: str | None = None,
         client: Any | None = None,
     ) -> None:
-        if not isinstance(model, str) or not model.strip():
+        if not isinstance(model, str) or not model.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise ValueError("model must be a non-empty string")
         self._model = model
         self._api_key = api_key
@@ -201,7 +202,7 @@ class AnthropicLLM:
     def _get_client(self) -> Any:
         if self._client is not None:
             return self._client
-        anthropic = _require("anthropic")
+        anthropic = require("anthropic")
         kwargs: dict[str, Any] = {}
         if self._api_key:
             kwargs["api_key"] = self._api_key
@@ -229,7 +230,7 @@ class GeminiLLM:
         api_key: str | None = None,
         client: Any | None = None,
     ) -> None:
-        if not isinstance(model, str) or not model.strip():
+        if not isinstance(model, str) or not model.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise ValueError("model must be a non-empty string")
         self._model = model
         self._api_key = api_key
@@ -238,7 +239,7 @@ class GeminiLLM:
     def _get_client(self) -> Any:
         if self._client is not None:
             return self._client
-        google = _require("google.generativeai", pip_name="google-generativeai")
+        google = require("google.generativeai", pip_name="google-generativeai")
         if self._api_key:
             google.configure(api_key=self._api_key)
         self._client = google.GenerativeModel(self._model)
@@ -267,7 +268,7 @@ class OpenAIEmbeddingLLM:
         api_key: str | None = None,
         post: PostCallable | None = None,
     ) -> None:
-        if not isinstance(model, str) or not model.strip():
+        if not isinstance(model, str) or not model.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise ValueError("model must be a non-empty string")
         if not base_url:
             raise ValueError("base_url must be provided")
@@ -281,6 +282,40 @@ class OpenAIEmbeddingLLM:
         headers = {"Content-Type": "application/json"}
         if self._api_key:
             headers["Authorization"] = f"Bearer {self._api_key}"
-        payload = {"model": self._model, "input": text}
+        payload: dict[str, Any] = {"model": self._model, "input": text}
         data = self._post(f"{self._base_url}/embeddings", payload, headers)
         return [float(value) for value in data["data"][0]["embedding"]]
+
+
+class OllamaEmbeddingLLM:
+    """Embed text with a local Ollama server over stdlib HTTP (no dependencies).
+
+    Exposes the duck-typed ``embed(text) -> list[float]`` capability against
+    Ollama's ``/api/embed`` endpoint, so a single local server can provide both
+    chat (via :class:`OllamaLLM`) and real semantic embeddings — a fully-local,
+    no-cloud semantic stack for the hybrid router. Uses only the standard
+    library; pass ``post`` to inject a transport for tests.
+    """
+
+    def __init__(
+        self,
+        model: str = "nomic-embed-text",
+        *,
+        base_url: str = "http://localhost:11434",
+        post: PostCallable | None = None,
+    ) -> None:
+        if not isinstance(model, str) or not model.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
+            raise ValueError("model must be a non-empty string")
+        self._model = model
+        self._base_url = base_url.rstrip("/")
+        self._post = post or _default_post
+
+    def embed(self, text: str) -> list[float]:
+        """Embed ``text`` into a float vector using the local Ollama server."""
+        payload: dict[str, Any] = {"model": self._model, "input": text}
+        data = self._post(
+            f"{self._base_url}/api/embed",
+            payload,
+            {"Content-Type": "application/json"},
+        )
+        return [float(value) for value in data["embeddings"][0]]

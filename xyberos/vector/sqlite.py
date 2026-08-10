@@ -8,7 +8,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from ..contracts.vector import ScoredHit, VectorStore
-from .cosine import _cosine
+from .cosine import cosine
 
 
 class SqliteVectorStore(VectorStore):
@@ -96,7 +96,7 @@ class SqliteVectorStore(VectorStore):
         query_vector = [float(value) for value in vector]
         scored: list[ScoredHit] = []
         for item_id, raw_vector, raw_payload in rows:
-            similarity = _cosine(query_vector, json.loads(raw_vector))
+            similarity = cosine(query_vector, json.loads(raw_vector))
             if threshold is not None and similarity < threshold:
                 continue
             scored.append(ScoredHit(id=item_id, score=similarity, payload=_load(raw_payload)))

@@ -24,7 +24,9 @@ def intent_accuracy(
     context_factory: Callable[[str], Any] | None = None,
 ) -> float:
     """Top-1 intent classification accuracy over ``(prompt, expected_intent)`` pairs."""
-    make_context = context_factory or (lambda prompt: CognitiveContext(prompt))
+    make_context: Callable[[str], Any] = context_factory or (
+        lambda prompt: CognitiveContext(prompt)
+    )
     correct = 0
     total = 0
     for prompt, expected in dataset:

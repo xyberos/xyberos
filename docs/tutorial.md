@@ -1,517 +1,475 @@
-# Xyberos Tutorial
+# Xyberos Tutorial — Build a Customer Support Assistant
 
-This tutorial shows how to build a small Xyberos application using the features that exist today:
+> **Beginner friendly.** No AI experience and no API keys required. In about 30
+> minutes you'll build a working AI **customer support assistant** — a bot that
+> knows your company's policies, remembers the conversation, looks up orders,
+> opens tickets, asks a human to approve refunds, and hands tough cases to a
+> real agent. Every step is a complete, copy-pasteable program.
 
-- configuration and services
-- swapping the LLM and model adapters
-- memory and knowledge providers (in-memory and SQLite)
-- tools and typed function tools
-- workflows and state graphs
-- agents and multi-agent collaboration
-- plugins
-- events and observability
-- async and streaming
-- structured outputs and LLM-driven planning
-- production hardening
-- training the system — capture, feedback, promote, evaluate, and distill (see the [Training Tutorial](training-tutorial.md))
+## What you'll build
 
-The codebase does not currently include a first-class automatic tool-calling or `skills` subsystem. In this repository, those responsibilities are covered by tools, workflows, planners, agents, and plugins.
+| Step | Your assistant learns to… | Concept you're learning |
+|---|---|---|
+| 1–3 | say hello with a real (local) model | apps, the pipeline, LLMs |
+| 4 | answer "what are your hours?" from a fact sheet | **knowledge** |
+| 5 | remember what you told it | **memory** |
+| 6 | look up orders and open tickets | **tools** |
+| 7 | handle repeat questions *without* the LLM | **hybrid router** |
+| 8 | run a refund that waits for a human "yes" | **workflows** |
+| 9 | escalate to a human agent | **agents** |
+| 10 | serve it as a web API | **FastAPI + async + streaming** |
+| 11 | survive failures and block bad prompts | **hardening + security** |
 
-## Prerequisites
+## Before you start
 
-Install Xyberos from PyPI:
+- **Python 3.10 or newer** — check with `python --version`.
+- Install Xyberos (the core is **zero-dependency** — just the standard library):
 
 ```bash
 pip install xyberos
 ```
 
-Or from source:
+- *(Optional but recommended)* A local [Ollama](https://ollama.com) server so
+  you can use a **real model with no API key and no cloud**:
 
 ```bash
-git clone https://github.com/xyberos/xyberos.git
-cd xyberos
-pip install -e .
+ollama pull llama3.2
 ```
 
-## 1. Create an app
+  Don't want to install Ollama? No problem — every example runs with a
+  deterministic stand-in, so nothing here is required to follow along.
 
-The fastest entry point is `create_app()`.
+> **How to follow along:** put each snippet in its own file (e.g. `step1.py`)
+> and run it with `python step1.py`. Each step is a complete program, not a
+> fragment.
+
+---
+
+# Part 1 — Hello, Xyberos
+
+## 1. Your first app
 
 ```python
 from xyberos import create_app
 
 app = create_app()
-print(app.chat("hello"))
+print(app.chat("Hello, world!"))   # -> Hello, world!
 ```
 
-By default, Xyberos uses `EchoLLM`, which returns the prompt unchanged.
+What just happened?
 
-## 2. Pass configuration
+- `create_app()` builds a **fully-wired AI application** for you — model,
+  memory, knowledge, planner, tools, security, and more. You didn't wire any
+  of it by hand.
+- `app.chat("...")` sends your text through the whole **cognitive pipeline**
+  and returns the reply as a string.
+- With no model configured, Xyberos uses `EchoLLM`, which simply echoes your
+  prompt back. That's the "Hello, world!" of AI apps — **zero setup, zero
+  cost, zero API keys.**
 
-You can provide configuration at startup.
+## 2. What's actually happening under the hood
+
+Use `app.run()` instead of `app.chat()` and you get back a `CognitiveContext`
+— an object that carries everything about the request:
 
 ```python
 from xyberos import create_app
 
-app = create_app(config={
-    "logger_name": "xyberos.tutorial",
-    "log_level": "INFO",
-})
+app = create_app()
+ctx = app.run("Hello, world!")
 
-print(app.config.as_dict())
+print(ctx.prompt)      # the input
+print(ctx.response)    # the model's reply
+print(ctx.succeeded)   # True when there was no error
+print(ctx.metadata)    # open-ended dict you can attach anything to
 ```
 
-The config object is accessible through `app.config`, and it is also registered as the `"config"` service in the kernel.
+A single `app.chat(prompt)` runs the **automated pipeline**:
 
-The app also exposes common services directly:
+```text
+Workflow → Memory → Knowledge → Intent → Plan → Tools → LLM → Memory
+ (pre-steps) (history)  (facts)   (goal)   (steps) (actions) (reply) (remember)
+```
 
-- `app.llm`
-- `app.memory`
-- `app.knowledge`
-- `app.tools`
-- `app.tool_runner`
-- `app.planner`
-- `app.workflow`
-- `app.events`
+The key idea: **the "brain" orchestrates all of this automatically.** You add
+capabilities (facts, history, tools) and the brain uses them in the right
+order. You rarely call subsystems yourself — you configure them and
+`app.chat()` does the rest.
 
-## 3. Override the LLM
+The app also exposes those subsystems directly, so you can inspect them:
 
-The supported way to replace the model is to pass an `LLMProvider` when you create the app.
+```python
+app.llm            # the model
+app.memory         # conversation history
+app.knowledge      # facts
+app.planner        # produces plans
+app.tools          # registered tools
+app.events         # pub/sub observability
+```
+
+## 3. Use a real model — with no API keys
+
+The simplest way to use a real model is **Ollama**, a free local server. After
+`ollama pull llama3.2`:
 
 ```python
 from xyberos import create_app
-from xyberos.llm import CallableLLM
-
-
-def reverse_text(prompt: str) -> str:
-    return prompt[::-1]
-
-
-app = create_app(llm=CallableLLM(reverse_text))
-print(app.chat("abc"))  # cba
-```
-
-You can also instantiate the facade directly:
-
-```python
-from xyberos import Xyberos
-from xyberos.llm import CallableLLM
-
-app = Xyberos(llm=CallableLLM(lambda prompt: f"handled: {prompt}"))
-```
-
-For a real model, use one of the bundled adapters — `OllamaLLM` and
-`OpenAICompatibleLLM` need no extra dependencies, while `OpenAILLM`,
-`AnthropicLLM`, and `GeminiLLM` import their SDK lazily (see
-[Model adapters](#19-model-adapters)):
-
-```python
 from xyberos.llm import OllamaLLM
 
-app = create_app(llm=OllamaLLM(model="llama3.2"))   # a local Ollama server
+app = create_app(llm=OllamaLLM(model="llama3.2"))
+print(app.chat("Explain quantum computing in one sentence."))
 ```
 
-### Important note
+`OllamaLLM` talks to your local Ollama server over plain HTTP — **no SDK, no
+cloud, no API key.**
 
-The `Brain` captures its providers when the app is constructed. If you replace a
-registered provider afterwards (for example
-`kernel.register("llm", ..., replace=True)`), the existing `Brain` instance
-keeps its original reference. `app.load_entry_points()` re-syncs the brain from
-the kernel after plugin discovery, but for a direct replacement either create a
-fresh app or reassign the provider on the brain yourself.
+Other ways to plug in a model:
 
-## 4. Use the runtime
+- `CallableLLM(func)` — wrap any plain `prompt -> text` function. The perfect
+  fake for building and testing before you spend money on a model:
 
-The runtime turns a prompt into a `CognitiveContext`.
+  ```python
+  from xyberos import create_app
+  from xyberos.llm import CallableLLM
+
+  app = create_app(llm=CallableLLM(lambda prompt: f"[support] {prompt}"))
+  ```
+
+- `OpenAICompatibleLLM` — any OpenAI-compatible `/chat/completions` endpoint
+  (OpenAI, vLLM, LM Studio, llama.cpp).
+- `OpenAILLM`, `AnthropicLLM`, `GeminiLLM` — the official SDKs, imported lazily
+  (they raise a clear error if the SDK isn't installed).
+
+---
+
+# Part 2 — Build the support assistant
+
+Now we build the real thing. Each section adds **one capability** to the same
+customer-support bot, so by the end you'll have a complete app.
+
+## 4. Teach it facts — Knowledge
+
+Support bots answer "what are your hours?" or "what's your refund policy?"
+from a **fact sheet**. That's the `Knowledge` subsystem: facts that are
+injected into the prompt so the model answers from *your* data.
 
 ```python
 from xyberos import create_app
+from xyberos.knowledge import SqliteKnowledge
+from xyberos.llm import CallableLLM
 
-app = create_app()
-context = app.run("say hello")
+knowledge = SqliteKnowledge("facts.db")              # durable, stdlib sqlite
+knowledge.add("hours", "Support is available 9am-6pm Mon-Fri.")
+knowledge.add("billing", "Billing questions go to billing@example.com.")
+knowledge.add("refund", "Refunds are processed within 5-7 business days.")
 
-print(context.prompt)
-print(context.response)
-print(context.succeeded)
+app = create_app(
+    llm=CallableLLM(lambda prompt: prompt),          # echo so you can SEE the injection
+    knowledge=knowledge,
+)
+print(app.chat("what are your hours?"))
 ```
 
-If you only want the generated text, use `chat()`:
+You'll see the model's input already contains your fact:
 
-```python
-text = app.chat("say hello")
+```text
+what are your hours?
+
+Relevant knowledge:
+{'hours': 'Support is available 9am-6pm Mon-Fri.'}
 ```
 
-## 5. Add memory
+That's the whole trick — the brain retrieves matching facts and **enriches the
+prompt** before calling the model. Use `SqliteKnowledge("facts.db")` for facts
+that survive restarts, or `InMemoryKnowledge({...})` for throwaway ones.
 
-`InMemoryMemory` is a simple provider that stores contexts in a list.
+## 5. Make it remember — Memory
 
-```python
-from xyberos.memory import InMemoryMemory
-from xyberos.runtime.context import CognitiveContext
-
-memory = InMemoryMemory()
-first = CognitiveContext("first request")
-second = CognitiveContext("second request")
-
-memory.store(first)
-memory.store(second)
-
-print(memory.retrieve(first))
-```
-
-The `Brain` wires memory automatically: it retrieves stored turns before
-generating and stores each completed turn afterward. `create_app()` already
-registers an `InMemoryMemory` as the default, so a default app remembers
-conversations across calls.
-
-```python
-from xyberos import create_app
-
-app = create_app()
-app.chat("first message")
-app.chat("what did I just say?")   # the first turn is part of the history
-
-for entry in app.memory.retrieve(None):
-    print(entry.prompt, "->", entry.response)
-```
-
-Swap in your own backend by passing `memory=` to `create_app()`. For durable
-storage that survives restarts, use the SQLite provider (stdlib only):
+Users say "my order is A-100" and then "what did I just ask about?" — the bot
+must **remember the conversation**. That's `Memory` (and `create_app()` wires it
+in for you):
 
 ```python
 from xyberos import create_app
 from xyberos.memory import SqliteMemory
 
-app = create_app(memory=SqliteMemory("chat.db"))
+app = create_app(memory=SqliteMemory("chat.db"))     # survives restarts
+app.chat("my order is A-100")
+print(app.chat("what did I just ask about?"))        # sees the history
 ```
 
-The tool runner is available as `app.tool_runner` and can choose and execute a
-tool for a context.
-
-## 6. Add knowledge
-
-`InMemoryKnowledge` provides keyword-based lookups.
+Past turns are added to the prompt as conversation history, so the model
+answers in context. Use `SqliteMemory` for real persistence or the default
+in-memory memory for quick tests. Inspect what it remembers:
 
 ```python
-from xyberos.knowledge import InMemoryKnowledge
+for entry in app.memory.retrieve(None):
+    print(entry.prompt, "->", entry.response)
+```
+
+## 6. Give it hands — Tools
+
+A bot that only talks gets stuck. **Tools** are named capabilities it can act
+on — look up an order, open a ticket. The easiest way is `FunctionTool`, which
+turns a plain typed function into a tool and derives a JSON schema from the
+signature:
+
+```python
 from xyberos.runtime.context import CognitiveContext
+from xyberos.tools import FunctionTool, ToolRegistry
 
-knowledge = InMemoryKnowledge({
-    "kernel": "platform services",
-    "brain": "response generation",
-})
+ORDERS = {"A-100": "shipped", "A-200": "delivered", "B-300": "processing"}
 
-context = CognitiveContext("tell me about the kernel")
-print(knowledge.query(context))
+def lookup_order(order_id: str = "unknown") -> str:
+    """Look up the status of an order by id."""
+    status = ORDERS.get(order_id.upper(), "not found")
+    return f"Order {order_id} status: {status}"
+
+def open_ticket() -> str:
+    """Open a new support ticket."""
+    return "A support ticket has been opened (ticket #T-1001)."
+
+registry = ToolRegistry([
+    FunctionTool("lookup_order", lookup_order, description="Look up an order's status"),
+    FunctionTool("open_ticket", open_ticket, description="Open a new support ticket"),
+])
+
+# Run a tool by name, passing its arguments:
+print(registry.execute("lookup_order", CognitiveContext("order"), order_id="A-100"))
+# -> Order A-100 status: shipped
+
+# The JSON schema is generated from the function signature:
+print(registry.get("lookup_order").schema)
 ```
 
-You can extend it at runtime:
+Notice the types: `FunctionTool` reads the signature (`order_id: str`),
+generates a JSON schema, and **validates/coerces** arguments before calling the
+function. Hand-executing tools like this is the simplest way to start; later
+you can let the LLM *choose* which tool to run.
 
-```python
-knowledge.add("runtime", "request execution")
+## 7. Handle repeat questions without the LLM — the hybrid router
+
+Here's the smart part. A support bot gets the **same questions over and over**
+(\"hours?\", \"refund?\", \"status?\"). Calling the LLM for every repeat is slow
+and expensive. The **hybrid router** answers each request with the *cheapest
+confident tier* first:
+
+```text
+Template → Tool → Knowledge → Memory → Cache → LLM → Degrade
+ (canned)  (actions)  (facts)  (history)  (learned)  (novel tail)  (fallback)
 ```
 
-The `Brain` queries knowledge automatically: facts matching the prompt are
-injected into the model input as relevant context. `create_app()` registers an
-`InMemoryKnowledge` by default; pass `knowledge=` to supply your own.
+- Tiers 0–4 can answer **without any LLM call**.
+- The LLM handles only the **novel tail**, and it **teaches** the cache — so
+  the same question next time is served by the cache, not the model.
+
+The easiest way to get this is `create_semantic_app` with a **real embedder**
+(semantic matching needs one; the default `HashEmbedder` is for development).
+
+#### Fully-local semantic stack
+
+If you run Ollama, you get a fully-local, no-cloud stack — one server for chat
+*and* embeddings (pull the embedding model once):
+
+```bash
+ollama pull nomic-embed-text
+```
 
 ```python
-from xyberos import create_app
-from xyberos.llm import CallableLLM
-from xyberos.knowledge import InMemoryKnowledge
+from xyberos import create_semantic_app
+from xyberos.llm import OllamaLLM, OllamaEmbeddingLLM
 
-app = create_app(
-    llm=CallableLLM(lambda prompt: prompt),   # echo the enriched prompt
-    knowledge=InMemoryKnowledge({"hours": "9am-6pm"}),
+app = create_semantic_app(
+    llm=OllamaLLM(model="llama3.2"),
+    embedder=OllamaEmbeddingLLM(model="nomic-embed-text"),  # real semantic matching
+    router="hybrid",  # template → tool → knowledge → memory → cache → LLM
 )
-print(app.chat("What are your hours?"))
-# What are your hours?
-#
-# Relevant knowledge:
-# {'hours': '9am-6pm'}
+
+print(app.chat("What time are you open?"))    # answered cheaply after warm-up
 ```
 
-You can extend the provider at runtime with `knowledge.add(key, value)`, and use
-`SqliteKnowledge("facts.db")` for a durable backend.
+Other embedders are drop-in: `SentenceTransformerEmbedder` (local, needs
+`pip install xyberos[embeddings]`) or `OpenAIEmbeddingLLM` (remote).
 
-## 7. Use tools
+## 8. Automate a process — Workflows
 
-Tools are named capabilities that act on a context. You register them in a
-`ToolRegistry` and execute them by name, or let the `ToolRunner` dispatch based
-on the prompt content.
-
-```python
-from xyberos.contracts import Tool
-from xyberos.tools import ToolRegistry, ToolRunner
-from xyberos.runtime.context import CognitiveContext
-
-
-class ReverseTool(Tool):
-    name = "reverse"
-
-    def execute(self, context, **arguments):
-        return context.prompt[::-1]
-
-
-registry = ToolRegistry([ReverseTool()])
-print(registry.execute("reverse", CognitiveContext("abc")))  # cba
-
-runner = ToolRunner([ReverseTool()])
-print(runner.dispatch(CognitiveContext("reverse this")))  # cba
-```
-
-For typed tools, wrap a plain function — `FunctionTool` derives a JSON schema
-from the signature and validates/coerces arguments:
+Refunds shouldn't be instant — a human should approve them. **Workflows** let
+you model a process with steps that can **pause for human input** and resume
+later, even after a server restart.
 
 ```python
-from xyberos.tools import FunctionTool
-
-
-def search(query: str, limit: int = 10) -> str:
-    return f"search({query}, limit={limit})"
-
-
-tool = FunctionTool("search", search, description="Search the catalog")
-print(tool.schema)   # JSON schema for the parameters
-print(tool.execute(CognitiveContext("x"), query="books", limit="5"))  # limit coerced to 5
-```
-
-## 8. Build workflows
-
-Workflows execute a sequence of steps against a cognitive context. Each step can
-mutate the context or return a replacement.
-
-```python
-from xyberos.workflows import SequentialWorkflow
-from xyberos.runtime.context import CognitiveContext
-
-
-def annotate(context):
-    context.metadata["source"] = "workflow"
-
-def respond(context):
-    context.response = f"processed: {context.prompt}"
-    return context
-
-
-workflow = SequentialWorkflow([annotate, respond])
-result = workflow.run(CognitiveContext("hello"))
-print(result.response)   # processed: hello
-print(result.metadata)   # {'source': 'workflow'}
-```
-
-Steps that return `None` keep the current context. Steps that return a new
-`CognitiveContext` replace it. Raising an exception stops the workflow.
-
-For branching, loops, and human-in-the-loop, use `GraphWorkflow` — a directed
-graph of named steps with `add_edge` (fixed) and `add_route` (conditional):
-
-```python
-from xyberos.workflows import GraphWorkflow
 from xyberos.exceptions import WorkflowPaused
+from xyberos.runtime.context import CognitiveContext
+from xyberos.workflows import GraphWorkflow, WorkflowCheckpoint
 
+refund = GraphWorkflow("verify")
 
-def review(context):
-    if GraphWorkflow.RESUME_KEY in context.metadata:   # resumed with a value
-        context.response = f"approved by {context.metadata[GraphWorkflow.RESUME_KEY]}"
+def verify(context):
+    if GraphWorkflow.RESUME_KEY in context.metadata:          # resumed with a value?
+        decision = context.metadata[GraphWorkflow.RESUME_KEY]
+        context.response = "approved" if decision == "yes" else "rejected"
         return context
-    raise WorkflowPaused(prompt="Approve this action?")
+    raise WorkflowPaused(prompt="Approve this refund? Reply yes or no.")
 
+refund.add_node("verify", verify)
 
-graph = GraphWorkflow("review")
-graph.add_node("review", review)
+# Start the flow -> it pauses for approval
+run = refund.execute(CognitiveContext("refund A-100"))
+print(run.status)     # paused
+print(run.prompt)     # Approve this refund? Reply yes or no.
 
-run = graph.execute(CognitiveContext("task"))
-if run.status == "paused":
-    print(run.prompt)                        # "Approve this action?"
-    run = graph.resume(run, "the reviewer")  # human-in-the-loop
-
-print(run.context.response)                  # approved by the reviewer
+# A human decides "yes" -> the flow resumes and finishes
+run = refund.resume(run, "yes")
+print(run.context.response)   # approved
 ```
 
-Paused runs can be persisted and resumed in a later process with
-`WorkflowCheckpoint("runs.db")` and `graph.resume_from_checkpoint(...)`.
+Pause a run across restarts with a checkpoint:
 
-## 9. Add agents
+```python
+checkpoint = WorkflowCheckpoint("runs.db")
+run = refund.execute(CognitiveContext("refund B-300"))
+checkpoint.save("run-1", run)          # save the paused run to disk
+# ...server restarts...
+restored = checkpoint.load("run-1")
+refund.resume(restored, "no")          # -> context.response == "rejected"
+```
 
-Agents are named participants that transform a context. The framework ships with
-`RuntimeAgent` (which wraps a runtime) and `MultiAgentRuntime` (which runs
-agents sequentially).
+For a simple fixed sequence, `SequentialWorkflow([step1, step2, ...])` runs
+steps in order. Use `GraphWorkflow` when you need branches, loops, or
+human-in-the-loop.
+
+## 9. Add teammates — Agents
+
+Some requests are too hard for the bot. **Agents** let you hand a request from
+one participant to another — here a *supervisor* hands off to a *support
+worker*:
 
 ```python
 from xyberos import create_app
-from xyberos.contracts import Agent
-
-
-class AuditAgent(Agent):
-    name = "audit"
-
-    def run(self, context):
-        context.metadata.setdefault("audits", []).append("checked")
-        return context
-
-
-app = create_app()
-app.register_agent(AuditAgent())
-result = app.run_agents("task", agent_names=["audit", "default"])
-print(result.response)
-print(result.metadata)   # {'audits': ['checked']}
-```
-
-Agents can also collaborate with messages, handoffs, and roles via `RoleAgent`,
-`Message`, `post`, and `handoff`:
-
-```python
 from xyberos.agents import RoleAgent, handoff, post
 
-
-def ask(context):
-    post(context, handoff("worker", sender="boss"))
+def supervisor_run(context):
+    post(context, handoff("support_worker", sender="supervisor"))
     return context
 
-
-def work(context):
-    context.response = "handled by worker"
+def worker_run(context):
+    context.response = f"Escalated: a human agent will follow up on '{context.prompt}'."
     return context
 
-
-app.register_agent(RoleAgent("boss", "supervisor", run=ask))
-app.register_agent(RoleAgent("worker", "performer", run=work))
-app.run_agents("task", agent_names=["boss", "worker"])
-```
-
-A `handoff` message runs its recipient next, `recipient="*"` broadcasts, and
-agents that implement `receive(message)` get inbound messages. The whole
-exchange is recorded on `app.agents.messages`.
-
-## 10. Load plugins
-
-Plugins extend the kernel by registering and unregistering services. They are
-first-class extension points with a stable contract.
-
-```python
-from xyberos import create_app
-from xyberos.contracts import Plugin
-
-
-class GreetingPlugin(Plugin):
-    name = "greeting"
-
-    def register(self, kernel):
-        kernel.register("greeting", "hello from plugin")
-
-    def unregister(self, kernel):
-        kernel.registry.unregister("greeting")
-
-
 app = create_app()
-app.load_plugin(GreetingPlugin())
-print(app.resolve("greeting"))   # hello from plugin
+app.register_agent(RoleAgent("supervisor", "triage", run=supervisor_run))
+app.register_agent(RoleAgent("support_worker", "resolver", run=worker_run))
+
+result = app.run_agents("I need a human", agent_names=["supervisor", "support_worker"])
+print(result.response)   # Escalated: a human agent will follow up on 'I need a human'.
 ```
 
-## 11. Auto-discovery
+`handoff(...)` tells the runtime to run the named agent next. The whole
+exchange is recorded on `app.agents.messages`, so you get a full audit trail.
 
-Plugins don't have to be loaded manually. Two auto-discovery mechanisms let
-modules register themselves without any wiring in the app.
+## 10. Serve it on the web — FastAPI
 
-**Convention scan** — walk a package and load every concrete `Plugin` subclass
-it finds. Drop a new module in the folder and it is wired up:
+To turn the bot into a real service, expose it over HTTP. Xyberos has an async
+API (`app.achat`) that works perfectly inside FastAPI:
 
 ```python
-app.load_plugins_from("app.plugins")   # auto-discovers every Plugin in the package
+# server.py  (pip install fastapi uvicorn)
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+from xyberos import create_app
+from xyberos.llm import OllamaLLM
+
+app = FastAPI(title="Support Assistant")
+bot = create_app(llm=OllamaLLM(model="llama3.2"))
+
+class ChatRequest(BaseModel):
+    prompt: str
+
+@app.post("/chat")
+async def chat(body: ChatRequest):
+    return {"response": await bot.achat(body.prompt)}
 ```
 
-**Entry points** — a plugin declares itself in its package metadata and is found
-via `importlib.metadata` (the same mechanism pytest and uvicorn use). Installing
-the package registers the plugin:
+Run it:
 
-```toml
-# pyproject.toml of the plugin package
-[project.entry-points."xyberos.plugins"]
-chat = "app.plugins.persistence:ChatPersistencePlugin"
+```bash
+pip install fastapi uvicorn
+uvicorn server:app --reload
 ```
+
+```bash
+curl -X POST localhost:8000/chat -H 'Content-Type: application/json' \
+     -d '{"prompt": "what are your hours?"}'
+```
+
+**Streaming** — if the model supports it, tokens arrive incrementally as
+`brain.token_streamed` events, which you can forward to the browser as
+server-sent events.
+
+**Observability** — every request publishes events to `app.events`. Record them
+all with an `EventRecorder` and expose a dashboard:
 
 ```python
-app.load_entry_points()   # auto-discovers every installed xyberos.plugins entry point
+from xyberos.events import EventRecorder
+
+recorder = EventRecorder(limit=10_000).subscribe_to(bot.events)
+# ...after some traffic...
+print(recorder.counts())   # {'brain.response_produced': 12, ...}
 ```
 
-Both styles are idempotent — re-running discovery never double-registers a plugin.
+## 11. Harden it for production
 
-## Putting it together
-
-A typical Xyberos app composes the kernel, an LLM, providers, tools, agents, and
-plugins. For a complete walkthrough, run the
-[Hello World to Full Stack](https://github.com/xyberos/xyberos/blob/main/examples/hello_world_to_full_stack/README.md)
-example, or study the
-[Chat App](https://github.com/xyberos/xyberos/blob/main/examples/chat_app/README.md) for a real FastAPI + database
-backend with pluggable auto-discovery.
+A real service retries transient failures, times out, and never says anything
+harmful. All of this is configuration:
 
 ```python
 from xyberos import create_app
 
-app = create_app()
-
-def build_message(logger, config):
-    return f"{logger.name}:{config.get('logger_name')}"
-
-app.register_factory("message", build_message)
-print(app.resolve("message"))
+app = create_app(config={
+    "brain.max_attempts": 3,     # retry transient LLM failures
+    "brain.retry_backoff": 0.2,  # wait (exponential) before retrying
+    "brain.timeout": 60,         # seconds per LLM call
+    "brain.rate_limit": 10,      # max LLM calls per second
+    "security.audit_path": "audit.db",  # log every security event to disk
+})
 ```
 
-## 12. Put everything together
-
-Here is a small end-to-end example that exercises every subsystem through the
-automated brain pipeline.
+**Kill switch** — halt the whole bot instantly (e.g. for an emergency):
 
 ```python
-from xyberos import create_app
-from xyberos.llm import CallableLLM
-from xyberos.contracts import Tool
-from xyberos.knowledge import InMemoryKnowledge
-from xyberos.runtime.context import CognitiveContext
-from xyberos.tools import ToolRegistry
+app.security.engage_kill_switch("emergency maintenance")
+app.chat("hello")            # raises SecurityHaltError
+app.security.disengage_kill_switch()
+app.chat("hello")            # works again
+```
 
+**Guardrails** — block harmful prompts:
 
-class ReverseTool(Tool):
-    @property
-    def name(self):
-        return "reverse"
+```python
+from xyberos import Guardrail
 
-    def execute(self, context, **arguments):
-        return context.prompt[::-1]
-
-
-app = create_app(
-    llm=CallableLLM(lambda prompt: f"model:{prompt}"),
-    knowledge=InMemoryKnowledge({"hello": "a greeting"}),
+app.security.add_guardrail(
+    Guardrail("no-hacks", lambda ctx: "hack" not in ctx.prompt)
 )
-
-context = app.run("hello")
-print(context.plan)                    # the planner's recorded plan
-print(app.resolve("knowledge").query(context))
-print(app.chat("hello"))               # the model sees the injected knowledge
-
-# The brain dispatches tools when they are registered with the app; you can
-# also execute a tool directly.
-tools = ToolRegistry([ReverseTool()])
-print(tools.execute("reverse", CognitiveContext("abc")))  # cba
 ```
 
-> Note: because the brain is wired to every subsystem, the memory, knowledge,
-> and tool steps also happen automatically inside `app.run()` / `app.chat()`
-> without manual orchestration. The explicit calls above let you observe them.
+---
 
-## 13. The automated pipeline
+# Part 3 — The full picture & next steps
 
-Since the brain is wired to every subsystem, a single `app.chat(prompt)` runs:
+## 12. How it all fits together
 
-1. **Workflow** — any configured steps run first; a step that sets the response short-circuits.
-2. **Memory** — past turns are retrieved and added to the prompt as conversation history.
-3. **Knowledge** — matching facts are retrieved and added to the prompt.
-4. **Planner** — the plan is computed and recorded on `context.plan`.
-5. **Tools** — a matching tool may handle the request before the model is called.
-6. **LLM** — the (possibly enriched) prompt is sent to the model.
-7. **Memory** — the completed turn is stored so the next request can recall it.
+By now your assistant has every capability. Here's what `app.chat("...")` does
+with them, in order:
+
+1. **Workflow** — any pre-steps run; a step that sets the response short-circuits.
+2. **Memory** — past turns are added as conversation history.
+3. **Knowledge** — matching facts are injected into the prompt.
+4. **Intent / Plan** — the request is classified and a plan is computed.
+5. **Router / Tools** — a confident cheap tier (or a tool) may answer first.
+6. **LLM** — only the novel tail reaches the model; its answer is cached.
+7. **Memory** — the completed turn is stored for next time.
 
 You can observe the memory behavior directly:
 
@@ -526,71 +484,33 @@ for entry in app.memory.retrieve(None):
     print(entry.prompt, "->", entry.response)
 ```
 
-## 14. Events and observability
+## 13. More building blocks
 
-Every request publishes events to an `EventBus` (exposed as `app.events`):
-kernel and plugin lifecycle, runtime requests, and each brain pipeline step
-(memory, knowledge, planner, tools, response). Subscribe with the event names
-from `xyberos.events`:
+Quick looks at a few more subsystems, all covered in the
+[API reference](api-reference.md) and [Extending Xyberos](extensions.md).
 
-```python
-from xyberos.events import RESPONSE_PRODUCED, TOKEN_STREAMED
-
-app.events.subscribe(RESPONSE_PRODUCED, lambda e: print("response:", e.data["response"]))
-app.events.subscribe(TOKEN_STREAMED, lambda e: print(e.data["token"], end=""))
-```
-
-Attach an `EventRecorder` to record everything and forward to exporters:
+**Plugins & auto-discovery** — extend the kernel by registering services, and
+let modules register themselves with zero wiring:
 
 ```python
-from xyberos.events import EventRecorder, LoggingExporter
-
-recorder = EventRecorder(limit=1000).subscribe_to(app.events)
-recorder.add_exporter(LoggingExporter(app.logger))
-print(recorder.counts())   # per-event counts for dashboards
-```
-
-A listener that raises is logged and isolated — it never breaks the pipeline.
-
-## 15. Async and streaming
-
-The synchronous API is the default; async is opt-in via `app.arun` and
-`app.achat`:
-
-```python
-import asyncio
 from xyberos import create_app
-from xyberos.llm import AsyncLLM
+from xyberos.contracts import Plugin
 
+class GreetingPlugin(Plugin):
+    name = "greeting"
+    def register(self, kernel):
+        kernel.register("greeting", "hello from plugin")
 
-async def agenerate(prompt):
-    return f"async: {prompt}"
+app = create_app()
+app.load_plugin(GreetingPlugin())
+print(app.resolve("greeting"))       # hello from plugin
 
-
-app = create_app(llm=AsyncLLM(agenerate))
-response = asyncio.run(app.achat("hello"))
+# app.load_plugins_from("app.plugins")   # convention scan
+# app.load_entry_points()                # installed entry points
 ```
 
-An LLM that implements `stream(prompt, on_token)` emits tokens incrementally;
-the brain publishes them as `brain.token_streamed` events:
-
-```python
-from xyberos.llm import StreamingLLM
-
-
-def stream(prompt, on_token):
-    for token in "abc":
-        on_token(token)
-    return "abc"
-
-
-app = create_app(llm=StreamingLLM(generate=lambda p: p, stream=stream))
-```
-
-## 16. Structured outputs
-
-Parse LLM text output into data with `StructuredLLM` or the one-shot
-`structured` helper. Parse failures raise `StructuredOutputError`:
+**Structured outputs** — parse LLM text into data, or it raises
+`StructuredOutputError`:
 
 ```python
 from xyberos.llm import structured
@@ -598,10 +518,8 @@ from xyberos.llm import structured
 data = structured(app.llm, "Return JSON: {'city': 'Paris'}")   # -> {'city': 'Paris'}
 ```
 
-## 17. LLM-driven planning
-
-`LLMPlanner` asks the LLM to break a request into ordered steps, and the Brain
-records the plan on `context.plan`:
+**LLM-driven planning** — ask the model to break a request into ordered steps
+(recorded on `context.plan`):
 
 ```python
 from xyberos import create_app
@@ -615,46 +533,125 @@ app = create_app(
 print(app.run("build a report").plan)      # ['research', 'draft', 'review']
 ```
 
-## 18. Production hardening
+## 14. Take it further
 
-Retries, rate limiting, and timeouts are configured through `Config` and all
-default to off:
+- **Run the finished example.** The repo ships a complete, runnable version of
+  exactly this app — a FastAPI support assistant with order lookup, refund
+  approval, escalation, streaming, events, and hardening — in
+  [`examples/support_assistant/`](https://github.com/xyberos/xyberos/blob/main/examples/support_assistant/README.md).
+  Try its zero-setup smoke test (`python smoke_test.py`).
+- **Make it learn.** Turn successful conversations into training data and let
+  the bot improve over time — see the [Training Tutorial](training-tutorial.md).
+- **Extend it.** Every subsystem is a plugin surface. See
+  [Extending Xyberos](extensions.md) and the [API reference](api-reference.md).
+
+---
+
+# Appendix
+
+## Glossary
+
+| Term | Meaning |
+|---|---|
+| **App** | A fully-wired Xyberos instance — `create_app()` gives you one. |
+| **Brain** | The orchestrator that runs the automated pipeline for each request. |
+| **LLM** | The model. Duck-typed: anything with `generate(prompt) -> str` works. |
+| **Embedder** | Anything with `embed(text) -> list[float]`; powers semantic matching. |
+| **Memory** | Conversation history injected into the prompt. |
+| **Knowledge** | Facts injected into the prompt. |
+| **Tool** | A named capability the bot can act on. |
+| **Workflow** | An ordered process that can pause for human input. |
+| **Agent** | A named participant that processes a context; agents can hand off. |
+| **Router** | Picks the cheapest confident tier to answer a request. |
+| **Event** | A pub/sub notification fired as the pipeline runs. |
+
+## Common gotchas
+
+- **Semantic matching needs a real embedder.** The default `HashEmbedder` only
+  matches near-identical text. Pass `embedder=` (e.g. `OllamaEmbeddingLLM` or
+  `SentenceTransformerEmbedder`) for paraphrase matching.
+- **SQLite files are written next to your script** (`chat.db`, `facts.db`,
+  `runs.db`, `learning.db`). Keep them out of git or pass explicit paths.
+- **`create_semantic_app` is persistent by default** (`learning.db`) — it
+  accumulates learned facts and cache across runs. Pass `store=CosineVectorStore()`
+  for a clean in-memory session in demos and tests.
+- **The brain captures providers at construction.** Replace a provider after
+  `create_app()`? Create a fresh app instead.
+- **Don't call the LLM for every request.** Teach the cache with the hybrid
+  router and watch LLM calls drop.
+
+## The whole app in one file
+
+Here's the complete support assistant — every step above, together:
 
 ```python
-app = create_app(config={
-    "brain.max_attempts": 3,     # retry LLM calls
-    "brain.retry_backoff": 0.1,  # exponential backoff base
-    "brain.rate_limit": 10,      # calls per second
-    "brain.timeout": 30,         # seconds per LLM call
-})
+from xyberos import create_app
+from xyberos.agents import RoleAgent, handoff, post
+from xyberos.exceptions import WorkflowPaused
+from xyberos.knowledge import SqliteKnowledge
+from xyberos.llm import OllamaLLM
+from xyberos.memory import SqliteMemory
+from xyberos.runtime.context import CognitiveContext
+from xyberos.tools import FunctionTool, ToolRegistry
+from xyberos.workflows import GraphWorkflow
+
+# --- model (needs `ollama pull llama3.2`; swap in CallableLLM to go offline) --
+llm = OllamaLLM(model="llama3.2")
+
+# --- facts + history -------------------------------------------------------
+knowledge = SqliteKnowledge("facts.db")
+knowledge.add("hours", "Support is available 9am-6pm Mon-Fri.")
+knowledge.add("refund", "Refunds are processed within 5-7 business days.")
+
+app = create_app(llm=llm, memory=SqliteMemory("chat.db"), knowledge=knowledge)
+
+# --- tools -----------------------------------------------------------------
+ORDERS = {"A-100": "shipped", "B-300": "processing"}
+
+def lookup_order(order_id: str = "unknown") -> str:
+    return f"Order {order_id} status: {ORDERS.get(order_id.upper(), 'not found')}"
+
+def open_ticket() -> str:
+    return "A support ticket has been opened (ticket #T-1001)."
+
+registry = ToolRegistry([
+    FunctionTool("lookup_order", lookup_order, description="Look up an order's status"),
+    FunctionTool("open_ticket", open_ticket, description="Open a new support ticket"),
+])
+
+# --- human-in-the-loop refund workflow -------------------------------------
+refund = GraphWorkflow("verify")
+
+def verify(context):
+    if GraphWorkflow.RESUME_KEY in context.metadata:
+        decision = context.metadata[GraphWorkflow.RESUME_KEY]
+        context.response = "approved" if decision == "yes" else "rejected"
+        return context
+    raise WorkflowPaused(prompt="Approve this refund? Reply yes or no.")
+
+refund.add_node("verify", verify)
+
+# --- escalation agents -----------------------------------------------------
+def supervisor_run(context):
+    post(context, handoff("support_worker", sender="supervisor"))
+    return context
+
+def worker_run(context):
+    context.response = "Escalated: a human agent will follow up."
+    return context
+
+app.register_agent(RoleAgent("supervisor", "triage", run=supervisor_run))
+app.register_agent(RoleAgent("support_worker", "resolver", run=worker_run))
+
+# --- use it ----------------------------------------------------------------
+print(app.chat("what are your hours?"))                                      # knowledge
+print(registry.execute("lookup_order", CognitiveContext("o"), order_id="A-100"))  # tool
+run = refund.execute(CognitiveContext("refund A-100"))                       # workflow pauses
+print(run.status, run.prompt)
+print(refund.resume(run, "yes").context.response)                            # approved
+print(app.run_agents("help", agent_names=["supervisor", "support_worker"]).response)
 ```
 
-The standalone helpers (`retry`, `RateLimiter`, `with_timeout`) live in
-`xyberos.utils`.
-
-## 19. Model adapters
-
-Dependency-light adapters for real models live in `xyberos.llm`:
-
-- `OllamaLLM` — a local Ollama server (stdlib HTTP, no dependencies).
-- `OpenAICompatibleLLM` — any `/chat/completions` endpoint (OpenAI, llama.cpp,
-  vLLM, LM Studio).
-- `OpenAILLM`, `AnthropicLLM`, `GeminiLLM` — official SDKs, imported lazily on
-  first use (a clear `ProviderError` is raised if the SDK isn't installed).
-
-```python
-from xyberos.llm import OpenAILLM
-
-app = create_app(llm=OpenAILLM(api_key="sk-..."))   # requires `pip install openai`
-```
-
-## 20. Practical guidance
-
-- Use `create_app()` for the simplest setup.
-- Pass `llm=` during creation when you want to override the model.
-- Provide `memory=`, `knowledge=`, `planner=`, `workflow=`, or `tools=` when you
-  want custom backends — the brain uses them automatically.
-- Use tools for named operations and workflows for ordered steps.
-- Use `tool_runner` when you want a simple orchestration layer that chooses and executes tools.
-- Use agents when you want multiple participants to process one context.
-- Use plugins when you need to add or remove kernel-level services.
+> The full, production-shaped version of this file — FastAPI server, streaming,
+> events, checkpointing across restarts — is in
+> [`examples/support_assistant/`](https://github.com/xyberos/xyberos/blob/main/examples/support_assistant/README.md).

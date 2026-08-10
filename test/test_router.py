@@ -1,7 +1,8 @@
 import pytest
 
 from xyberos.contracts import Responder, Template
-from xyberos.router import ResponderChain, TemplateResponder
+from xyberos.llm import CallableLLM
+from xyberos.router import LLMResponder, ResponderChain, TemplateResponder
 
 
 class FailingResponder(Responder):
@@ -105,6 +106,36 @@ def test_chain_accepts_plain_responders_and_assigns_tier_names():
 def test_chain_rejects_invalid_threshold():
     with pytest.raises(ValueError, match="threshold"):
         ResponderChain(threshold=1.5)
+
+
+def test_chain_respond_cheap_stops_before_llm_tier():
+    cheap = RecordingResponder(answer="cheap")
+    llm = LLMResponder(CallableLLM(lambda prompt: "llm"))
+    chain = ResponderChain([("cache", cheap), ("llm", llm)])
+
+    assert chain.respond_cheap(object()) == "cheap"
+
+
+def test_chain_respond_cheap_returns_none_when_no_cheap_tier_answers():
+    chain = ResponderChain(
+        [("cache", RecordingResponder(answer=None)), ("llm", LLMResponder(CallableLLM(lambda p: "llm")))],
+        fallback=lambda context: "fallback",
+    )
+
+    assert chain.respond_cheap(object()) is None  # no fallback in the cheap pass
+
+
+def test_chain_respond_cheap_skips_fallback():
+    chain = ResponderChain([("cache", RecordingResponder(answer=None))], fallback=lambda context: "fallback")
+    assert chain.respond_cheap(object()) is None
+
+
+def test_chain_respond_cheap_stops_before_local_cloud_names():
+    cheap = RecordingResponder(answer="cheap")
+    cloud = RecordingResponder(answer="cloud")
+    chain = ResponderChain([("cache", cheap), ("cloud", cloud)])
+
+    assert chain.respond_cheap(object()) == "cheap"
 
 
 def test_template_responder_requires_template_instances():

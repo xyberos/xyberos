@@ -59,6 +59,12 @@ vectors = [
     "pgvector",
     "psycopg[binary]",
 ]
+rerank = [
+    "scikit-learn",
+]
+embeddings = [
+    "sentence-transformers",
+]
 
 [tool.setuptools.packages.find]
 include = ["xyberos*"]

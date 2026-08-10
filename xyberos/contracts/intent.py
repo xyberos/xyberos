@@ -12,6 +12,11 @@ from dataclasses import dataclass, field
 from typing import Any
 
 
+def _empty_params() -> Mapping[str, Any]:
+    """A fresh params mapping for each Intent."""
+    return {}
+
+
 @dataclass(frozen=True)
 class Intent:
     """A classification of one request.
@@ -24,7 +29,7 @@ class Intent:
 
     name: str
     confidence: float = 0.0
-    params: Mapping[str, Any] = field(default_factory=dict)
+    params: Mapping[str, Any] = field(default_factory=_empty_params)
     target: str | None = None
 
 

@@ -50,9 +50,11 @@ class MultiAgentRuntime:
 
     def register(self, agent: Agent) -> Agent:
         """Register an agent for subsequent coordinated runs."""
-        if not isinstance(agent, Agent):
+        # Defensive runtime guards for untyped callers; the annotations already
+        # guarantee these types for type-checked callers.
+        if not isinstance(agent, Agent):  # type: ignore[unnecessary-isinstance]
             raise TypeError("agent must implement the Agent contract")
-        if not isinstance(agent.name, str) or not agent.name.strip():
+        if not isinstance(agent.name, str) or not agent.name.strip():  # type: ignore[unnecessary-isinstance]
             raise ValueError("agent name must be a non-empty string")
         if agent.name in self._agents:
             raise AgentAlreadyRegisteredError(f"Agent is already registered: {agent.name}")

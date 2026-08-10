@@ -10,12 +10,16 @@ from ..contracts.responder import Responder
 class ToolResponder(Responder):
     """Wrap a :class:`~tools.ToolRunner` as a formal router tier.
 
-    Runs a tool only when there is a *genuine* match:
+    By default it runs a tool only on a *genuine* match:
 
     * the classified intent's ``target`` names a registered tool, or
     * a registered tool name appears in the request prompt.
 
-    Otherwise returns ``None`` so the chain escalates to the next tier.
+    Otherwise it returns ``None`` so the chain escalates to the next tier.
+
+    Pass a :class:`~tools.SchemaToolCaller` as ``caller`` to replace the name
+    heuristic with schema-driven LLM selection and argument extraction
+    (RFC-0018, M9).
 
     ``ToolRunner.dispatch`` is deliberately not wrapped unconditionally: its
     ``choose`` falls back to the *first registered tool* when nothing matches,
@@ -23,8 +27,9 @@ class ToolResponder(Responder):
     on a real match first (RFC-0017, M10).
     """
 
-    def __init__(self, tool_runner: Any) -> None:
+    def __init__(self, tool_runner: Any, *, caller: Any | None = None) -> None:
         self._tool_runner = tool_runner
+        self._caller = caller
 
     @property
     def tool_runner(self) -> Any:
@@ -33,6 +38,8 @@ class ToolResponder(Responder):
 
     def respond(self, context: object) -> Any | None:
         """Dispatch the matching tool, or return ``None`` to escalate."""
+        if self._caller is not None:
+            return self._caller.run(context)
         if not self._matches(context):
             return None
         try:
@@ -41,7 +48,10 @@ class ToolResponder(Responder):
             return None
 
     def confidence(self, context: object) -> float:
-        """``1.0`` when a tool genuinely matches, ``0.0`` otherwise."""
+        """``1.0`` when a tool can answer, ``0.0`` otherwise."""
+        if self._caller is not None:
+            # Schema-driven: let ``respond`` decide via the LLM.
+            return 1.0 if self._tool_runner.names else 0.0
         return 1.0 if self._matches(context) else 0.0
 
     # ------------------------------------------------------------------ #

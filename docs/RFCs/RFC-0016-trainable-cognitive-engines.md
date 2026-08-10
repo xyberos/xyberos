@@ -176,9 +176,10 @@ class VectorStore(ABC):
 def embed(self, text: str) -> Sequence[float]: ...
 ```
 
-A helper `EmbeddingLLM(llm, embedder=None)` and an `OpenAIEmbeddingLLM` adapter are added
-in `xyberos/llm/` / `xyberos/llm/adapters.py` (lazy import, `ProviderError` if the SDK is
-missing — matching existing adapter policy).
+A helper `EmbeddingLLM(llm, embedder=None)` and the `OpenAIEmbeddingLLM` /
+`OllamaEmbeddingLLM` adapters are added in `xyberos/llm/` /
+`xyberos/llm/adapters.py` (stdlib HTTP, no SDK; `OllamaEmbeddingLLM` targets
+Ollama's `/api/embed` for a fully-local semantic stack).
 
 ### 3. `xyberos/contracts/experience.py` — Experience / Learning Layer
 

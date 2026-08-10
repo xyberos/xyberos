@@ -15,7 +15,7 @@ class CallableLLM:
 
     def generate(self, prompt: str) -> str:
         response = self._generate(prompt)
-        if not isinstance(response, str):
+        if not isinstance(response, str):  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise TypeError("LLM generator must return a string")
         return response
 
@@ -60,7 +60,7 @@ class AsyncLLM:
 
     async def agenerate(self, prompt: str) -> str:
         response = await self._agenerate(prompt)
-        if not isinstance(response, str):
+        if not isinstance(response, str):  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise TypeError("LLM generator must return a string")
         return response
 

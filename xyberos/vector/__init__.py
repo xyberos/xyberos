@@ -9,11 +9,15 @@ when it is missing.
 
 from .adapters import ChromaVectorStore, PgVectorStore
 from .cosine import CosineVectorStore
+from .rerank import LexicalReranker, Reranker, ScoreReranker
 from .sqlite import SqliteVectorStore
 
 __all__ = [
     "ChromaVectorStore",
     "CosineVectorStore",
+    "LexicalReranker",
     "PgVectorStore",
+    "Reranker",
+    "ScoreReranker",
     "SqliteVectorStore",
 ]

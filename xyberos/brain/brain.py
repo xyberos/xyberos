@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 from ..contracts.experience import Episode, ExperienceStore
 from ..contracts.intent import IntentEngine
@@ -101,6 +102,14 @@ class Brain:
         rate_limit = float(config.get("brain.rate_limit", 0.0)) if config is not None else 0.0
         self._rate_limiter = RateLimiter(calls_per_second=rate_limit) if rate_limit > 0 else None
         self._timeout = float(config.get("brain.timeout", 0.0)) if config is not None else 0.0
+        # ``brain.cheap_first`` runs LLM-free tiers before intent/planner LLM
+        # calls. Explicitly configurable; when unset, defaults ON for fully
+        # LLM-free chains (no model calls to preserve) and OFF otherwise.
+        cheap_first = config.get("brain.cheap_first", None) if config is not None else None
+        if cheap_first is not None:
+            self._cheap_first = bool(cheap_first)
+        else:
+            self._cheap_first = router is not None and bool(getattr(router, "is_llm_free", False))
 
     def chat(self, context: CognitiveContext) -> str:
         prompt = getattr(context, "prompt", None)
@@ -189,7 +198,25 @@ class Brain:
                 return _Prepared(context=result, prompt=prompt, short_response=result.response)
             context = result
 
+        # Cheap-first optimization (RFC-0017): when enabled and a router is
+        # installed, let the LLM-free tiers (template → tools → knowledge →
+        # memory → cache) answer BEFORE spending LLM calls on intent
+        # classification and planning. A cheap hit skips both entirely. Routers
+        # without a cheap pass simply fall through to the full pipeline.
+        if self.router is not None and self._cheap_first:
+            respond_cheap = getattr(self.router, "respond_cheap", None)
+            if callable(respond_cheap):
+                response = respond_cheap(context)
+                if response is not None:
+                    return _Prepared(context=context, prompt=prompt, short_response=str(response))
+
         enriched = self._enrich_prompt(context, prompt)
+
+        # Surface the enriched prompt (memory/knowledge/plan) on the context so
+        # the router's LLM tier can generate with full context, not just the raw
+        # prompt (RFC-0017). Kept off ``metadata`` so user-facing metadata is
+        # not polluted.
+        context.enriched_prompt = enriched
 
         # A configured router gets the next crack: run the cheapest confident
         # tier (template → rules → tools → knowledge → memory → cache →
@@ -203,8 +230,9 @@ class Brain:
                 return _Prepared(context=context, prompt=enriched, short_response=response)
 
         if self.tool_runner is not None:
+            tool_runner = self.tool_runner
             try:
-                tool_result = self._resilient_tool(lambda: self.tool_runner.dispatch(context))
+                tool_result = self._resilient_tool(lambda: tool_runner.dispatch(context))
             except ValueError:
                 tool_result = None
             else:
@@ -225,17 +253,19 @@ class Brain:
         """Generate text synchronously, streaming tokens when the LLM supports it."""
         stream = getattr(self.llm, "stream", None)
         if callable(stream):
+            stream_call = cast(Callable[[str, Callable[[str], None]], Any], stream)
 
             def call() -> str:
-                return stream(prompt, self._token_sink(context))
+                return stream_call(prompt, self._token_sink(context))
 
         else:
             generate = getattr(self.llm, "generate", None)
             if not callable(generate):
                 raise TypeError("LLM must implement generate() for synchronous use")
+            generate_call = cast(Callable[[str], Any], generate)
 
             def call() -> str:
-                return generate(prompt)
+                return generate_call(prompt)
 
         response = self._resilient_llm(call)
         if not isinstance(response, str):
@@ -248,16 +278,19 @@ class Brain:
             self._rate_limiter.acquire()
         astream = getattr(self.llm, "astream", None)
         if callable(astream):
-            response = await astream(prompt, self._token_sink(context))
+            astream_call = cast(Callable[[str, Callable[[str], None]], Awaitable[Any]], astream)
+            response = await astream_call(prompt, self._token_sink(context))
         else:
             agenerate = getattr(self.llm, "agenerate", None)
             if callable(agenerate):
-                response = await agenerate(prompt)
+                agenerate_call = cast(Callable[[str], Awaitable[Any]], agenerate)
+                response = await agenerate_call(prompt)
             else:
                 generate = getattr(self.llm, "generate", None)
                 if not callable(generate):
                     raise TypeError("LLM must implement agenerate() for asynchronous use")
-                response = generate(prompt)
+                generate_call = cast(Callable[[str], Any], generate)
+                response = generate_call(prompt)
         if not isinstance(response, str):
             raise TypeError("LLM must return a string")
         return response
@@ -333,7 +366,8 @@ class Brain:
         if isinstance(plan, str):
             return plan
         if isinstance(plan, (list, tuple)):
-            return "\n".join(f"- {item}" for item in plan)
+            items: Sequence[Any] = cast(Sequence[Any], plan)
+            return "\n".join(f"- {item}" for item in items)
         return str(plan)
 
     def _remember(self, context: CognitiveContext, response: str) -> None:
@@ -367,8 +401,8 @@ class Brain:
     @staticmethod
     def _format_history(entries: Any) -> str:
         """Render stored entries as a readable user/assistant transcript."""
-        lines = []
-        for entry in entries or []:
+        lines: list[str] = []
+        for entry in list(entries) if entries else []:
             user = getattr(entry, "prompt", None)
             assistant = getattr(entry, "response", None)
             if user is None and assistant is None:

@@ -63,7 +63,7 @@ class GraphWorkflow(Workflow):
     RESUME_KEY = "workflow.resume_value"
 
     def __init__(self, entry: str, *, max_steps: int = 100) -> None:
-        if not isinstance(entry, str) or not entry.strip():
+        if not isinstance(entry, str) or not entry.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise ValueError("entry node must be a non-empty string")
         if max_steps < 1:
             raise ValueError("max_steps must be a positive integer")
@@ -85,7 +85,7 @@ class GraphWorkflow(Workflow):
 
     def add_node(self, name: str, step: WorkflowStep) -> "GraphWorkflow":
         """Register a named step and return the graph for chaining."""
-        if not isinstance(name, str) or not name.strip():
+        if not isinstance(name, str) or not name.strip():  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise ValueError("node name must be a non-empty string")
         if name in self._nodes:
             raise ValueError(f"node already registered: {name}")
@@ -157,7 +157,7 @@ class GraphWorkflow(Workflow):
     def _execute(
         self,
         context: object,
-        node: str,
+        node: str | None,
         *,
         prior_steps: list[str] | None = None,
         prior_count: int = 0,
@@ -191,7 +191,7 @@ class GraphWorkflow(Workflow):
                 )
 
             if result is not None:
-                if not isinstance(result, CognitiveContext):
+                if not isinstance(result, CognitiveContext):  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
                     raise TypeError("workflow steps must return a CognitiveContext or None")
                 current = result
 

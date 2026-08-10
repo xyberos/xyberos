@@ -32,17 +32,17 @@ class LLMPlanner(Planner):
         if parse is not None and not callable(parse):
             raise TypeError("parse must be callable")
         self._llm = llm or EchoLLM()
-        self._parse = parse or self._default_parse
+        self._parse = parse or self.default_parse
 
     def plan(self, context: object) -> Any:
         """Build a plan by asking the LLM to break down the context prompt."""
         request = getattr(context, "prompt", "")
         response = self._llm.generate(self.INSTRUCTION.format(request=request))
-        if not isinstance(response, str):
+        if not isinstance(response, str):  # type: ignore[unnecessary-isinstance]  # defensive runtime guard
             raise TypeError("LLM must return a string")
         return self._parse(response)
 
     @staticmethod
-    def _default_parse(response: str) -> list[str]:
+    def default_parse(response: str) -> list[str]:
         """Split the model output into non-empty lines."""
         return [line.strip() for line in response.splitlines() if line.strip()]

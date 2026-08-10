@@ -3,6 +3,7 @@
 from .adapters import (
     AnthropicLLM,
     GeminiLLM,
+    OllamaEmbeddingLLM,
     OllamaLLM,
     OpenAICompatibleLLM,
     OpenAIEmbeddingLLM,
@@ -11,6 +12,7 @@ from .adapters import (
 from .embeddings import EmbeddingLLM, HashEmbedder
 from .fallback import FallbackLLM
 from .llm import AsyncLLM, CallableLLM, ChatModel, EchoLLM, LLMProvider, StreamingLLM
+from .sentence import SentenceTransformerEmbedder
 from .structured import StructuredLLM, extract_json, structured
 
 __all__ = [
@@ -24,10 +26,12 @@ __all__ = [
     "GeminiLLM",
     "HashEmbedder",
     "LLMProvider",
+    "OllamaEmbeddingLLM",
     "OllamaLLM",
     "OpenAICompatibleLLM",
     "OpenAIEmbeddingLLM",
     "OpenAILLM",
+    "SentenceTransformerEmbedder",
     "StreamingLLM",
     "StructuredLLM",
     "extract_json",
