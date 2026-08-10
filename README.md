@@ -279,7 +279,7 @@ current behavior.
 
 ## Documentation
 
-The full docs are hosted at **[xyberos-docs.pages.dev](https://xyberos-docs.pages.dev)** and live in [`docs/`](docs/). Start here:
+The full docs are hosted at **[xyberos-docs.pages.dev](https://docs.xyberos.com)** and live in [`docs/`](docs/). Start here:
 
 - [Tutorial](docs/tutorial.md) — build your first app
 - [Training Tutorial](docs/training-tutorial.md) — capture, feedback, learn, evaluate, and distill
