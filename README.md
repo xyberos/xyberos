@@ -5,11 +5,8 @@
 
 ---
 
-**Xyberos** is a complete, layered platform for building AI applications —
-agents, tools, workflows, multi-agent collaboration, streaming, memory,
-knowledge, planning, trainable intent/learning engines, plugins,
-observability, and security. Every subsystem is swappable through stable
-contracts. The core has **zero runtime dependencies**.
+**Xyberos** is a continuously evolving, layered platform for building AI applications. Its architecture is designed to support capabilities including agents, tools, workflows, multi-agent collaboration, streaming, memory, knowledge, planning, trainable intent and learning engines, plugins, observability, and security as the platform develops. Every subsystem is built around stable contracts, allowing components to be independently extended, replaced, or improved over time. The core is designed with **zero runtime dependencies**.
+
 
 ```text
                  ┌────────────────────────────────┐
