@@ -1,4 +1,6 @@
-# Training Xyberos — A Tutorial
+# 22. Training Xyberos
+
+[**← Previous**](21-knowledge-ingestion.md) · [**Next →**](23-customer-support-tutorial.md)
 
 Xyberos becomes *trainable* through the RFC-0016 learning layer. There are two
 levels of training:

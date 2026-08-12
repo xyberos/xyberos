@@ -1,4 +1,6 @@
-# Lifecycle and Service Behavior
+# 20. Lifecycle & Services
+
+[**← Previous**](19-extension-surfaces.md) · [**Next →**](21-knowledge-ingestion.md)
 
 This guide explains how services, factories, and lifecycle-aware components behave in Xyberos.
 

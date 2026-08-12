@@ -104,7 +104,7 @@ cascade's confidence gate is set via `intent.threshold` (default `0.9`).
 > matching (so knowledge/memory/cache tiers answer without the LLM), pass a
 > semantic embedder — a fully-local option is `OllamaEmbeddingLLM` (no cloud, no
 > SDK), or `SentenceTransformerEmbedder` / `OpenAIEmbeddingLLM` for other
-> backends. See the [tutorial](tutorial.md#fully-local-semantic-stack).
+> backends. See the [tutorial](learn/23-customer-support-tutorial.md#fully-local-semantic-stack).
 
 ### `chat(prompt, config=None, llm=None, ...)`
 

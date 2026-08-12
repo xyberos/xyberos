@@ -1,4 +1,6 @@
-# Using Extension Surfaces
+# 19. Extension Surfaces
+
+[**← Previous**](18-configuring-services.md) · [**Next →**](20-lifecycle.md)
 
 Xyberos is built around a small set of extension surfaces. This guide shows how to use the ones that exist in the codebase today:
 

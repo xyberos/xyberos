@@ -1,4 +1,6 @@
-# Configuring Services
+# 18. Configuring Services
+
+[**← Previous**](17-build-your-jarvis.md) · [**Next →**](19-extension-surfaces.md)
 
 Three approaches to wire up services (LLM, tools, knowledge, memory, etc.) in
 Xyberos, from simplest to most decoupled.

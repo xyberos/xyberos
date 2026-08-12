@@ -1,4 +1,6 @@
-# Xyberos Tutorial — Build a Customer Support Assistant
+# 23. Build a Customer Support Assistant
+
+[**← Previous**](22-training-tutorial.md) · [**Next →**](../api-reference.md)
 
 > **Beginner friendly.** No AI experience and no API keys required. In about 30
 > minutes you'll build a working AI **customer support assistant** — a bot that
@@ -487,7 +489,7 @@ for entry in app.memory.retrieve(None):
 ## 13. More building blocks
 
 Quick looks at a few more subsystems, all covered in the
-[API reference](api-reference.md) and [Extending Xyberos](extensions.md).
+[API reference](../api-reference.md) and [Extension Surfaces](19-extension-surfaces.md).
 
 **Plugins & auto-discovery** — extend the kernel by registering services, and
 let modules register themselves with zero wiring:
@@ -541,9 +543,9 @@ print(app.run("build a report").plan)      # ['research', 'draft', 'review']
   [`examples/support_assistant/`](https://github.com/xyberos/xyberos/blob/master/examples/support_assistant/README.md).
   Try its zero-setup smoke test (`python smoke_test.py`).
 - **Make it learn.** Turn successful conversations into training data and let
-  the bot improve over time — see the [Training Tutorial](training-tutorial.md).
+  the bot improve over time — see the [Training Tutorial](22-training-tutorial.md).
 - **Extend it.** Every subsystem is a plugin surface. See
-  [Extending Xyberos](extensions.md) and the [API reference](api-reference.md).
+  [Extension Surfaces](19-extension-surfaces.md) and the [API reference](../api-reference.md).
 
 ---
 

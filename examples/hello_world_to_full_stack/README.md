@@ -30,7 +30,7 @@ No setup beyond the package install (`pip install -e .`) is required.
 
 ## Reading along
 
-- The [full tutorial](../../docs/tutorial.md) covers the same ground step by step.
+- The [full tutorial](../../docs/learn/23-customer-support-tutorial.md) covers the same ground step by step.
 - The [API reference](../../docs/api-reference.md) lists each class, what it owns,
   and when to use it.
 - `minimal_chat.py` and `extended_app.py` in `../` are shorter, focused examples.

@@ -278,13 +278,19 @@ current behavior.
 
 The full docs are hosted at **[docs.xyberos.com](https://docs.xyberos.com)** and live in [`docs/`](docs/). Start here:
 
-- [Tutorial](docs/tutorial.md) — build your first app
-- [Training Tutorial](docs/training-tutorial.md) — capture, feedback, learn, evaluate, and distill
-- [Configuring Services](docs/configuring-services.md) — explicit, factory, and plugin wiring
-- [Extension Surfaces](docs/extensions.md) — contracts, plugins, and customization
-- [Lifecycle & Services](docs/lifecycle.md) — start/stop and service behavior
+- **[Learn](docs/learn/01-what-is-xyberos.md)** — the W3Schools-style tutorial: build your own AI assistant, one capability per chapter
+  - [What is Xyberos?](docs/learn/01-what-is-xyberos.md) · [Getting Started](docs/learn/02-getting-started.md) · [Hello Assistant](docs/learn/03-hello-assistant.md) · [Knowledge](docs/learn/05-knowledge.md) · [Memory](docs/learn/06-memory.md) · [Tools](docs/learn/07-tools.md) · [Workflows](docs/learn/08-workflows.md) · [Plugins](docs/learn/09-plugins.md) · [Brain](docs/learn/10-brain.md) · [Agents](docs/learn/12-agents.md) · [Security](docs/learn/15-security.md) · [Build Your Jarvis](docs/learn/17-build-your-jarvis.md)
+- [How-To / Recipes](docs/howto.md) — change the LLM, add memory, go offline, and more
+- [FAQ](docs/faq.md) — beginner, architecture, and production questions
+- [Configuring Services](docs/learn/18-configuring-services.md) — explicit, factory, and plugin wiring
+- [Extension Surfaces](docs/learn/19-extension-surfaces.md) — contracts, plugins, and customization
+- [Lifecycle & Services](docs/learn/20-lifecycle.md) — start/stop and service behavior
+- [Knowledge Ingestion](docs/learn/21-knowledge-ingestion.md) — index documents, files, and URLs
+- [Training Xyberos](docs/learn/22-training-tutorial.md) — capture, feedback, learn, evaluate, and distill
+- [Build a Customer Support Assistant](docs/learn/23-customer-support-tutorial.md) — a production-shaped app
 - [API Reference](docs/api-reference.md)
 - [Roadmap & Vision](docs/RFCs/RFC-Roadmap.md)
+- [Contributing](CONTRIBUTING.md) — how to build, test, and contribute
 
 Architecture RFCs — the reasoning behind every layer, all in [`docs/RFCs/`](docs/RFCs/):
 
@@ -335,11 +341,13 @@ Useful supporting modules:
 New to the project? Read the docs in this order:
 
 1. This README
-2. [`docs/extensions.md`](docs/extensions.md)
-3. [`docs/tutorial.md`](docs/tutorial.md)
-4. [`docs/api-reference.md`](docs/api-reference.md)
-5. [`docs/lifecycle.md`](docs/lifecycle.md)
-6. [`docs/RFCs/RFC-0001-architecture.md`](docs/RFCs/RFC-0001-architecture.md), then the remaining RFCs in [`docs/RFCs/`](docs/RFCs/)
+2. [`docs/learn/01-what-is-xyberos.md`](docs/learn/01-what-is-xyberos.md)
+3. [`docs/learn/02-getting-started.md`](docs/learn/02-getting-started.md)
+4. [`docs/learn/03-hello-assistant.md`](docs/learn/03-hello-assistant.md)
+5. The rest of the [`docs/learn/`](docs/learn/) series
+6. [`docs/api-reference.md`](docs/api-reference.md)
+7. [`docs/learn/20-lifecycle.md`](docs/learn/20-lifecycle.md)
+8. [`docs/RFCs/RFC-0001-architecture.md`](docs/RFCs/RFC-0001-architecture.md), then the remaining RFCs in [`docs/RFCs/`](docs/RFCs/)
 
 ---
 

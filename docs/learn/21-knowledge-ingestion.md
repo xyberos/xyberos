@@ -1,4 +1,6 @@
-# Knowledge Ingestion — Documents, Files & URLs
+# 21. Knowledge Ingestion
+
+[**← Previous**](20-lifecycle.md) · [**Next →**](22-training-tutorial.md)
 
 Xyberos can index raw text into a semantic knowledge base and have the Brain
 inject the relevant facts into every prompt. This tutorial shows how to ingest
@@ -111,7 +113,7 @@ print(app.chat("What are your office hours?"))
 
 If you also want the vector intent/memory/planner stack, build the app with
 `create_app(knowledge=kb, ...)` and add the providers from the
-[Training Tutorial](training-tutorial.md) — `create_semantic_app` builds its own
+[Training Tutorial](22-training-tutorial.md) — `create_semantic_app` builds its own
 plain `VectorKnowledge`, so use `create_app` when you need the `ingest()`
 capability.
 

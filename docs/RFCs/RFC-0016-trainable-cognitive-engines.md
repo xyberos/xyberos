@@ -372,10 +372,10 @@ One `_contract.py` + one `_provider.py` per new subsystem, plus integration:
 ## Documentation Plan
 
 - `docs/RFCs/RFC-0016-trainable-cognitive-engines.md` (this file) — the plan.
-- `docs/extensions.md` — add an "Intent Engines", "Vector Stores", and "Experience &
+- `docs/learn/19-extension-surfaces.md` — add an "Intent Engines", "Vector Stores", and "Experience &
   Learning" extension surface (following the existing per-contract guide pattern).
 - `docs/api-reference.md` — new contracts/providers/events.
-- `docs/configuring-services.md` — wiring examples: `create_app(intent=CascadeIntentEngine(...),
+- `docs/learn/18-configuring-services.md` — wiring examples: `create_app(intent=CascadeIntentEngine(...),
   experience=SqliteExperience("exp.db"))`, `app.feedback(...)`, optional extras install.
 - `mkdocs.yml` — add RFC-0016 to the Architecture RFCs nav.
 

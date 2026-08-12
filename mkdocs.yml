@@ -61,14 +61,34 @@ plugins:
 
 nav:
   - Home: index.md
-  - Tutorial: tutorial.md
-  - Training Tutorial: training-tutorial.md
-  - Knowledge Ingestion: knowledge-ingestion.md
-  - Guides:
-      - Configuring Services: configuring-services.md
-      - Extension Surfaces: extensions.md
-      - Lifecycle & Services: lifecycle.md
+  - Learn:
+      - What is Xyberos?: learn/01-what-is-xyberos.md
+      - Getting Started: learn/02-getting-started.md
+      - Hello Assistant: learn/03-hello-assistant.md
+      - Give It a Name & Personality: learn/04-name-and-personality.md
+      - Give It Knowledge: learn/05-knowledge.md
+      - Give It Memory: learn/06-memory.md
+      - Give It Skills — Tools: learn/07-tools.md
+      - Give It Plans & Workflows: learn/08-workflows.md
+      - Skills & Plugins: learn/09-plugins.md
+      - Give It a Brain: learn/10-brain.md
+      - Context: learn/11-context.md
+      - Multi-Agent Systems: learn/12-agents.md
+      - Configuration: learn/13-configuration.md
+      - Observability & Debugging: learn/14-observability.md
+      - Security: learn/15-security.md
+      - Testing: learn/16-testing.md
+      - Build Your First Jarvis: learn/17-build-your-jarvis.md
+      - Configuring Services: learn/18-configuring-services.md
+      - Extension Surfaces: learn/19-extension-surfaces.md
+      - Lifecycle & Services: learn/20-lifecycle.md
+      - Knowledge Ingestion: learn/21-knowledge-ingestion.md
+      - Training Xyberos: learn/22-training-tutorial.md
+      - Build a Customer Support Assistant: learn/23-customer-support-tutorial.md
+  - How-To: howto.md
   - API Reference: api-reference.md
+  - FAQ: faq.md
+  - Contributing: contributing.md
   - Roadmap: RFCs/RFC-Roadmap.md
   - Architecture RFCs:
       - RFC-0001 Architecture: RFCs/RFC-0001-architecture.md
