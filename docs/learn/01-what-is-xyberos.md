@@ -14,11 +14,14 @@
 
 ## What is Xyberos?
 
-**Xyberos is a cognitive platform for building AI systems.** Instead of a
-single chatbot library, it is a layered platform: a small dependency-free core
-(Kernel, Runtime, Brain, Contracts) surrounded by replaceable subsystems
-(LLM, memory, knowledge, planner, intent, router, tools, workflows, agents,
-plugins, events, security, learning).
+**Xyberos is a continuously evolving, layered platform for building AI
+applications.** Its architecture is designed to support capabilities including
+agents, tools, workflows, multi-agent collaboration, streaming, memory,
+knowledge, planning, trainable intent and learning engines, plugins,
+observability, and security as the platform develops. Every subsystem is built
+around stable contracts, allowing components to be independently extended,
+replaced, or improved over time. The core is designed with **zero runtime
+dependencies**.
 
 > **The core is zero-dependency.** It uses only the Python standard library.
 > `pip install xyberos` — that's it.
@@ -40,6 +43,27 @@ pipeline, the memory, the planning, the tools, the agents, the guardrails.
             │                   │
             └──── Context ──────┘
 ```
+
+## Platform at a Glance
+
+| Subsystem | What it does |
+|---|---|
+| **Kernel** | Config, logging, DI, lifecycle, event bus, plugin loader, security |
+| **Runtime** | Executes cognitive requests — sync and async |
+| **Brain** | Automated pipeline: workflow → cheap-first router → memory → knowledge → intent → plan → router → tools → LLM |
+| **LLM** | OpenAI, Anthropic, Gemini, Ollama, any OpenAI-compatible endpoint + embeddings (incl. local `OllamaEmbeddingLLM`) |
+| **Memory** | In-memory, SQLite, and vector providers; semantic + consolidating memory |
+| **Knowledge** | Fact injection from dicts, SQLite, or vector retrieval |
+| **Planner** | Sequential, LLM, adaptive (few-shot), reflective, and plan execution |
+| **Intent** | Heuristic, LLM, embedding, and cascade engines with confidence routing |
+| **Router** | Confidence-gated responder tiers — template → tool → knowledge → memory → cache → LLM |
+| **Learning** | Experience store, feedback, example promotion, offline training (Trainer) |
+| **Tools** | Typed function tools with JSON-schema signatures |
+| **Workflows** | Sequential + graph-based with branches, loops, pause/resume |
+| **Agents** | Multi-agent runtime with messaging, handoffs, roles |
+| **Plugins** | Auto-discovery via entry points or package scanning |
+| **Events** | Pub/sub bus with 32 canonical events, tracing, and exporters |
+| **Security** | Kill switch, content guardrails, audit logging |
 
 ## What problem does it solve?
 
@@ -114,14 +138,24 @@ Plugins & providers (swappable)
 
 ## What can you build?
 
-- Personal AI assistants
-- Jarvis-style assistants
-- Customer-support agents
-- Knowledge assistants
-- Workflow automation
-- Multi-agent systems
-- Developer assistants
-- Local AI applications (fully offline with Ollama)
+- **AI-Powered IDE or Dev Tool** — multi-agent code review with streaming,
+  guardrails blocking destructive ops, tools for `read_file` / `run_test` /
+  `git_diff`, and a workflow node with human approval per step.
+- **Robotics Controller** — Perception → Plan → Act loop, hierarchical agents
+  (supervisor → navigation → manipulation), and a **literal emergency stop** via
+  `Security.engage_kill_switch()` that halts all motor commands.
+- **Customer Support Platform** — intent routing via typed tools, escalation
+  through agent handoffs, refund workflows that pause for human approval,
+  persistent SQLite conversation history, and a full audit trail.
+- **Autonomous Research Assistant** — `LLMPlanner` decomposes "summarize the
+  state of X" into search → read → synthesize → cite, streaming token-by-token.
+- **Personal AI assistants** — Jarvis-style assistants with a name, personality,
+  knowledge, memory, planning, skills, and workflows.
+- **Local AI applications** — fully offline with Ollama (chat + embeddings, no
+  cloud, no SDK).
+
+> **Anything else** — every subsystem is a plugin surface. The platform is
+> done; the rest is building blocks.
 
 ## Try it yourself
 

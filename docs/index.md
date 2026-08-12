@@ -1,8 +1,33 @@
 # Xyberos Documentation
 
-Welcome! **Xyberos** is a cognitive platform for building AI systems — agents,
-tools, workflows, multi-agent collaboration, streaming, memory, knowledge,
-planning, plugins, observability, and security. The core is **zero-dependency**.
+<p align="center"><strong>The cognitive platform for AI systems.</strong></p>
+
+**Xyberos** is a continuously evolving, layered platform for building AI
+applications. Its architecture is designed to support capabilities including
+agents, tools, workflows, multi-agent collaboration, streaming, memory,
+knowledge, planning, trainable intent and learning engines, plugins,
+observability, and security as the platform develops. Every subsystem is built
+around stable contracts, allowing components to be independently extended,
+replaced, or improved over time. The core is designed with **zero runtime
+dependencies**.
+
+```text
+                 ┌────────────────────────────────┐
+                 │          Kernel                │
+                 │  Config · Logger · Registry    │
+                 │  EventBus · Plugins · Security │
+                 └──────────────┬─────────────────┘
+                                │
+    ┌───────────────┐  ┌────────┴─────────┐  ┌───────────────┐
+    │    Runtime    │  │     Brain        │  │   Contracts   │
+    │  sync · async │  │  Pipeline Engine │  │ 15 interfaces │
+    └───────┬───────┘  └────────┬─────────┘  └───────────────┘
+            │                   │
+            └──── Context ──────┘
+```
+
+You bring **what** the system should do. Xyberos provides **how** — the
+pipeline, the memory, the planning, the tools, the agents, the guardrails.
 
 > **New here?** Follow the tutorial like a class — each chapter adds one
 > capability to your assistant. Copy → Run → Modify → Build something.
@@ -36,6 +61,27 @@ The W3Schools-style tutorial. Each chapter builds on the last.
 | 21 | [Knowledge Ingestion](learn/21-knowledge-ingestion.md) | index documents, files, and URLs |
 | 22 | [Training Xyberos](learn/22-training-tutorial.md) | capture, feedback, learn, evaluate, and distill |
 | 23 | [Build a Customer Support Assistant](learn/23-customer-support-tutorial.md) | a complete production-shaped app |
+
+## 🧩 Platform at a Glance
+
+| Subsystem | What it does |
+|---|---|
+| **Kernel** | Config, logging, DI, lifecycle, event bus, plugin loader, security |
+| **Runtime** | Executes cognitive requests — sync and async |
+| **Brain** | Automated pipeline: workflow → cheap-first router → memory → knowledge → intent → plan → router → tools → LLM |
+| **LLM** | OpenAI, Anthropic, Gemini, Ollama, any OpenAI-compatible endpoint + embeddings (incl. local `OllamaEmbeddingLLM`) |
+| **Memory** | In-memory, SQLite, and vector providers; semantic + consolidating memory |
+| **Knowledge** | Fact injection from dicts, SQLite, or vector retrieval |
+| **Planner** | Sequential, LLM, adaptive (few-shot), reflective, and plan execution |
+| **Intent** | Heuristic, LLM, embedding, and cascade engines with confidence routing |
+| **Router** | Confidence-gated responder tiers — template → tool → knowledge → memory → cache → LLM |
+| **Learning** | Experience store, feedback, example promotion, offline training (Trainer) |
+| **Tools** | Typed function tools with JSON-schema signatures |
+| **Workflows** | Sequential + graph-based with branches, loops, pause/resume |
+| **Agents** | Multi-agent runtime with messaging, handoffs, roles |
+| **Plugins** | Auto-discovery via entry points or package scanning |
+| **Events** | Pub/sub bus with 32 canonical events, tracing, and exporters |
+| **Security** | Kill switch, content guardrails, audit logging |
 
 ## 🛠 How-To & Recipes
 

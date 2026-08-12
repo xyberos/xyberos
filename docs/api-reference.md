@@ -1,7 +1,15 @@
 # API Reference
 
-A short reference to Xyberos' primary public objects. For each main class it
-lists what the class is, **what it owns**, and **when to use it**.
+Xyberos' primary public objects. Every entry follows a consistent template:
+
+- **Primary entry points** (package root: `create_app`, `create_semantic_app`,
+  `chat`, `achat`, the `Xyberos` facade, `doctor`) get the **full template** —
+  What it does · Signature · Parameters · Returns · Default behavior · Basic
+  example · Configuration example · Alternative · Custom implementation ·
+  Workaround · Common mistakes · Related APIs.
+- **Classes & providers** (Kernel, Brain, LLMs, memory, knowledge, etc.) use the
+  compact **"what it owns / when to use it"** format — they're swappable behind
+  contracts, so the interesting parts are the contract and the use cases.
 
 ## At a Glance
 
@@ -78,56 +86,454 @@ from xyberos import (
   request execution. Prefer `create_app()` unless you need to keep a reference
   around.
 
-### `create_app(config=None, llm=None, memory=None, knowledge=None, tools=None, planner=None, workflow=None, tool_runner=None, intent=None, experience=None, router=None)`
+---
 
-Convenience constructor for a ready-to-use `Xyberos` application. Any provider
-you omit is filled in with an in-memory default (`intent` defaults to an empty
-`HeuristicIntentEngine`, `experience` to `InMemoryExperience`; both are inactive
-unless enabled via config). Pass `router=` a `Router` (e.g. from `build_router`)
-to add a confidence-gated responder chain that answers cheap tiers before the
-LLM (see [xyberos.router](#xyberosrouter)).
+### `create_app()`
 
-### `create_semantic_app(config=None, llm=None, embedder=None, store=None, *, experience=None, tools=None, workflow=None, tool_runner=None, router=None, templates=None)`
+**What it does**
 
-One-line persistent setup for the RFC-0016 trainable engines: intent, memory,
-knowledge, and planner share a single `SqliteVectorStore` (`learning.db` by
-default), so everything learned survives restarts with zero extra configuration.
-Pass `embedder=` (any `embed(text)` object; defaults to `HashEmbedder` for
-development) and optionally swap `store=` for `ChromaVectorStore`/
-`PgVectorStore` or a plugin-provided `VectorStore`. Pass `router="hybrid"` (or a
-`Router`) to also wire the hybrid responder chain with a self-teaching cache;
-`templates=` pre-seeds the router's template tier. The embedding→LLM intent
-cascade's confidence gate is set via `intent.threshold` (default `0.9`).
+Build a ready-to-use `Xyberos` application, filling in an in-memory default for
+every provider you omit.
 
-> **Tip — real semantic matching:** the default `HashEmbedder` is deterministic
-> and dependency-free but only matches near-identical text. For real paraphrase
-> matching (so knowledge/memory/cache tiers answer without the LLM), pass a
-> semantic embedder — a fully-local option is `OllamaEmbeddingLLM` (no cloud, no
-> SDK), or `SentenceTransformerEmbedder` / `OpenAIEmbeddingLLM` for other
-> backends. See the [tutorial](learn/23-customer-support-tutorial.md#fully-local-semantic-stack).
+**Signature**
 
-### `chat(prompt, config=None, llm=None, ...)`
+```python
+create_app(
+    config=None,        # Mapping[str, Any] | None
+    llm=None,           # LLMProvider | None
+    memory=None,        # MemoryProvider | None
+    knowledge=None,     # KnowledgeProvider | None
+    tools=None,         # ToolRegistry | None
+    planner=None,       # Planner | None
+    workflow=None,      # Workflow | None
+    tool_runner=None,   # ToolRunner | None
+    intent=None,        # IntentEngine | None
+    experience=None,    # ExperienceStore | None
+    router=None,        # Router | None
+) -> Xyberos
+```
 
-One-shot helper for the common case where you only need a response string. It
-accepts the same provider arguments as `create_app`.
+**Parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `config` | `Mapping[str, Any]` | `None` | Dotted-key settings (e.g. `brain.intent`, `brain.max_attempts`) |
+| `llm` | `LLMProvider` | `None` → `EchoLLM` | The model backend |
+| `memory` | `MemoryProvider` | `None` → `InMemoryMemory` | Conversation history provider |
+| `knowledge` | `KnowledgeProvider` | `None` → `InMemoryKnowledge` | Domain facts provider |
+| `tools` | `ToolRegistry` | `None` → empty registry | Named capabilities |
+| `planner` | `Planner` | `None` → `SequentialPlanner` | Produces a step plan |
+| `workflow` | `Workflow` | `None` → `SequentialWorkflow` | Pre-steps before the pipeline |
+| `tool_runner` | `ToolRunner` | `None` → wraps `tools` | Dispatches tools |
+| `intent` | `IntentEngine` | `None` → empty `HeuristicIntentEngine` | Classifies intent (inactive unless enabled) |
+| `experience` | `ExperienceStore` | `None` → `InMemoryExperience` | Records episodes (inactive unless enabled) |
+| `router` | `Router` | `None` | Confidence-gated responder chain (see [xyberos.router](#xyberosrouter)) |
+
+**Returns**
+
+A wired `Xyberos` instance with `.run()`, `.chat()`, `.achat()`, `.arun()`,
+and every subsystem exposed as a property.
+
+### Default behavior
+
+If you call `create_app()` with no arguments, you get:
+
+- `EchoLLM` — echoes your prompt (zero setup, zero API keys)
+- in-memory memory, knowledge, planner, tools, workflow, intent, experience
+- a fully automated brain pipeline
+- a default `RuntimeAgent` inside a `MultiAgentRuntime`
+- `intent` and `experience` wired but **inactive** until enabled via config
+
+### Basic example
+
+```python
+from xyberos import create_app
+
+app = create_app()
+print(app.chat("Hello, world!"))   # -> Hello, world!
+```
+
+### Configuration example
+
+```python
+from xyberos import create_app
+from xyberos.llm import OllamaLLM
+from xyberos.memory import SqliteMemory
+from xyberos.knowledge import SqliteKnowledge
+
+app = create_app(
+    llm=OllamaLLM(model="llama3.2"),
+    memory=SqliteMemory("chat.db"),
+    knowledge=SqliteKnowledge("facts.db"),
+    config={
+        "brain.intent": True,      # enable intent classification
+        "brain.max_attempts": 3,   # retry transient failures
+        "brain.timeout": 30,       # seconds per LLM call
+    },
+)
+```
+
+### Alternative
+
+- **`create_semantic_app()`** — one-call persistent setup where intent, memory,
+  knowledge, and planner share a single vector store (see below).
+- **`Xyberos(...)` directly** — full control, no defaults injected:
+
+  ```python
+  from xyberos import Xyberos
+  app = Xyberos(config={"brain.intent": True})
+  ```
+
+- **`chat()` / `achat()`** — one-shot helpers that build a default app, run,
+  and return only the text.
+
+### Custom implementation
+
+Pass any object that satisfies the relevant contract — no subclassing required:
+
+```python
+from xyberos import create_app
+from xyberos.llm import CallableLLM
+
+app = create_app(llm=CallableLLM(lambda prompt: f"answer: {prompt}"))
+```
+
+### Workaround
+
+> If you don't want one of the default providers, pass your own (or `None`
+> won't disable it — pass a no-op provider). To *disable* intent/experience,
+> simply leave them off; they're inactive until enabled via config.
+
+### Common mistakes
+
+```python
+# ❌ Replacing a provider after create_app() doesn't affect the built brain
+app = create_app()
+app.kernel.register("llm", my_llm, replace=True)   # resolve() sees it, brain doesn't
+
+# ✅ Build a fresh app, or use plugins (load_entry_points() re-syncs the brain)
+app = create_app(llm=my_llm)
+```
+
+### Related APIs
+
+- `create_semantic_app()`
+- `Xyberos.chat()` / `Xyberos.run()`
+- `chat()` / `achat()` (package-level one-shots)
+- `Configuring Services` → [learn/18-configuring-services.md](learn/18-configuring-services.md)
+
+---
+
+### `create_semantic_app()`
+
+**What it does**
+
+Build a ready-to-use app backed by **one shared, persistent `VectorStore`**:
+intent, memory, and knowledge all share a single `SqliteVectorStore`
+(`learning.db` by default), so everything learned survives restarts with zero
+extra configuration.
+
+**Signature**
+
+```python
+create_semantic_app(
+    config=None,        # Mapping[str, Any] | None
+    llm=None,           # LLMProvider | None
+    embedder=None,      # Any with embed(text) -> list[float]
+    store=None,         # VectorStore | None  (default SqliteVectorStore("learning.db"))
+    *,
+    experience=None,    # ExperienceStore | None
+    tools=None,         # ToolRegistry | None
+    workflow=None,      # Workflow | None
+    tool_runner=None,   # ToolRunner | None
+    router=None,        # Router | str | None   ("hybrid" auto-builds the responder chain)
+    templates=None,     # Iterable[Template] | None  (pre-seeds the hybrid template tier)
+) -> Xyberos
+```
+
+**Parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `config` | `Mapping[str, Any]` | `None` | Dotted-key settings; `brain.intent` defaults to `True` |
+| `llm` | `LLMProvider` | `None` | The model backend |
+| `embedder` | any `embed(text)` | `HashEmbedder` | Powers semantic matching |
+| `store` | `VectorStore` | `SqliteVectorStore("learning.db")` | Shared semantic backend |
+| `experience` | `ExperienceStore` | `None` | Episode store (inactive unless enabled) |
+| `tools` | `ToolRegistry` | `None` | Named capabilities |
+| `workflow` | `Workflow` | `None` | Pre-steps before the pipeline |
+| `tool_runner` | `ToolRunner` | `None` | Dispatches tools |
+| `router` | `Router` \| `str` | `None` | `"hybrid"` auto-wires a self-teaching responder chain + `CacheTeacher` |
+| `templates` | `Iterable[Template]` | `None` | Pre-seeds the hybrid router's template tier |
+
+**Returns**
+
+A wired `Xyberos` with `VectorMemory`, `VectorKnowledge`, an embedding→LLM
+intent cascade, and an `AdaptivePlanner` — all over the shared store.
+
+### Default behavior
+
+- Everything is **persistent by default** (`learning.db`) — learned facts,
+  cache, and examples survive restarts.
+- Intent is **enabled** (`brain.intent` defaults to `True`).
+- The intent cascade's confidence gate is set via `intent.threshold`
+  (default `0.9`).
+- With no `router=`, no hybrid chain is installed (the brain still runs its
+  normal LLM path).
+
+### Basic example
+
+```python
+from xyberos import create_semantic_app
+from xyberos.llm import OllamaLLM, OllamaEmbeddingLLM
+
+app = create_semantic_app(
+    llm=OllamaLLM(model="llama3.2"),
+    embedder=OllamaEmbeddingLLM(model="nomic-embed-text"),  # real semantics
+    router="hybrid",
+)
+```
+
+### Configuration example
+
+```python
+from xyberos import create_semantic_app
+from xyberos.llm import OllamaEmbeddingLLM
+from xyberos.vector import SqliteVectorStore
+
+app = create_semantic_app(
+    llm=llm,
+    embedder=OllamaEmbeddingLLM(model="nomic-embed-text"),
+    store=SqliteVectorStore("learning.db"),
+    router="hybrid",
+)
+```
+
+### Alternative
+
+Swap the backend without touching the engines:
+
+```python
+from xyberos.vector import ChromaVectorStore, PgVectorStore
+
+app = create_semantic_app(embedder=embedder, store=ChromaVectorStore())  # pip install xyberos[vectors]
+app = create_semantic_app(embedder=embedder, store=PgVectorStore())
+```
+
+### Workaround
+
+> If you need `IngestingKnowledge` (document/file/URL ingestion), note that
+> `create_semantic_app` builds its own plain `VectorKnowledge`. Build with
+> `create_app(knowledge=kb, ...)` when you need the `ingest()` capability — see
+> [21. Knowledge Ingestion](learn/21-knowledge-ingestion.md).
+
+### Common mistakes
+
+- **Using the default `HashEmbedder` for real matching** — it only matches
+  near-identical text. Pass a semantic embedder (`OllamaEmbeddingLLM`,
+  `SentenceTransformerEmbedder`, or `OpenAIEmbeddingLLM`) for paraphrase
+  matching.
+- **Forgetting persistence** — the default `SqliteVectorStore("learning.db")`
+  accumulates state across runs. Pass `store=CosineVectorStore()` for a clean
+  in-memory session in demos and tests.
+
+### Related APIs
+
+- `create_app()`
+- `xyberos.vector` — `VectorStore`, `SqliteVectorStore`, `CosineVectorStore`
+- `xyberos.router` — `build_router`, `ResponderChain`, `CacheTeacher`
+
+---
+
+### `chat(prompt, *, config=None, llm=None, memory=None, knowledge=None, tools=None, planner=None, workflow=None, tool_runner=None)`
+
+**What it does**
+
+One-shot helper: build a default app, run one prompt, return only the response
+text. Accepts the same provider arguments as `create_app`.
+
+**Signature**
+
+```python
+chat(prompt: str, *, config=None, llm=None, memory=None, knowledge=None,
+     tools=None, planner=None, workflow=None, tool_runner=None) -> str
+```
+
+**Parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `prompt` | `str` | required | The user input |
+| `config` / providers | same as `create_app` | `None` | Overrides for the one-shot app |
+
+**Returns**
+
+`str` — the generated response text.
+
+### Default behavior
+
+Builds a default app (same defaults as `create_app`) and returns
+`app.chat(prompt)`. Raises `RuntimeError` if the pipeline produced no response.
+
+### Basic example
+
+```python
+from xyberos import chat
+print(chat("Hello!"))   # -> Hello!
+```
+
+### Configuration example
+
+```python
+from xyberos import chat
+from xyberos.llm import CallableLLM
+
+print(chat("hello", llm=CallableLLM(lambda p: f"answer: {p}")))  # -> answer: hello
+```
+
+### Alternative
+
+- **`achat()`** — the async one-shot:
+
+  ```python
+  import asyncio
+  from xyberos import achat
+
+  print(asyncio.run(achat("Hello!")))
+  ```
+
+- **`app = create_app()` then `app.chat()`** — when you want to reuse the app.
+
+### Related APIs
+
+- `achat()`
+- `create_app()`
+- `Xyberos.chat()` / `Xyberos.achat()`
+
+---
 
 ### `Xyberos` facade methods
 
-Beyond the properties listed above, the facade exposes the full platform:
+Beyond the properties listed above, the facade exposes the full platform. Each
+method follows the same template.
 
-- **Lifecycle** — `start()`, `stop()`, and the `started` property.
-- **Service registration / DI** — `register(name, service, replace=False)`,
-  `register_factory(name, factory, singleton=True, replace=False)`,
-  `resolve(name)`, `inject(target, **overrides)`.
-- **Plugins** — `load_plugin(plugin)`, `unload_plugin(name)`,
-  `load_entry_points(group="xyberos.plugins")`, `load_plugins_from(package)`.
-- **Agents** — `register_agent(agent)`, `remove_agent(name)`, and
-  `run_agents(prompt, *, metadata=None, agent_names=None)` which runs all (or a
-  selected subset of) registered agents over a fresh context.
-- **Requests** — `run(prompt, metadata=None)`, `arun(...)`, `chat(prompt)`,
-  `achat(prompt)` (see [Common Patterns](#common-patterns)).
-- **Learning** — `feedback(episode_id, rating, *, note=None)` attaches a rating
-  (−1.0..1.0) to a recorded episode and emits `FEEDBACK_RECORDED`.
+#### `run(prompt, *, metadata=None) -> CognitiveContext`
+
+**What it does** — run one prompt and return the complete cognitive context
+(prompt, response, plan, intent, metadata, succeeded, error).
+
+**Basic example**
+
+```python
+ctx = app.run("hello")
+print(ctx.response, ctx.succeeded)
+```
+
+**Alternative** — `arun(prompt)` for the async pipeline.
+
+#### `chat(prompt, *, metadata=None) -> str`
+
+**What it does** — convenience wrapper over `run()` returning only the text.
+
+**Basic example**
+
+```python
+print(app.chat("hello"))
+```
+
+**Note** — raises `RuntimeError` if the pipeline produced no response.
+
+#### `achat(prompt, *, metadata=None) -> str` / `arun(prompt, *, metadata=None) -> CognitiveContext`
+
+**What it does** — async variants of `chat()` / `run()` for use inside
+FastAPI / asyncio apps.
+
+```python
+response = await app.achat("hello")
+```
+
+#### `run_agents(prompt, *, metadata=None, agent_names=None) -> CognitiveContext`
+
+**What it does** — run all (or a selected subset of) registered agents over a
+fresh context, honoring handoffs and messaging.
+
+```python
+result = app.run_agents("I need a human", agent_names=["supervisor", "support_worker"])
+```
+
+#### `register(name, service, *, replace=False)` / `resolve(name)`
+
+**What they do** — register a named service in the kernel and resolve it by
+name (with optional `replace=True`).
+
+```python
+app.register("answer", 42)
+assert app.resolve("answer") == 42
+```
+
+#### `register_factory(name, factory, *, singleton=True, replace=False)`
+
+**What it does** — register a lazy factory; dependencies are injected by
+parameter name.
+
+```python
+app.register_factory("llm", build_llm, replace=True)
+```
+
+#### `inject(target, **overrides)`
+
+**What it does** — construct or invoke any callable, resolving its parameters
+by name from registered services.
+
+```python
+def build_message(logger, config): ...
+msg = app.inject(build_message)
+```
+
+#### Plugin management
+
+```python
+app.load_plugin(plugin)                       # load one plugin
+app.unload_plugin(name)                       # unload by name
+app.load_entry_points(group="xyberos.plugins")# discover installed entry points
+app.load_plugins_from("app.plugins")          # convention scan a package
+```
+
+#### Agent management
+
+```python
+app.register_agent(agent)     # add an agent to the multi-agent runtime
+app.remove_agent(name)        # remove by name
+```
+
+#### Learning
+
+```python
+app.feedback(episode_id, 1.0, note="great answer")  # rating -1.0..1.0
+```
+
+Attaches a rating to a recorded episode and emits `FEEDBACK_RECORDED`.
+
+#### Lifecycle
+
+```python
+app.start()          # idempotent
+app.stop()           # idempotent
+app.started          # bool
+```
+
+### `doctor()`
+
+**What it does** — build a lightweight `DiagnosticReport` snapshot of the
+local runtime and package state (version, Python, kernel services, plugins).
+
+**Basic example**
+
+```python
+from xyberos import doctor
+report = doctor()
+print(report.as_dict())
+```
 
 ## Core Classes
 
