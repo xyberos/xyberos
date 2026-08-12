@@ -1,5 +1,7 @@
 """Tests for typed function tools with JSON-schema signatures."""
 
+import functools
+
 import pytest
 
 from xyberos.exceptions import ToolArgumentError
@@ -96,3 +98,30 @@ def test_typed_tool_coerces_bools_floats_and_collections():
         tool.execute(object(), active="maybe")
     with pytest.raises(ToolArgumentError, match="a number"):
         tool.execute(object(), active=True, score="nope")
+
+
+def notes_tool(storage, note: str, limit: int = 5) -> str:
+    return f"{storage}:{note}:{limit}"
+
+
+def test_function_tool_schema_ignores_partial_bound_args():
+    tool = FunctionTool("notes", functools.partial(notes_tool, storage="injected"))
+
+    properties = tool.schema["parameters"]["properties"]
+    assert "storage" not in properties
+    assert properties["note"] == {"type": "string"}
+    assert tool.schema["parameters"]["required"] == ["note"]
+
+    assert tool.execute(object(), note="hi") == "injected:hi:5"
+    assert tool.execute(object(), note="hi", limit="7") == "injected:hi:7"
+    with pytest.raises(ToolArgumentError, match="unknown argument"):
+        tool.execute(object(), note="hi", storage="override")
+
+
+def test_build_json_schema_handles_positional_partial_binding():
+    def fmt(prefix, value: str, suffix="!") -> str:
+        return f"{prefix}{value}{suffix}"
+
+    schema = build_json_schema(functools.partial(fmt, ">>"))
+    assert "prefix" not in schema["parameters"]["properties"]
+    assert schema["parameters"]["required"] == ["value"]

@@ -28,6 +28,7 @@ from ..events.names import (
     WORKFLOW_RUN,
 )
 from ..exceptions.security import SecurityHaltError
+from ..exceptions.tool import ToolError
 from ..exceptions.workflow import WorkflowPaused
 from ..kernel.config import Config
 from ..kernel.logger import Logger
@@ -233,7 +234,10 @@ class Brain:
             tool_runner = self.tool_runner
             try:
                 tool_result = self._resilient_tool(lambda: tool_runner.dispatch(context))
-            except ValueError:
+            except (ToolError, ValueError):
+                # A tool contract failure (bad arguments, unknown tool, no tools
+                # registered) is not a pipeline error: escalate to the LLM
+                # rather than crashing the caller (RFC-0017).
                 tool_result = None
             else:
                 if tool_result is not None:

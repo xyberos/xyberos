@@ -1,5 +1,7 @@
 """Tests for the SQLite-backed persistent memory and knowledge providers."""
 
+import os
+
 from xyberos import create_app
 from xyberos.knowledge import SqliteKnowledge
 from xyberos.llm import CallableLLM
@@ -75,6 +77,17 @@ def test_sqlite_memory_lifecycle_start_stop_preserves_file_data(tmp_path):
     memory.close()
 
 
+def test_sqlite_memory_creates_missing_parent_dirs(tmp_path):
+    path = str(tmp_path / "nested" / "memory" / "chat.db")
+    memory = SqliteMemory(path)
+
+    assert os.path.exists(path)
+
+    memory.store(CognitiveContext("hello"))
+    assert len(memory.retrieve(None)) == 1
+    memory.close()
+
+
 def test_sqlite_memory_stores_non_context_objects():
     memory = SqliteMemory()
     memory.store("a plain note")
@@ -131,6 +144,17 @@ def test_sqlite_knowledge_lifecycle_start_stop(tmp_path):
 
     knowledge.start()
     assert knowledge.query(CognitiveContext("a")) == {"a": 1}
+    knowledge.close()
+
+
+def test_sqlite_knowledge_creates_missing_parent_dirs(tmp_path):
+    path = str(tmp_path / "deep" / "facts.db")
+    knowledge = SqliteKnowledge(path)
+
+    assert os.path.exists(path)
+
+    knowledge.add("hours", "9am")
+    assert knowledge.query(CognitiveContext("hours")) == {"hours": "9am"}
     knowledge.close()
 
 

@@ -4,6 +4,7 @@ from xyberos.brain.brain import Brain
 from xyberos.runtime.context import CognitiveContext
 from xyberos.llm import CallableLLM
 from xyberos.contracts import Tool
+from xyberos.exceptions import ToolArgumentError
 from xyberos.knowledge import InMemoryKnowledge
 from xyberos.memory import InMemoryMemory
 from xyberos.planner import SequentialPlanner
@@ -149,3 +150,41 @@ def test_brain_remembers_tool_responses():
     stored = memory.retrieve(None)
     assert len(stored) == 1
     assert stored[0].response == "esrever"
+
+
+def test_brain_escalates_tool_argument_errors_to_llm():
+    class ArgumentRaisingTool(Tool):
+        @property
+        def name(self):
+            return "argtool"
+
+        def execute(self, context, **arguments):
+            raise ToolArgumentError("bad arguments")
+
+    brain = Brain(
+        CallableLLM(lambda prompt: f"answer:{prompt}"),
+        tool_runner=ToolRunner([ArgumentRaisingTool()]),
+    )
+
+    # A tool contract failure (ToolArgumentError) escalates to the LLM instead
+    # of crashing the caller's chat loop.
+    assert brain.chat(CognitiveContext("argtool")) == "answer:argtool"
+
+
+def test_brain_still_propagates_unexpected_tool_errors():
+    class BuggyTool(Tool):
+        @property
+        def name(self):
+            return "buggy"
+
+        def execute(self, context, **arguments):
+            raise RuntimeError("internal tool bug")
+
+    brain = Brain(
+        CallableLLM(lambda prompt: "never"),
+        tool_runner=ToolRunner([BuggyTool()]),
+    )
+
+    # Only ToolError/ValueError escalate; genuine tool bugs still surface.
+    with pytest.raises(RuntimeError, match="internal tool bug"):
+        brain.chat(CognitiveContext("buggy"))

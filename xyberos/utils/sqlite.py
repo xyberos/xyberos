@@ -2,9 +2,25 @@
 
 from __future__ import annotations
 
+import os
 import sqlite3
 import threading
 from collections.abc import Callable
+
+
+def _ensure_parent_dir(path: str) -> None:
+    """Create a database file's parent directory so sqlite3 can open it.
+
+    ``:memory:`` databases have no file, and paths without a directory
+    component (e.g. ``"memory.db"``) resolve to the current directory, which
+    already exists. Nested paths like ``"data/memory.db"`` otherwise fail with
+    ``sqlite3.OperationalError: unable to open database file``.
+    """
+    if path == ":memory:":
+        return
+    parent = os.path.dirname(path)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
 
 
 class ThreadLocalSQLite:
@@ -27,6 +43,10 @@ class ThreadLocalSQLite:
         self._path = path
         self._initialize = initialize
         self._local = threading.local()
+        # Ensure a file-backed database's parent directory exists before the
+        # eager connection below opens it (sqlite3 cannot create a file whose
+        # parent directory is missing).
+        _ensure_parent_dir(path)
         # Open the constructor-thread connection eagerly so the database file
         # and schema exist immediately after construction (some callers rely
         # on the file being present). Other threads still get their own

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import functools
 import inspect
 from collections.abc import Callable, Mapping
 from typing import Any, cast, get_args, get_origin
@@ -20,6 +21,41 @@ _TYPE_MAP: dict[type, dict[str, str]] = {
 }
 
 
+def _effective_signature(func: Callable[..., Any]) -> inspect.Signature:
+    """Return ``func``'s signature with ``functools.partial``-bound args removed.
+
+    ``inspect.signature`` keeps arguments already bound by a ``partial`` as
+    keyword-only defaults, so a tool built from a partial would advertise its
+    injected config in the JSON schema — and could crash with "multiple values
+    for keyword argument" if an LLM supplied that bound arg. Unwrap partials
+    and drop their bound parameters so only the real call arguments remain.
+    """
+    if not isinstance(func, functools.partial):
+        return inspect.signature(func, eval_str=True)
+    signature = _effective_signature(func.func)
+    bound_keywords = set(func.keywords or {})
+    remaining = [
+        parameter
+        for parameter in list(signature.parameters.values())[len(func.args) :]
+        if parameter.name not in bound_keywords
+    ]
+    return signature.replace(parameters=remaining)
+
+
+def _callable_name(func: Callable[..., Any]) -> str:
+    """Return a stable display name for a callable.
+
+    Plain functions expose ``__name__``; ``functools.partial`` objects do not,
+    so unwrap to the underlying callable (or fall back to ``"tool"``).
+    """
+    current: Any = func
+    seen: set[int] = set()
+    while isinstance(current, functools.partial) and id(current) not in seen:
+        seen.add(id(current))
+        current = current.func
+    return getattr(current, "__name__", None) or "tool"
+
+
 def build_json_schema(
     func: Callable[..., Any],
     *,
@@ -31,7 +67,7 @@ def build_json_schema(
     Annotated parameters become typed ``properties``; parameters without a
     default are listed in ``required``. Unannotated parameters get no ``type``.
     """
-    signature = inspect.signature(func, eval_str=True)
+    signature = _effective_signature(func)
     properties: dict[str, Any] = {}
     required: list[str] = []
     for parameter in signature.parameters.values():
@@ -41,7 +77,7 @@ def build_json_schema(
         if parameter.default is inspect.Parameter.empty:
             required.append(parameter.name)
     return {
-        "name": name or func.__name__,
+        "name": name or _callable_name(func),
         "description": description,
         "parameters": {
             "type": "object",
@@ -77,7 +113,7 @@ def coerce_arguments(
     parameters, unknown parameters, or values that cannot be coerced to the
     annotated type.
     """
-    signature = inspect.signature(func, eval_str=True)
+    signature = _effective_signature(func)
     coerced: dict[str, Any] = {}
     for name, parameter in signature.parameters.items():
         if parameter.kind in (parameter.VAR_POSITIONAL, parameter.VAR_KEYWORD):
