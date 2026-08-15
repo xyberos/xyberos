@@ -1,4 +1,9 @@
-# Plugin Contribution Workflow — External & Additive (No Core Changes)
+# Build & Contribute Plugins
+
+> **Related:** this page is the *plugin* half of the [Contributing Guide](contributing.md).
+> For what is available today and what's planned, see the
+> [Integration Roadmap](RFCs/RFC-0019-integrations-roadmap.md); for a hands-on
+> walkthrough, see [Learn 24 — Build & Contribute Plugins](learn/24-plugin-development.md).
 
 Turning plugin contribution into an automated developer workflow where Xyberos
 does most of the boring architectural work — **without touching the core

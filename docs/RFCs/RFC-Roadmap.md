@@ -1,3 +1,12 @@
+# Roadmap & Status
+
+> This is the **platform** roadmap — what the Xyberos core implements today and
+> what is planned for it. For the **integration** roadmap — which providers,
+> stores, and plugins to build and where each ships — see
+> [RFC-0019 — Plugin & Integration Roadmap](RFC-0019-integrations-roadmap.md).
+
+## Version history
+
 v0.1
 [x] Core
 
@@ -62,8 +71,9 @@ Memory (store)
 The default `create_app()` wires in-memory providers for every subsystem, so a
 default app remembers conversations, grounds prompts in knowledge, records a
 plan on the context, and dispatches tools automatically. The repository test
-suite (533 tests, 89% coverage) is the authoritative description of current
-behavior.
+suite (533 passed, 3 skipped for optional dependencies, ~90% coverage) is the
+authoritative description of current behavior; the 3 remaining failures are
+pre-existing async-security tests requiring `pytest-asyncio`.
 
 ---
 

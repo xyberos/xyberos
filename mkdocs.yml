@@ -89,27 +89,30 @@ nav:
   - How-To: howto.md
   - API Reference: api-reference.md
   - FAQ: faq.md
-  - Contributing: contributing.md
-  - Integrations: integrations.md
-  - Plugin Contribution: plugin-contribution.md
-  - Roadmap: RFCs/RFC-Roadmap.md
-  - Integration Roadmap: RFCs/RFC-0019-integrations-roadmap.md
-  - Architecture RFCs:
-      - RFC-0001 Architecture: RFCs/RFC-0001-architecture.md
-      - RFC-0002 Kernel: RFCs/RFC-0002-kernel.md
-      - RFC-0003 Runtime: RFCs/RFC-0003-runtime.md
-      - RFC-0004 Brain: RFCs/RFC-0004-brain.md
-      - RFC-0005 Context: RFCs/RFC-0005-context.md
-      - RFC-0006 LLM Provider: RFCs/RFC-0006-llm-provider.md
-      - RFC-0007 Memory: RFCs/RFC-0007-memory.md
-      - RFC-0008 Knowledge: RFCs/RFC-0008-knowledge.md
-      - RFC-0009 Planner: RFCs/RFC-0009-planner.md
-      - RFC-0010 Tools: RFCs/RFC-0010-tools.md
-      - RFC-0011 Workflows: RFCs/RFC-0011-workflows.md
-      - RFC-0012 Agents: RFCs/RFC-0012-agents.md
-      - RFC-0013 Plugins: RFCs/RFC-0013-plugins.md
-      - RFC-0014 Events: RFCs/RFC-0014-events.md
-      - RFC-0015 Security: RFCs/RFC-0015-security.md
-      - RFC-0016 Trainable Cognitive Engines: RFCs/RFC-0016-trainable-cognitive-engines.md
-      - RFC-0017 LLM-as-Fallback & Self-Routing: RFCs/RFC-0017-llm-fallback-router.md
-      - RFC-0018 Smarter Learning: RFCs/RFC-0018-smarter-learning.md
+  - Contributing:
+      - Contributing Guide: contributing.md
+      - Build & Contribute Plugins: plugin-contribution.md
+  - Integrations:
+      - Integrations & Ecosystem: integrations.md
+      - Integration Roadmap: RFCs/RFC-0019-integrations-roadmap.md
+  - Architecture:
+      - Roadmap & Status: RFCs/RFC-Roadmap.md
+      - Architecture RFCs:
+          - RFC-0001 Architecture: RFCs/RFC-0001-architecture.md
+          - RFC-0002 Kernel: RFCs/RFC-0002-kernel.md
+          - RFC-0003 Runtime: RFCs/RFC-0003-runtime.md
+          - RFC-0004 Brain: RFCs/RFC-0004-brain.md
+          - RFC-0005 Context: RFCs/RFC-0005-context.md
+          - RFC-0006 LLM Provider: RFCs/RFC-0006-llm-provider.md
+          - RFC-0007 Memory: RFCs/RFC-0007-memory.md
+          - RFC-0008 Knowledge: RFCs/RFC-0008-knowledge.md
+          - RFC-0009 Planner: RFCs/RFC-0009-planner.md
+          - RFC-0010 Tools: RFCs/RFC-0010-tools.md
+          - RFC-0011 Workflows: RFCs/RFC-0011-workflows.md
+          - RFC-0012 Agents: RFCs/RFC-0012-agents.md
+          - RFC-0013 Plugins: RFCs/RFC-0013-plugins.md
+          - RFC-0014 Events: RFCs/RFC-0014-events.md
+          - RFC-0015 Security: RFCs/RFC-0015-security.md
+          - RFC-0016 Trainable Cognitive Engines: RFCs/RFC-0016-trainable-cognitive-engines.md
+          - RFC-0017 LLM-as-Fallback & Self-Routing: RFCs/RFC-0017-llm-fallback-router.md
+          - RFC-0018 Smarter Learning: RFCs/RFC-0018-smarter-learning.md

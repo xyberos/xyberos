@@ -7,8 +7,8 @@
 
 | | |
 |---|---|
-| **Status** | Draft |
-| **Version** | 2.0 |
+| **Status** | Active |
+| **Version** | 2.1 |
 | **Applies to** | Plugin ecosystem (integrations); core remains additive-only |
 | **Companion docs** | [`integrations.md`](../integrations.md) (available integrations + usage) · [`plugin-contribution.md`](../plugin-contribution.md) (plugin SDK, generator, validator, CLI) · [`RFC-Roadmap.md`](RFC-Roadmap.md) (platform implementation status + community backlog) |
 
@@ -298,10 +298,12 @@ Each milestone: goal → deliverables → dependencies → effort (S/M/L) → Do
 asking questions.
 
 - [x] Status-aware roadmap + Definition of Done written (this document).
-- [ ] Publish a short "contribute an integration" guide (extend
-      `CONTRIBUTING.md`).
-- [ ] CI gate: `xyberos plugin validate` as a GitHub Action on plugin PRs
-      (from `plugin-contribution.md` §7).
+- [x] Publish a short "contribute an integration" guide — the
+      [Contributing Guide](../contributing.md) plugin callout and
+      [Learn 24 — Build & Contribute Plugins](../learn/24-plugin-development.md).
+- [x] CI gate: `xyberos plugin validate` as a GitHub Action on plugin PRs
+      (`.github/workflows/plugin-validation.yml` + the `xyberos-plugin-validator`
+      composite action; validates `examples/texttools`).
 - [ ] First external plugin PR merged using the generator.
 
 **Effort:** S · **Deps:** none · **DoD:** the guide + CI action exist and the
@@ -514,7 +516,8 @@ For **every** integration:
 - Number of 🟢 integrations in this roadmap over time.
 - Number of community PRs merged via the generator.
 - Time-to-first-plugin for a new contributor (**target: < 15 minutes**).
-- Full test suite stays green (currently 536 passed / 3 skipped).
+- Full test suite: 533 passed / 3 skipped (optional deps) — the 3 remaining
+  failures are pre-existing async-security tests requiring `pytest-asyncio`.
 
 ## 15. Open questions
 
@@ -558,6 +561,7 @@ idea into an architectural strategy. 🧲
 
 | Rev | Date | Change |
 | --- | ---- | ------ |
+| 2.1 | 2026-08-15 | M0 status updated (contribution guide + CI gate implemented); corrected test counts. |
 | 2.0 | 2026-08-15 | Merged the `INTEGRATION.md` status tracker into this roadmap (single source of truth). |
 | 1.0 | 2026-08-15 | Initial draft — execution plan (milestones M0–M10). |
 

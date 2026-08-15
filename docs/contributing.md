@@ -1,12 +1,20 @@
-# Contributing
+# Contributing Guide
 
-> **Building a plugin?** Use the plugin toolkit: `xyberos plugin create` →
-> implement → `xyberos plugin validate` → `xyberos plugin repair`. See
-> [Learn 24 — Build & Contribute Plugins](learn/24-plugin-development.md) and
-> [`plugin-contribution.md`](plugin-contribution.md) for the
-> contribution pipeline (`CREATE → IMPLEMENT → TEST → VALIDATE → DOCUMENT → PACKAGE → PR`).
+Contributing to Xyberos takes one of two paths:
 
-This page mirrors the repository's root [`CONTRIBUTING.md`](https://github.com/xyberos/xyberos/blob/master/CONTRIBUTING.md) —
-the canonical contribution guide for Xyberos.
+| Path | What you contribute | Guide |
+| ---- | ------------------- | ----- |
+| **Core** | Bug fixes, tests, docs, features, RFCs — changes *inside* `xyberos/` | This page |
+| **Plugins** | New capabilities (LLM providers, tools, memory, knowledge, integrations) — **external**, no core changes | [Build & Contribute Plugins](plugin-contribution.md) |
+
+> **Building a plugin?** That's the fastest path — the toolkit does most of the
+> work: `xyberos plugin create` → implement → `xyberos plugin validate` →
+> `xyberos plugin repair`. See [Build & Contribute Plugins](plugin-contribution.md)
+> and the [Learn 24 — Build & Contribute Plugins](learn/24-plugin-development.md)
+> walkthrough for the
+> `CREATE → IMPLEMENT → TEST → VALIDATE → DOCUMENT → PACKAGE → PR` pipeline.
+
+This page is the **core** contribution guide. It mirrors the repository's root
+[`CONTRIBUTING.md`](https://github.com/xyberos/xyberos/blob/master/CONTRIBUTING.md).
 
 --8<-- "CONTRIBUTING.md"

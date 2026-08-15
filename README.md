@@ -269,8 +269,8 @@ pip install xyberos[dev]
 pytest
 ```
 
-533 tests, 89% coverage. The test suite is the authoritative reference for
-current behavior.
+533 passed · 3 skipped (optional deps) · ~90% coverage. The test suite is the
+authoritative reference for current behavior.
 
 ---
 
@@ -288,13 +288,16 @@ The full docs are hosted at **[docs.xyberos.com](https://docs.xyberos.com)** and
 - [Knowledge Ingestion](docs/learn/21-knowledge-ingestion.md) — index documents, files, and URLs
 - [Training Xyberos](docs/learn/22-training-tutorial.md) — capture, feedback, learn, evaluate, and distill
 - [Build a Customer Support Assistant](docs/learn/23-customer-support-tutorial.md) — a production-shaped app
-- [API Reference](docs/api-reference.md)
-- [Roadmap & Vision](docs/RFCs/RFC-Roadmap.md)
-- [Contributing](CONTRIBUTING.md) — how to build, test, and contribute
+- [API Reference](docs/api-reference.md) — every primary public object
+- [Integrations & Ecosystem](docs/integrations.md) — what's available today
+- [Integration Roadmap](docs/RFCs/RFC-0019-integrations-roadmap.md) — status tracker + execution plan
+- [Contributing Guide](CONTRIBUTING.md) — how to build, test, and contribute to the core
+- [Build & Contribute Plugins](docs/plugin-contribution.md) — the plugin toolkit: SDK, generator, validator, CLI
 
-Architecture RFCs — the reasoning behind every layer, all in [`docs/RFCs/`](docs/RFCs/):
+Architecture — the reasoning behind every layer, all in [`docs/RFCs/`](docs/RFCs/):
 
-- [RFC-0001 Architecture](docs/RFCs/RFC-0001-architecture.md) through [RFC-0018 Smarter Learning](docs/RFCs/RFC-0018-smarter-learning.md)
+- [Roadmap & Status](docs/RFCs/RFC-Roadmap.md)
+- [RFC-0001 Architecture](docs/RFCs/RFC-0001-architecture.md) through [RFC-0019 Plugin & Integration Roadmap](docs/RFCs/RFC-0019-integrations-roadmap.md)
 
 Run the docs locally:
 

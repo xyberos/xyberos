@@ -94,6 +94,9 @@ The W3Schools-style tutorial. Each chapter builds on the last.
 - [Integrations & Ecosystem](integrations.md) — what's available today:
   LLM providers, vector stores, memory, knowledge, tools, plugins, and
   observability.
+- [Integration Roadmap](RFCs/RFC-0019-integrations-roadmap.md) — the
+  plugin/integration execution plan: status tracker, milestones, and
+  Definition of Done.
 
 ## 📖 API Reference
 
@@ -107,10 +110,8 @@ The W3Schools-style tutorial. Each chapter builds on the last.
 
 ## 🧠 Architecture
 
-- [Roadmap & Vision](RFCs/RFC-Roadmap.md) — current status and enhancement
-  backlog.
-- [Integration Roadmap](RFCs/RFC-0019-integrations-roadmap.md) — the
-  plugin/integration execution plan (milestones, Definition of Done).
+- [Roadmap & Status](RFCs/RFC-Roadmap.md) — platform implementation status and
+  enhancement backlog.
 - [Architecture RFCs](RFCs/RFC-0001-architecture.md) — the reasoning behind
   every layer (RFC-0001 through RFC-0018).
 
@@ -118,6 +119,8 @@ The W3Schools-style tutorial. Each chapter builds on the last.
 
 - [Contributing Guide](contributing.md) — development environment, tests,
   coding standards, RFC process, and pull requests.
+- [Build & Contribute Plugins](plugin-contribution.md) — the plugin toolkit:
+  SDK, generator, validator, CLI, and CI action.
 
 ---
 
