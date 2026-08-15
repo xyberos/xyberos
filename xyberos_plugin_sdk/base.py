@@ -1,4 +1,4 @@
-"""Typed plugin base classes (``EXTRA.md`` approach #1).
+"""Typed plugin base classes (``plugin-contribution.md`` approach #1).
 
 Each typed base is a thin :class:`~xyberos.contracts.Plugin` subclass whose
 ``register()`` wires a contribution through the **public** kernel API
@@ -14,14 +14,12 @@ A typed plugin adds two things on top of the ``Plugin`` contract:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, cast
 
 from xyberos.contracts import (
     Agent,
-    Knowledge,
     KnowledgeProvider,
     LLMProvider,
-    Memory,
     MemoryProvider,
     Planner,
     Plugin,
@@ -55,7 +53,7 @@ def _pop_tool(registry: Any, name: str) -> None:
         return
     store = getattr(registry, "_tools", None)
     if isinstance(store, dict):
-        store.pop(name, None)
+        cast(dict[str, Any], store).pop(name, None)
 
 
 class TypedPlugin(Plugin, ABC):

@@ -2,8 +2,7 @@
 
 from xyberos import create_app
 from xyberos.contracts import Service, Tool
-
-from xyberos_plugin_sdk.base import CONTRIBUTE_METHODS, ServicePlugin, ToolPlugin, TYPED_BASES
+from xyberos_plugin_sdk.base import CONTRIBUTE_METHODS, TYPED_BASES, ServicePlugin, ToolPlugin
 
 
 class HelloTool(Tool):

@@ -1,4 +1,4 @@
-"""Declarative plugins via ``[tool.xyberos.plugins.*]`` (``EXTRA.md`` approach #5).
+"""Declarative plugins via ``[tool.xyberos.plugins.*]`` (``plugin-contribution.md`` approach #5).
 
 A package can declare plugins in its ``pyproject.toml``::
 
@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from xyberos.contracts import Plugin, Tool
 
@@ -37,6 +37,13 @@ else:  # pragma: no cover - Python 3.10 fallback
 def _read_toml(path: str | Path) -> dict[str, Any]:
     with open(path, "rb") as handle:
         return tomllib.load(handle)
+
+
+def _as_dict(value: Any) -> dict[str, Any]:
+    """Return ``value`` as a ``dict[str, Any]`` when it is one, else ``{}``."""
+    if isinstance(value, dict):
+        return cast(dict[str, Any], value)
+    return {}
 
 
 class DeclarativePlugin(Plugin):
@@ -61,12 +68,12 @@ class DeclarativePlugin(Plugin):
     def plugin_type(self) -> str | None:
         return self.config.get("type")
 
-    def with_tool(self, tool: Tool) -> "DeclarativePlugin":
+    def with_tool(self, tool: Tool) -> DeclarativePlugin:
         """Attach a tool implementation; registered on ``register()``."""
         self._tools[tool.name] = tool
         return self
 
-    def with_service(self, name: str, service: Any) -> "DeclarativePlugin":
+    def with_service(self, name: str, service: Any) -> DeclarativePlugin:
         """Attach a named service; registered as ``<plugin>.<name>``."""
         self._services[name] = service
         return self
@@ -89,27 +96,29 @@ class DeclarativePlugin(Plugin):
             else:
                 store = getattr(kernel.resolve("tools"), "_tools", None)
                 if isinstance(store, dict):
-                    store.pop(tool.name, None)
+                    cast(dict[str, Any], store).pop(tool.name, None)
 
 
 def load_declarative(pyproject_path: str | Path) -> list[DeclarativePlugin]:
     """Parse ``[tool.xyberos.plugins.*]`` from ``pyproject.toml`` into plugins."""
     data = _read_toml(pyproject_path)
-    table = data.get("tool", {})
-    if not isinstance(table, dict):
-        return []
-    xyberos = table.get("xyberos", {})
-    plugins = xyberos.get("plugins", {}) if isinstance(xyberos, dict) else {}
+    table = _as_dict(data.get("tool"))
+    xyberos = _as_dict(table.get("xyberos"))
+    plugins = _as_dict(xyberos.get("plugins"))
     result: list[DeclarativePlugin] = []
     for name, cfg in plugins.items():
         if isinstance(cfg, dict):
-            result.append(DeclarativePlugin(name, cfg))
+            result.append(DeclarativePlugin(str(name), cast(dict[str, Any], cfg)))
     return result
 
 
 def register_declarative(kernel: Any, pyproject_path: str | Path) -> list[DeclarativePlugin]:
     """Load declarative plugins from ``pyproject.toml`` and register them."""
-    loaded = [plugin for plugin in load_declarative(pyproject_path) if _looks_unloaded(kernel, plugin)]
+    loaded = [
+        plugin
+        for plugin in load_declarative(pyproject_path)
+        if _looks_unloaded(kernel, plugin)
+    ]
     for plugin in loaded:
         kernel.plugins.load(plugin) if hasattr(kernel, "plugins") else plugin.register(kernel)
     return loaded

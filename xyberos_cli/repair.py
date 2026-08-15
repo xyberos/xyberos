@@ -1,4 +1,4 @@
-"""AST-based repair for Xyberos plugins (``EXTRA.md`` approach #6).
+"""AST-based repair for Xyberos plugins (``plugin-contribution.md`` approach #6).
 
 ``xyberos plugin repair`` finds classes in the plugin's source that extend a
 known Xyberos contract (e.g. ``Tool``, ``Memory``, ``VectorStore``) and are
@@ -74,8 +74,11 @@ def repair_source(source: str) -> tuple[str, list[str]]:
                 existing.add(member)
             if stubs:
                 # Insert just after the class body's last line (still inside the class).
-                insertions.setdefault(node.end_lineno - 1, []).extend(stubs)
-                changes.append(f"{node.name} (+{len(stubs)} member{'s' if len(stubs) != 1 else ''})")
+                end_line = node.end_lineno or node.lineno
+                insertions.setdefault(end_line - 1, []).extend(stubs)
+                changes.append(
+                    f"{node.name} (+{len(stubs)} member{'s' if len(stubs) != 1 else ''})"
+                )
 
     if not changes:
         return source, []

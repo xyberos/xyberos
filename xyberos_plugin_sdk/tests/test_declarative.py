@@ -2,7 +2,6 @@
 
 from xyberos import create_app
 from xyberos.contracts import Tool
-
 from xyberos_plugin_sdk.declarative import DeclarativePlugin, load_declarative
 
 _PYPROJECT = """

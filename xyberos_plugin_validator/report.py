@@ -29,7 +29,7 @@ class Check:
 class Report:
     """The ordered result of validating one plugin package."""
 
-    checks: list[Check] = field(default_factory=list)
+    checks: list[Check] = field(default_factory=list[Check])
 
     @property
     def passed(self) -> bool:

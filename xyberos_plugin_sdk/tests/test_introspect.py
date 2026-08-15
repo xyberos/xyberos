@@ -1,7 +1,6 @@
 """Tests for the shared contract introspection layer."""
 
 from xyberos.contracts import LLMProvider, Tool
-
 from xyberos_plugin_sdk import introspect as it
 
 

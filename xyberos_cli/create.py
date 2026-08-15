@@ -1,4 +1,4 @@
-"""Plugin scaffold generator (``EXTRA.md`` CLI milestone #4).
+"""Plugin scaffold generator (``plugin-contribution.md`` CLI milestone #4).
 
 Runs ``xyberos plugin create``: asks a few questions (or accepts flags), then
 emits a validated, tested, packaged plugin skeleton whose *service* class is
@@ -9,26 +9,56 @@ from __future__ import annotations
 
 import argparse
 import re
-import sys
 from pathlib import Path
 from string import Template
+from typing import Any
 
 from xyberos_plugin_sdk.introspect import CONTRACTS, abstract_members, render_stub
 
 __all__ = ["run_create"]
 
 #: Per-type generation info. ``plural`` marks a contribution that returns a list.
-TYPE_INFO: dict[str, dict] = {
-    "tool": {"contract": "Tool", "base": "ToolPlugin", "method": "tools", "return": "list[Tool]", "label": "Tool", "plural": True},
-    "llm": {"contract": "LLMProvider", "base": "LLMPlugin", "method": "llm", "return": "LLMProvider", "label": "LLM Provider", "plural": False},
-    "memory": {"contract": "Memory", "base": "MemoryPlugin", "method": "memory", "return": "MemoryProvider", "label": "Memory", "plural": False},
-    "knowledge": {"contract": "Knowledge", "base": "KnowledgePlugin", "method": "knowledge", "return": "KnowledgeProvider", "label": "Knowledge", "plural": False},
-    "vector": {"contract": "VectorStore", "base": "VectorPlugin", "method": "vector_store", "return": "VectorStore", "label": "Vector Store", "plural": False},
-    "workflow": {"contract": "Workflow", "base": "WorkflowPlugin", "method": "workflow", "return": "Workflow", "label": "Workflow", "plural": False},
-    "planner": {"contract": "Planner", "base": "PlannerPlugin", "method": "planner", "return": "Planner", "label": "Planner", "plural": False},
-    "agent": {"contract": "Agent", "base": "AgentPlugin", "method": "agent", "return": "Agent", "label": "Agent", "plural": False},
-    "service": {"contract": "Service", "base": "ServicePlugin", "method": "service", "return": "Service", "label": "Service", "plural": False},
-    "other": {"contract": "Plugin", "base": None, "method": None, "return": None, "label": "Other", "plural": False},
+TYPE_INFO: dict[str, dict[str, Any]] = {
+    "tool": {
+        "contract": "Tool", "base": "ToolPlugin", "method": "tools",
+        "return": "list[Tool]", "label": "Tool", "plural": True,
+    },
+    "llm": {
+        "contract": "LLMProvider", "base": "LLMPlugin", "method": "llm",
+        "return": "LLMProvider", "label": "LLM Provider", "plural": False,
+    },
+    "memory": {
+        "contract": "Memory", "base": "MemoryPlugin", "method": "memory",
+        "return": "MemoryProvider", "label": "Memory", "plural": False,
+    },
+    "knowledge": {
+        "contract": "Knowledge", "base": "KnowledgePlugin", "method": "knowledge",
+        "return": "KnowledgeProvider", "label": "Knowledge", "plural": False,
+    },
+    "vector": {
+        "contract": "VectorStore", "base": "VectorPlugin", "method": "vector_store",
+        "return": "VectorStore", "label": "Vector Store", "plural": False,
+    },
+    "workflow": {
+        "contract": "Workflow", "base": "WorkflowPlugin", "method": "workflow",
+        "return": "Workflow", "label": "Workflow", "plural": False,
+    },
+    "planner": {
+        "contract": "Planner", "base": "PlannerPlugin", "method": "planner",
+        "return": "Planner", "label": "Planner", "plural": False,
+    },
+    "agent": {
+        "contract": "Agent", "base": "AgentPlugin", "method": "agent",
+        "return": "Agent", "label": "Agent", "plural": False,
+    },
+    "service": {
+        "contract": "Service", "base": "ServicePlugin", "method": "service",
+        "return": "Service", "label": "Service", "plural": False,
+    },
+    "other": {
+        "contract": "Plugin", "base": None, "method": None,
+        "return": None, "label": "Other", "plural": False,
+    },
 }
 
 
@@ -80,7 +110,7 @@ _README = Template(
 $description
 
 A Xyberos plugin of type **$label**, generated with
-[`xyberos plugin create`](https://github.com/xyberos/xyberos/blob/main/EXTRA.md).
+[`xyberos plugin create`](https://github.com/xyberos/xyberos/blob/main/docs/plugin-contribution.md).
 
 ## What it integrates with
 
@@ -111,7 +141,7 @@ xyberos plugin validate .
 ## Contribution pipeline
 
 `CREATE -> IMPLEMENT -> TEST -> VALIDATE -> DOCUMENT -> PACKAGE -> PULL REQUEST`
-(see `EXTRA.md`).
+(see `plugin-contribution.md`).
 """
 )
 
@@ -295,7 +325,7 @@ if __name__ == "__main__":
 # --------------------------------------------------------------------------- #
 
 
-def _service_source(plugin_type: str, info: dict, name: str, pascal: str) -> str:
+def _service_source(plugin_type: str, info: dict[str, Any], name: str, pascal: str) -> str:
     if info["plural"]:
         return _SERVICE_TOOL.substitute(name=name, Name=pascal, pascal=pascal)
     stubs = "".join(
@@ -312,7 +342,7 @@ def _service_source(plugin_type: str, info: dict, name: str, pascal: str) -> str
     )
 
 
-def _plugin_source(info: dict, name: str, pascal: str, pkg: str) -> str:
+def _plugin_source(info: dict[str, Any], name: str, pascal: str, pkg: str) -> str:
     if info["base"] is None:
         return _PLUGIN_OTHER.substitute(name=name, pascal=pascal, label=info["label"])
     contribution = f"{pascal}Tool" if info["plural"] else f"{pascal}Service"
@@ -331,7 +361,7 @@ def _plugin_source(info: dict, name: str, pascal: str, pkg: str) -> str:
     )
 
 
-def generate_plugin(target: Path, answers: dict) -> list[Path]:
+def generate_plugin(target: Path, answers: dict[str, Any]) -> list[Path]:
     """Scaffold a plugin into ``target``. Returns the created file paths."""
     name = answers["name"]
     pkg = _sanitize_package(name)
@@ -352,7 +382,9 @@ def generate_plugin(target: Path, answers: dict) -> list[Path]:
             integrate_with=answers["integrate_with"] or "TODO: describe the external system",
         ),
         f"{pkg}/__init__.py": _INIT.substitute(Name=pascal, label=info["label"]),
-        f"{pkg}/config.py": _CONFIG.substitute(name=name, base_url=f"https://api.{name}.example.com", prefix=prefix),
+        f"{pkg}/config.py": _CONFIG.substitute(
+            name=name, base_url=f"https://api.{name}.example.com", prefix=prefix
+        ),
         f"{pkg}/service.py": _service_source(plugin_type, info, name, pascal),
         f"{pkg}/plugin.py": _plugin_source(info, name, pascal, pkg),
         "tests/test_plugin.py": _TESTS.substitute(name=name, pascal=pascal, pkg=pkg),
@@ -393,9 +425,9 @@ def _prompt_type() -> str:
         return "other"
 
 
-def gather_answers(args) -> dict:
+def gather_answers(args: argparse.Namespace) -> dict[str, Any]:
     """Collect answers from flags or an interactive wizard."""
-    answers = {
+    answers: dict[str, Any] = {
         "name": args.name,
         "type": args.type,
         "description": args.description,
@@ -407,13 +439,21 @@ def gather_answers(args) -> dict:
     if args.non_interactive:
         missing = [key for key in ("name", "type", "description") if not answers[key]]
         if missing:
-            raise SystemExit(f"error: --non-interactive requires --name, --type and --description (missing: {', '.join(missing)})")
+            raise SystemExit(
+                "error: --non-interactive requires --name, --type and --description "
+                f"(missing: {', '.join(missing)})"
+            )
         return answers
 
     answers["name"] = _prompt("What is your plugin name?", default=answers["name"] or "myplugin")
     answers["type"] = answers["type"] or _prompt_type()
-    answers["description"] = _prompt("What does this plugin do?", default=answers["description"] or f"A {TYPE_INFO[answers['type']]['label']} plugin")
-    answers["integrate_with"] = _prompt("What does this plugin integrate with?", default=answers["integrate_with"] or "")
+    answers["description"] = _prompt(
+        "What does this plugin do?",
+        default=answers["description"] or f"A {TYPE_INFO[answers['type']]['label']} plugin",
+    )
+    answers["integrate_with"] = _prompt(
+        "What does this plugin integrate with?", default=answers["integrate_with"] or ""
+    )
     return answers
 
 
@@ -424,7 +464,8 @@ def run_create(args: argparse.Namespace) -> int:
         raise SystemExit(f"error: {target} already exists and is not empty")
     created = generate_plugin(target, answers)
     print(f"Created plugin {answers['name']!r} in {target}")
-    print(f"  {len(created)} files generated ({answers['type']} / {TYPE_INFO[answers['type']]['label']})")
+    label = TYPE_INFO[answers['type']]['label']
+    print(f"  {len(created)} files generated ({answers['type']} / {label})")
     print()
     print("Next steps:")
     print(f"  cd {target}")

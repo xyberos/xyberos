@@ -15,7 +15,7 @@
 
 The whole toolkit is **external and additive** — it imports the stable Xyberos
 public API and never modifies the core. See
-[`EXTRA.md`](https://github.com/xyberos/xyberos/blob/main/EXTRA.md) for the
+[`plugin-contribution.md`](../plugin-contribution.md) for the
 design and the [integration roadmap](../RFCs/RFC-0019-integrations-roadmap.md)
 for where each plugin fits.
 
@@ -297,6 +297,6 @@ makes plugin contribution **standardized**.
 
 ## Further reading
 
-- [`EXTRA.md`](https://github.com/xyberos/xyberos/blob/main/EXTRA.md) — the full toolkit design (introspection rule, declarative loader, repair, CI)
-- [`INTEGRATION.md`](https://github.com/xyberos/xyberos/blob/main/INTEGRATION.md) — the plugin/integration roadmap with per-integration status
+- [`plugin-contribution.md`](../plugin-contribution.md) — the full toolkit design (introspection rule, declarative loader, repair, CI)
+- [Integration Roadmap RFC](../RFCs/RFC-0019-integrations-roadmap.md) — status tracker + execution plan
 - [Integration Roadmap RFC](../RFCs/RFC-0019-integrations-roadmap.md) — the execution plan (milestones, Definition of Done)

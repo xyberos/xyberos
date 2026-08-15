@@ -1,8 +1,9 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
 name: 'Xyberos Plugin Validator'
 description: >-
   Validate a Xyberos plugin package on every PR (structure, contract,
   configuration, testing, documentation, and live-kernel compatibility).
-  Institutionalizes the EXTRA.md contribution pipeline.
+  Institutionalizes the plugin-contribution.md contribution pipeline.
 inputs:
   path:
     description: 'Plugin package directory to validate.'

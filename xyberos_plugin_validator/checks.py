@@ -1,6 +1,6 @@
 """Static validation checks for a Xyberos plugin package.
 
-Checks reported (matching ``EXTRA.md``): ``structure``, ``contract``,
+Checks reported (matching ``plugin-contribution.md``): ``structure``, ``contract``,
 ``configuration``, ``testing``, ``documentation``, and (via :mod:`.live`)
 ``compatibility`` (the live-kernel register/unregister check).
 """
@@ -8,10 +8,9 @@ Checks reported (matching ``EXTRA.md``): ``structure``, ``contract``,
 from __future__ import annotations
 
 import importlib
-import inspect
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from xyberos_plugin_sdk.introspect import (
     CONTRACTS,
@@ -48,20 +47,21 @@ def _read_toml(path: str | Path) -> dict[str, Any]:
         return tomllib.load(handle)
 
 
+def _as_dict(value: Any) -> dict[str, Any]:
+    """Return ``value`` as a ``dict[str, Any]`` when it is one, else ``{}``."""
+    if isinstance(value, dict):
+        return cast(dict[str, Any], value)
+    return {}
+
+
 def discover_entry_points(pyproject_path: str | Path) -> dict[str, str]:
     """Return ``{name: 'module:attr'}`` from ``[project.entry-points."xyberos.plugins"]``."""
     if not Path(pyproject_path).is_file():
         return {}
     data = _read_toml(pyproject_path)
-    project = data.get("project", {})
-    if not isinstance(project, dict):
-        return {}
-    entry_points = project.get("entry-points", {})
-    if not isinstance(entry_points, dict):
-        return {}
-    group = entry_points.get("xyberos.plugins", {})
-    if not isinstance(group, dict):
-        return {}
+    project = _as_dict(data.get("project"))
+    entry_points = _as_dict(project.get("entry-points"))
+    group = _as_dict(entry_points.get("xyberos.plugins"))
     return {str(name): str(value) for name, value in group.items() if isinstance(value, str)}
 
 
@@ -112,7 +112,7 @@ def _contribution_issues(plugin: Any, plugin_type: str) -> list[str]:
         return [f"{_method_name(plugin_type)}() raised {type(exc).__name__}: {exc}"]
 
     contract = CONTRACTS[plugin_type]
-    services = value if plugin_type == "tool" else [value]
+    services: list[Any] = value if plugin_type == "tool" else [value]
     for index, service in enumerate(services):
         label = f"tool #{index}" if plugin_type == "tool" else "service"
         missing = [m for m in _CONTRACT_MEMBERS[plugin_type] if not hasattr(service, m)]
@@ -129,9 +129,10 @@ def _contribution_issues(plugin: Any, plugin_type: str) -> list[str]:
             if not callable(impl_method):
                 issues.append(f"{label}.{member} is not callable")
                 continue
-            if not signature_compatible(type(service), contract, member):
+            if not signature_compatible(cast(type[Any], type(service)), contract, member):
                 issues.append(
-                    f"{label}.{member} signature is not compatible with the {contract.__name__} contract"
+                    f"{label}.{member} signature is not compatible with "
+                    f"the {contract.__name__} contract"
                 )
     return issues
 
@@ -185,7 +186,10 @@ def validate_plugin_checks(
     module, attr = _entry_module(entry_value)
     pkg_dir = root / _top_level_package(module)
     if not pkg_dir.is_dir():
-        report.fail("structure", f"expected package directory {pkg_dir.name}/ for entry point {entry_name!r}")
+        report.fail(
+            "structure",
+            f"expected package directory {pkg_dir.name}/ for entry point {entry_name!r}",
+        )
         return report
     report.pass_("structure", f"found {pyproject.name} and package {pkg_dir.name}/")
 
@@ -210,7 +214,9 @@ def validate_plugin_checks(
             passed, detail = _run_pytest(root)
             report.pass_("testing", detail) if passed else report.fail("testing", detail)
         else:
-            report.pass_("testing", f"{len(test_files)} test file(s) present (run with --run-tests)")
+            report.pass_(
+                "testing", f"{len(test_files)} test file(s) present (run with --run-tests)"
+            )
     else:
         report.fail("testing", "no test_*.py files found")
 
@@ -223,7 +229,10 @@ def validate_plugin_checks(
         if issues:
             report.fail("contract", "; ".join(issues))
         else:
-            report.pass_("contract", f"{type(plugin).__name__} is a valid {_plugin_type_of(plugin)} plugin")
+            report.pass_(
+                "contract",
+                f"{type(plugin).__name__} is a valid {_plugin_type_of(plugin)} plugin",
+            )
 
     # --- compatibility (live kernel, isolated subprocess) ------------------
     if run_live:
@@ -241,7 +250,7 @@ def _contract_issues(plugin: Any) -> list[str]:
     for required in ("register", "unregister"):
         if not callable(getattr(plugin, required, None)):
             issues.append(f"plugin.{required} must be callable")
-    cls = type(plugin)
+    cls = cast(type[Any], type(plugin))
     if not is_concrete(cls):
         issues.append(f"{cls.__name__} is abstract; missing: {', '.join(missing_abstracts(cls))}")
     plugin_type = _plugin_type_of(plugin)

@@ -89,6 +89,12 @@ The W3Schools-style tutorial. Each chapter builds on the last.
 - [How-To / Recipes](howto.md) — change the LLM, add memory, add knowledge,
   create tools/plugins/workflows, go offline, and more.
 
+## 🌐 Integrations
+
+- [Integrations & Ecosystem](integrations.md) — what's available today:
+  LLM providers, vector stores, memory, knowledge, tools, plugins, and
+  observability.
+
 ## 📖 API Reference
 
 - [API Reference](api-reference.md) — every primary public object, what it

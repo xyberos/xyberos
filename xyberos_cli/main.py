@@ -29,9 +29,20 @@ def build_parser() -> argparse.ArgumentParser:
     create_p.add_argument(
         "--auth", choices=["none", "api-key", "oauth", "token", "custom"], default="none"
     )
-    create_p.add_argument("--async", dest="async_support", action="store_true", help="generate async-friendly scaffolding")
-    create_p.add_argument("--streaming", action="store_true", help="generate streaming-friendly scaffolding")
-    create_p.add_argument("--dir", default=".", help="output directory (default: current directory)")
+    create_p.add_argument(
+        "--async",
+        dest="async_support",
+        action="store_true",
+        help="generate async-friendly scaffolding",
+    )
+    create_p.add_argument(
+        "--streaming",
+        action="store_true",
+        help="generate streaming-friendly scaffolding",
+    )
+    create_p.add_argument(
+        "--dir", default=".", help="output directory (default: current directory)"
+    )
     create_p.add_argument(
         "--non-interactive",
         action="store_true",
@@ -41,7 +52,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     validate_p = psub.add_parser("validate", help="validate a plugin package")
     validate_p.add_argument("path", nargs="?", default=".", help="plugin package directory")
-    validate_p.add_argument("--fix", action="store_true", help="repair missing contract stubs before validating")
+    validate_p.add_argument(
+        "--fix", action="store_true", help="repair missing contract stubs before validating"
+    )
     validate_p.add_argument("--run-tests", action="store_true", help="also run the plugin's tests")
     validate_p.set_defaults(func=validate.run_validate)
 

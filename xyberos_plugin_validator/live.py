@@ -1,4 +1,4 @@
-"""Live-kernel validation in an isolated subprocess (``EXTRA.md`` approach #3).
+"""Live-kernel validation in an isolated subprocess (``plugin-contribution.md`` approach #3).
 
 ``xyberos plugin validate`` builds a real ``create_app()``, ``load_plugin()``s
 the target, and runs register/unregister — inside a ``subprocess`` harness so it
@@ -13,6 +13,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any, cast
 
 __all__ = ["live_validate"]
 
@@ -41,14 +42,14 @@ def live_validate(root: str | Path, module: str, attr: str) -> tuple[bool, str]:
     return False, payload.get("error", "unknown live-kernel failure")
 
 
-def _last_json_line(text: str) -> dict | None:
+def _last_json_line(text: str) -> dict[str, Any] | None:
     for line in reversed((text or "").strip().splitlines()):
         try:
             value = json.loads(line)
         except ValueError:
             continue
         if isinstance(value, dict):
-            return value
+            return cast(dict[str, Any], value)
     return None
 
 

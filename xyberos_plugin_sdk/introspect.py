@@ -1,4 +1,4 @@
-"""Shared introspection of Xyberos contracts — the "one rule" from ``EXTRA.md``.
+"""Shared introspection of Xyberos contracts — the "one rule" from ``plugin-contribution.md``.
 
 Both the generator (``xyberos-cli``) and the validator
 (``xyberos-plugin-validator``) derive their definitions from this module so the
@@ -75,7 +75,7 @@ def contract_for(plugin_type: str) -> type:
 
 def is_concrete(cls: type) -> bool:
     """Whether ``cls`` implements every abstract member of its contracts."""
-    return isinstance(cls, type) and not bool(getattr(cls, "__abstractmethods__", ()))
+    return not bool(getattr(cls, "__abstractmethods__", ()))
 
 
 def missing_abstracts(cls: type) -> tuple[str, ...]:
@@ -153,7 +153,9 @@ def signature_compatible(impl: type, contract: type, name: str) -> bool:
     return True
 
 
-def render_stub(contract: type, name: str, *, name_value: str | None = None, indent: int = 4) -> str:
+def render_stub(
+    contract: type, name: str, *, name_value: str | None = None, indent: int = 4
+) -> str:
     """Render an implementable stub line for ``name`` (used by the generator).
 
     ``name_value`` is used for ``name`` properties so a scaffolded plugin is

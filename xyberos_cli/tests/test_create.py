@@ -4,7 +4,6 @@ import ast
 import sys
 
 from xyberos import create_app
-
 from xyberos_cli.create import generate_plugin
 from xyberos_cli.main import main
 

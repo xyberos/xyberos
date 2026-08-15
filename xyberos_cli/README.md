@@ -1,7 +1,7 @@
 # xyberos-cli
 
 The Xyberos plugin developer command line — makes plugin contribution
-one-command (see [`EXTRA.md`](https://github.com/xyberos/xyberos/blob/main/EXTRA.md)).
+one-command (see [`plugin-contribution.md`](https://github.com/xyberos/xyberos/blob/main/docs/plugin-contribution.md)).
 
 ## Install
 

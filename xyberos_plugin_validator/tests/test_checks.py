@@ -36,7 +36,9 @@ def test_missing_readme_warns(valid_plugin):
 
 
 def test_missing_tests_fails(valid_plugin):
-    for path in list(valid_plugin.glob("test_*.py")) + list((valid_plugin / "tests").glob("test_*.py")):
+    for path in list(valid_plugin.glob("test_*.py")) + list(
+        (valid_plugin / "tests").glob("test_*.py")
+    ):
         path.unlink()
     report = validate_plugin(valid_plugin, run_live=False)
     assert any(check.name == "testing" and not check.passed for check in report.checks)

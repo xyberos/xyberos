@@ -90,6 +90,8 @@ nav:
   - API Reference: api-reference.md
   - FAQ: faq.md
   - Contributing: contributing.md
+  - Integrations: integrations.md
+  - Plugin Contribution: plugin-contribution.md
   - Roadmap: RFCs/RFC-Roadmap.md
   - Integration Roadmap: RFCs/RFC-0019-integrations-roadmap.md
   - Architecture RFCs:
