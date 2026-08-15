@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xyberos"
-description = "A complete cognitive platform for building AI systems — agents, tools, workflows, multi-agent collaboration, streaming, memory, knowledge, planning, plugins, observability, and security."
+description = "A continuously evolving, layered platform for building AI applications. Its architecture is designed to support capabilities including agents, tools, workflows, multi-agent collaboration, streaming, memory, knowledge, planning, trainable intent and learning engines, plugins, observability, and security as the platform develops."
 readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.10"
