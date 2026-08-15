@@ -72,6 +72,40 @@ text = "\n\n".join(page.extract_text() or "" for page in PdfReader("manual.pdf")
 kb.ingest(text)
 ```
 
+### Prefer the `xyberos-documents` plugin
+
+Instead of hand-writing extractors, install the official document-loaders
+plugin (RFC-0019 M1) from the
+[`xyberos/xyberos-plugins`](https://github.com/xyberos/xyberos-plugins) repo. It
+ships `PdfLoader` / `DocxLoader` / `HtmlLoader` / `CsvLoader` / `XlsxLoader`
+(optional deps via `pip install xyberos[documents]`) and registers two tools
+that feed an `IngestingKnowledge` directly:
+
+```python
+from xyberos import create_app
+from xyberos.knowledge import IngestingKnowledge
+from xyberos.llm import HashEmbedder
+from xyberos.vector import SqliteVectorStore
+from xyberos_documents import DocumentsPlugin
+
+app = create_app(
+    knowledge=IngestingKnowledge(SqliteVectorStore("learning.db"), embedder=HashEmbedder())
+)
+app.load_plugin(DocumentsPlugin())
+
+app.tools.execute("ingest_document", None, path="report.pdf", chunk_size=512)
+app.tools.execute("ingest_directory", None, path="docs/", extensions=[".pdf", ".docx"])
+```
+
+Or use the loaders standalone (no app required):
+
+```python
+from xyberos_documents import PdfLoader
+
+for doc in PdfLoader().load("report.pdf"):
+    print(doc.text)
+```
+
 ## 3. Ingest a URL
 
 Fetch the page with the standard library, strip the markup, then ingest:
@@ -173,4 +207,6 @@ print(app.chat("What are your office hours?"))
   (one connection per thread).
 - **No built-in parsers** — the core is dependency-free, so PDF/DOCX/HTML
   extraction is up to you (the examples above use `pypdf` and a stdlib regex
-  strip). Feed the extracted text to `ingest()`.
+  strip). Feed the extracted text to `ingest()`. For batteries included, the
+  `xyberos-documents` plugin provides ready-made loaders and
+  `ingest_document` / `ingest_directory` tools (RFC-0019 M1).

@@ -58,12 +58,25 @@ vectors = [
     "chromadb",
     "pgvector",
     "psycopg[binary]",
+    "qdrant-client",
+    "faiss-cpu",
 ]
 rerank = [
     "scikit-learn",
 ]
 embeddings = [
     "sentence-transformers",
+]
+documents = [
+    "pypdf",
+    "python-docx",
+    "openpyxl",
+]
+state = [
+    "redis",
+]
+mcp = [
+    "mcp",
 ]
 
 [tool.setuptools.packages.find]

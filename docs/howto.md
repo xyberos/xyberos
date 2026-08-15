@@ -88,16 +88,22 @@ and full examples.
 ## Replace the vector database
 
 Pass any `VectorStore` — the bundled `SqliteVectorStore` is dependency-free;
-`ChromaVectorStore` / `PgVectorStore` need `pip install xyberos[vectors]`:
+`ChromaVectorStore` / `PgVectorStore` need `pip install xyberos[vectors]`; and
+Qdrant / FAISS / Redis ship as plugins from
+[`xyberos/xyberos-plugins`](https://github.com/xyberos/xyberos-plugins):
 
 ```python
 from xyberos import create_semantic_app
 from xyberos.llm import OllamaEmbeddingLLM
 from xyberos.vector import SqliteVectorStore, ChromaVectorStore
+from xyberos_qdrant import QdrantPlugin       # pip install xyberos[vectors]
 
 embedder = OllamaEmbeddingLLM(model="nomic-embed-text")
 app = create_semantic_app(embedder=embedder, store=SqliteVectorStore("learning.db"))
 app = create_semantic_app(embedder=embedder, store=ChromaVectorStore())
+
+# hosted or local Qdrant via plugin (local in-memory mode shown)
+app = create_semantic_app(embedder=embedder, store=QdrantPlugin(location=":memory:").vector_store())
 ```
 
 ## Add a custom tool

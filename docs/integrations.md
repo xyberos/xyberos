@@ -49,6 +49,9 @@ app = create_app(llm=OllamaLLM(model="qwen2.5:1.5b"))     # fully local, no SDK
 | SQLite (persistent, stdlib) | `SqliteVectorStore` | `VectorStore` | Core |
 | Chroma | `ChromaVectorStore` | `VectorStore` | `[vectors]` |
 | PostgreSQL / pgvector | `PgVectorStore` | `VectorStore` | `[vectors]` |
+| Qdrant (hosted or local) | `QdrantVectorStore` | `VectorStore` | Plugin `xyberos-qdrant` + `[vectors]` |
+| FAISS (local, no server) | `FaissVectorStore` | `VectorStore` | Plugin `xyberos-faiss` + `[vectors]` |
+| Redis (vector + memory + cache) | `RedisVectorStore`, `RedisMemory`, `RedisStringCache` | `VectorStore` / `Memory` | Plugin `xyberos-redis` + `[state]` |
 | Reranking | `ScoreReranker`, `LexicalReranker` | `Reranker` | Core / `[rerank]` |
 
 > **Learn more:** [Learn 5 — Give It Knowledge](learn/05-knowledge.md) ·
@@ -116,6 +119,27 @@ app = create_app(llm=OllamaLLM(model="qwen2.5:1.5b"))     # fully local, no SDK
 
 ---
 
+## Multiplier plugins
+
+A curated set of official plugins lives in the
+[`xyberos/xyberos-plugins`](https://github.com/xyberos/xyberos-plugins) repo.
+Each is a standalone package with an `xyberos.plugins` entry point, lazy
+optional deps, tests, and examples — installed with `pip install -e
+./<folder>` from that repo, then auto-discovered by `app.load_entry_points()`.
+
+| Plugin | Package / folder | What it unlocks |
+| --- | --- | --- |
+| Document loaders | `xyberos-documents` (`documents/`) | `ingest_document` / `ingest_directory` tools + `FileLoader`/`HtmlLoader`/`CsvLoader` (stdlib) and `PdfLoader`/`DocxLoader`/`XlsxLoader` (`[documents]`) → feed `IngestingKnowledge` |
+| Generic HTTP/API connector | `xyberos-http-api` (`http-api/`) | Declarative `base_url`/auth/operations spec → one typed `Tool` per operation |
+| MCP client | `xyberos-mcp` (`mcp/`) | stdio + streamable HTTP `McpClient` → one `Tool` per server tool (allowlist-guarded) |
+| Web search | `xyberos-web-search` (`web-search/`) | one `WebSearch` contract; Tavily / Serper / Brave / Exa / Firecrawl behind a `web_search` tool |
+
+> **Learn more:** [Learn 21 — Knowledge Ingestion](learn/21-knowledge-ingestion.md) ·
+> [Integration Roadmap RFC](RFCs/RFC-0019-integrations-roadmap.md) — milestone
+> status (M1–M5 shipped here).
+
+---
+
 ## Observability & security
 
 | Capability | Implementation | Contract | Ship |
@@ -132,8 +156,10 @@ app = create_app(llm=OllamaLLM(model="qwen2.5:1.5b"))     # fully local, no SDK
 ## In development & planned
 
 The roadmap tracks everything that is **not yet available** — from 🟡 in
-development (Qdrant, Redis, MCP client, document loaders, HTTP/API connector)
-to 🔵 community-wanted and ⚪ planned:
+development to 🔵 community-wanted and ⚪ planned. After the M1–M5 wave shipped
+(MCP, HTTP/API, document loaders, Qdrant/FAISS/Redis, web search), the next
+in-line work is the remaining LLM provider presets (M6) and the community
+wave (M7):
 
 - [Integration Roadmap RFC](RFCs/RFC-0019-integrations-roadmap.md) — status tracker + execution plan
 

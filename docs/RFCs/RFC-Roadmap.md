@@ -114,8 +114,9 @@ Status: SQLite implemented in v0.9.0.
       knowledge=SqliteKnowledge("facts.db"))` or plugin registration.
 - [x] Vector providers (`vector.py`) — shipped in RFC-0016: `CosineVectorStore`
       (dependency-free) plus optional `ChromaVectorStore`/`PgVectorStore`
-      adapters (`xyberos[vectors]`). Redis (`redis.py`) remains deferred: it
-      requires an optional third-party dependency.
+      adapters (`xyberos[vectors]`). Redis (`redis.py`) remains deferred in the
+      core (stays zero-dependency); Qdrant, FAISS and Redis now ship as plugins
+      via `xyberos/xyberos-plugins` (RFC-0019 M4).
 
 ## 3. Branching workflows and state graphs
 
