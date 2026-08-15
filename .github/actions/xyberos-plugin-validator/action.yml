@@ -21,9 +21,17 @@ runs:
       with:
         python-version: '3.12'
 
-    - name: Install xyberos-cli
+    - name: Install xyberos tooling
       shell: bash
-      run: python -m pip install --upgrade pip && python -m pip install xyberos-cli
+      run: |
+        python -m pip install --upgrade pip
+        # The plugin tooling packages (sdk / validator / cli) are not published to
+        # PyPI yet, so install them from the repo checkout (this action is expected
+        # to live in the xyberos monorepo where they live at the repo root).
+        python -m pip install ./ ./xyberos_plugin_sdk ./xyberos_plugin_validator ./xyberos_cli
+        if [ "${{ inputs.run-tests }}" = "true" ]; then
+          python -m pip install pytest
+        fi
 
     - name: Validate plugin
       shell: bash
