@@ -85,11 +85,13 @@ nav:
       - Knowledge Ingestion: learn/21-knowledge-ingestion.md
       - Training Xyberos: learn/22-training-tutorial.md
       - Build a Customer Support Assistant: learn/23-customer-support-tutorial.md
+      - Build & Contribute Plugins: learn/24-plugin-development.md
   - How-To: howto.md
   - API Reference: api-reference.md
   - FAQ: faq.md
   - Contributing: contributing.md
   - Roadmap: RFCs/RFC-Roadmap.md
+  - Integration Roadmap: RFCs/RFC-0019-integrations-roadmap.md
   - Architecture RFCs:
       - RFC-0001 Architecture: RFCs/RFC-0001-architecture.md
       - RFC-0002 Kernel: RFCs/RFC-0002-kernel.md

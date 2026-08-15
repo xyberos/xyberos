@@ -208,12 +208,34 @@ existing `xyberos.plugins` entry-point group.
   additive change adds a machine-readable field.
 - Typed-plugin enforcement happens at SDK `register()` time, not in the core.
 
-## Next steps (milestones)
+## Implementation status (all milestones implemented)
 
-1. Extract the introspection layer (contract → method set + signatures) — the
-   shared definition both generator and validator consume.
-2. Ship `xyberos-plugin-sdk`: typed base classes + declarative loader.
-3. Build the subprocess live-kernel validator.
-4. Add the `xyberos-cli` wizard + generator on top.
-5. Add AST-based repair / `--fix`.
-6. Publish the GitHub Action for PR validation.
+All six milestones are implemented in this repository as three external,
+independent packages — the core (`xyberos/`) is untouched.
+
+| # | Milestone | Where | Status |
+| - | --------- | ----- | ------ |
+| 1 | Introspection layer (contract → method set + signatures) | `xyberos_plugin_sdk/introspect.py` | ✅ |
+| 2 | `xyberos-plugin-sdk`: typed base classes + declarative loader | `xyberos_plugin_sdk/{base,declarative}.py` | ✅ |
+| 3 | Subprocess live-kernel validator | `xyberos_plugin_validator/{checks,live,_runner}.py` | ✅ |
+| 4 | `xyberos-cli` wizard + generator | `xyberos_cli/{main,create}.py` | ✅ |
+| 5 | AST-based repair / `--fix` | `xyberos_cli/{repair,validate}.py` | ✅ |
+| 6 | GitHub Action for PR validation | `.github/actions/xyberos-plugin-validator/` + `.github/workflows/plugin-validation.yml` | ✅ |
+
+### Quick start
+
+```bash
+pip install -e ./xyberos_plugin_sdk -e ./xyberos_plugin_validator -e ./xyberos_cli
+
+xyberos plugin create --name github --type tool --description "GitHub integration" \
+    --integrate-with "GitHub REST API" --auth token --non-interactive
+cd github
+pip install -e .
+xyberos plugin validate .            # static + live-kernel PASS/FAIL
+xyberos plugin repair . --check      # preview missing contract stubs
+```
+
+The shared introspection rule is enforced: the generator and the validator both
+derive their definitions from `xyberos_plugin_sdk.introspect`, which reads the
+contracts (`__abstractmethods__` / protocol bodies) at runtime — so they cannot
+drift as the contracts evolve.

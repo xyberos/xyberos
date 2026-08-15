@@ -1,0 +1,19 @@
+name: Plugin Validation
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Validates the plugin at the repo root. For a monorepo with many
+      # plugins, repeat this job per plugin directory (or use a matrix).
+      - uses: ./.github/actions/xyberos-plugin-validator
+        with:
+          path: .
+          run-tests: 'true'

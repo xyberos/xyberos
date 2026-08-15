@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xyberos-plugin-validator"
+version = "0.1.0"
+description = "Static + live-kernel validation for Xyberos plugins (structure, contract, config, tests, docs, compatibility)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [{name = "Xyberos Contributors"}]
+keywords = ["xyberos", "ai", "plugin", "validator", "ci"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+]
+dependencies = ["xyberos>=1.0", "xyberos-plugin-sdk>=0.1"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools]
+package-dir = {"xyberos_plugin_validator" = "."}
+packages = ["xyberos_plugin_validator"]

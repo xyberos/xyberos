@@ -143,6 +143,35 @@ app = create_app()
 app.load_plugin(MyPlugin())
 ```
 
+## Scaffold a plugin with the CLI (toolkit)
+
+The plugin toolkit (`xyberos-cli`) turns plugin creation into one command —
+wizard, generator, validator, and CI action. No core changes required.
+
+```bash
+pip install xyberos-cli
+
+# interactive wizard, or fully non-interactive:
+xyberos plugin create --name github --type tool \
+    --description "GitHub integration" --integrate-with "GitHub REST API" \
+    --auth token --non-interactive
+
+cd github
+pip install -e .
+xyberos plugin validate .     # static + live-kernel check -> Result: PASS/FAIL
+xyberos plugin repair .       # auto-insert missing contract stubs
+```
+
+Generated plugins declare the `xyberos.plugins` entry point, so they load
+automatically:
+
+```python
+app.load_entry_points()      # discovers every installed xyberos.plugins plugin
+```
+
+For the full walkthrough see
+[Learn 24 — Build & Contribute Plugins](learn/24-plugin-development.md).
+
 ## Create a custom workflow
 
 ```python

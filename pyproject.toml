@@ -67,7 +67,10 @@ embeddings = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["xyberos*"]
+# Only the core package (and its subpackages) ship in the `xyberos` wheel.
+# The plugin tooling packages (xyberos_plugin_sdk / _validator / _cli) are
+# external, independent distributions and must NOT be bundled here.
+include = ["xyberos", "xyberos.*"]
 
 [tool.setuptools.dynamic]
 version = {attr = "xyberos.version.__version__"}

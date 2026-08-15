@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xyberos-cli"
+version = "0.1.0"
+description = "Xyberos plugin developer CLI — scaffold, validate, and repair plugins (wizard + generator + validator)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [{name = "Xyberos Contributors"}]
+keywords = ["xyberos", "ai", "plugin", "cli", "scaffold", "generator"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Environment :: Console",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "xyberos>=1.0",
+    "xyberos-plugin-sdk>=0.1",
+    "xyberos-plugin-validator>=0.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+xyberos = "xyberos_cli.main:main"
+
+[tool.setuptools]
+package-dir = {"xyberos_cli" = "."}
+packages = ["xyberos_cli"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

@@ -61,6 +61,7 @@ The W3Schools-style tutorial. Each chapter builds on the last.
 | 21 | [Knowledge Ingestion](learn/21-knowledge-ingestion.md) | index documents, files, and URLs |
 | 22 | [Training Xyberos](learn/22-training-tutorial.md) | capture, feedback, learn, evaluate, and distill |
 | 23 | [Build a Customer Support Assistant](learn/23-customer-support-tutorial.md) | a complete production-shaped app |
+| 24 | [Build & Contribute Plugins](learn/24-plugin-development.md) | the plugin toolkit: create, validate, repair, contribute |
 
 ## 🧩 Platform at a Glance
 
@@ -102,6 +103,8 @@ The W3Schools-style tutorial. Each chapter builds on the last.
 
 - [Roadmap & Vision](RFCs/RFC-Roadmap.md) — current status and enhancement
   backlog.
+- [Integration Roadmap](RFCs/RFC-0019-integrations-roadmap.md) — the
+  plugin/integration execution plan (milestones, Definition of Done).
 - [Architecture RFCs](RFCs/RFC-0001-architecture.md) — the reasoning behind
   every layer (RFC-0001 through RFC-0018).
 
