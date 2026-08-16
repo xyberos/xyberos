@@ -78,6 +78,10 @@ state = [
 mcp = [
     "mcp",
 ]
+llm-providers = [
+    "boto3",
+    "google-auth",
+]
 
 [tool.setuptools.packages.find]
 # Only the core package (and its subpackages) ship in the `xyberos` wheel.

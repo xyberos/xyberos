@@ -289,7 +289,7 @@ The full docs are hosted at **[docs.xyberos.com](https://docs.xyberos.com)** and
 - [Training Xyberos](docs/learn/22-training-tutorial.md) — capture, feedback, learn, evaluate, and distill
 - [Build a Customer Support Assistant](docs/learn/23-customer-support-tutorial.md) — a production-shaped app
 - [API Reference](docs/api-reference.md) — every primary public object
-- [Integrations & Ecosystem](docs/integrations.md) — what's available today
+- [Features & Plugins](docs/features-and-plugins.md) — built-in features + plugin catalog with usage
 - [Integration Roadmap](docs/RFCs/RFC-0019-integrations-roadmap.md) — status tracker + execution plan
 - [Contributing Guide](CONTRIBUTING.md) — how to build, test, and contribute to the core
 - [Build & Contribute Plugins](docs/plugin-contribution.md) — the plugin toolkit: SDK, generator, validator, CLI

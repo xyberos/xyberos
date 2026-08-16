@@ -92,8 +92,8 @@ nav:
   - Contributing:
       - Contributing Guide: contributing.md
       - Build & Contribute Plugins: plugin-contribution.md
-  - Integrations:
-      - Integrations & Ecosystem: integrations.md
+  - Features & Plugins:
+      - Features & Plugins: features-and-plugins.md
       - Integration Roadmap: RFCs/RFC-0019-integrations-roadmap.md
   - Architecture:
       - Roadmap & Status: RFCs/RFC-Roadmap.md
@@ -116,3 +116,5 @@ nav:
           - RFC-0016 Trainable Cognitive Engines: RFCs/RFC-0016-trainable-cognitive-engines.md
           - RFC-0017 LLM-as-Fallback & Self-Routing: RFCs/RFC-0017-llm-fallback-router.md
           - RFC-0018 Smarter Learning: RFCs/RFC-0018-smarter-learning.md
+          - RFC-0019 Plugin & Integration Roadmap: RFCs/RFC-0019-integrations-roadmap.md
+          - RFC-0020 Database Plugin Contract: RFCs/RFC-0020-database-plugin-contract.md

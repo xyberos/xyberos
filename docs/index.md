@@ -89,11 +89,10 @@ The W3Schools-style tutorial. Each chapter builds on the last.
 - [How-To / Recipes](howto.md) — change the LLM, add memory, add knowledge,
   create tools/plugins/workflows, go offline, and more.
 
-## 🌐 Integrations
+## 🌐 Features & Plugins
 
-- [Integrations & Ecosystem](integrations.md) — what's available today:
-  LLM providers, vector stores, memory, knowledge, tools, plugins, and
-  observability.
+- [Features & Plugins](features-and-plugins.md) — built-in features and the
+  official plugin catalog, with how-to-use for every plugin.
 - [Integration Roadmap](RFCs/RFC-0019-integrations-roadmap.md) — the
   plugin/integration execution plan: status tracker, milestones, and
   Definition of Done.
