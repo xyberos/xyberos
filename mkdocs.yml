@@ -229,6 +229,7 @@ nav:
       - reference/adr/0022-ecosystem-repository-and-satellite-names.md
       - reference/adr/0023-crud-package-and-the-dx-refusals.md
       - reference/adr/0024-sessions-and-csrf-are-middleware-in-the-http-module.md
+      - reference/adr/0025-memory-and-knowledge-packages.md
   - Project:
       - Feature support: feature-support.md
       - Terminology: terminology.md
