@@ -64,7 +64,7 @@ before any of this; a request that fails that check never reaches the branch.
 One shipped detail if you add the cross-site check here: HTMX sends whatever the page puts in
 `hx-headers`, so `hx-headers='{"X-CSRF-Token": "..."}'` is all `CSRFMiddleware` needs — a button is
 protected exactly as lesson 10's form is
-([the sessions example](https://github.com/xyberos/xyberos2.0/tree/master/examples/sessions)).
+([the sessions example](https://github.com/xyberos/xyberos/tree/master/examples/sessions)).
 
 ## What the lesson runs
 

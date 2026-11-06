@@ -286,8 +286,8 @@ def test_site_url_resolves_for_a_preview_and_the_release(monkeypatch: pytest.Mon
     assert site.frontmatter.load_config()["site_url"] == "https://docs.xyberos.com/"
     assert site.roadmap.navigation(), "the navigation reads the same configuration"
 
-    monkeypatch.setenv("SITE_URL", "https://xyberos.github.io/xyberos2.0/")
-    assert site.frontmatter.load_config()["site_url"] == "https://xyberos.github.io/xyberos2.0/"
+    monkeypatch.setenv("SITE_URL", "https://xyberos.github.io/xyberos/")
+    assert site.frontmatter.load_config()["site_url"] == "https://xyberos.github.io/xyberos/"
     assert site.snippets_hook.output_directory() == REPOSITORY_ROOT / "build" / "site"
 
 

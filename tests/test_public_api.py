@@ -106,7 +106,7 @@ def test_expected_public_names_are_exported() -> None:
 
 
 def test_public_api_versions_are_present() -> None:
-    assert xyberos.__version__ == "2.1.0"
+    assert xyberos.__version__ == "2.2.0"
 
 
 def test_injected_annotations_are_explicit_and_typed() -> None:

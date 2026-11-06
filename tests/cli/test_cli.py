@@ -34,7 +34,7 @@ def test_version_is_reported_without_a_command(capsys: pytest.CaptureFixture[str
         main(["--version"])
 
     assert exit_info.value.code == 0
-    assert "xyberos 2.1.0" in capsys.readouterr().out
+    assert "xyberos 2.2.0" in capsys.readouterr().out
 
 
 def test_no_command_is_a_usage_error(capsys: pytest.CaptureFixture[str]) -> None:

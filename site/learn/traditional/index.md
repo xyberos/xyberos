@@ -64,7 +64,7 @@ lesson also changed — the lesson that changed it says so on its own page.
 **Identity is not built here.** Xyberos ships no identity, tenancy, or authorization model and will
 not, and this path does not quietly build one. Sessions and CSRF *do* ship, as middleware the
 application passes ([ADR 0024](../../reference/adr/0024-sessions-and-csrf-are-middleware-in-the-http-module.md)),
-with [the sessions example](https://github.com/xyberos/xyberos2.0/tree/master/examples/sessions) as
+with [the sessions example](https://github.com/xyberos/xyberos/tree/master/examples/sessions) as
 their recipe. The identity lesson shows the sanctioned shape instead: something verifies an incoming
 assertion, the principal is passed to the service as a required argument, and the tenant is taken from
 the principal rather than from the payload

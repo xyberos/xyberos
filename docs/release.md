@@ -3,8 +3,8 @@
 > Status: Phase 7. This page is the procedure for the first release and for every one after it, the
 > deployment plan for the index it publishes to, and the audit results it rests on.
 
-The project is at **`2.0.0`**, the first release of this line, because the `xyberos` name is held on the
-package index by the already-published 1.x line.
+The project is at **`2.2.0`**, the third release of this line. The first release was `2.0.0`, because
+the `xyberos` name was already held on the package index by the published 1.x line.
 The versioning rules that make that the right number are in [the stability guide](./stability.md), and
 the decision itself is [ADR 0017](./adr/0017-release-identity-and-lineage.md).
 
@@ -149,25 +149,26 @@ an existing one, which is why these four things come first.
 
 | # | Precondition | Why it blocks | How to confirm |
 | --- | --- | --- | --- |
-| 1 | The trusted publisher on the PyPI project — **registered: owner `xyberos`, repository `xyberos2.0`, workflow `publish.yml`, environment left empty** | Only a project owner can add one or correct it, and a single field that disagrees with the workflow fails as an authentication error with nothing to fall back on: there is no second name, and no token is kept | Compare the registration against the table in [The publishing workflow](#the-publishing-workflow), including the empty environment |
-| 2 | The repository this line publishes from — **`https://github.com/xyberos/xyberos2.0`**, default branch `master` | The declared project URLs, the README's links, and a trusted publisher all bind to it, so the URL and the branch name have to be settled before the metadata is written | `git rev-parse master origin/master` matches, and every declared URL resolves — see [Preparing the repository](#preparing-the-repository) |
+| 1 | The trusted publisher on the PyPI project — **owner `xyberos`, repository `xyberos`, workflow `publish.yml`, environment left empty** | GitHub's repository rename does not update PyPI's OIDC publisher record. Update that record before the next release; a mismatch fails authentication, and there is no token fallback | Compare the registration against the table in [The publishing workflow](#the-publishing-workflow), including the empty environment |
+| 2 | The repository this line publishes from — **`https://github.com/xyberos/xyberos`**, default branch `master` | The declared project URLs, the README's links, and a trusted publisher all bind to it, so the URL and the branch name have to be settled before the metadata is written | `git rev-parse master origin/master` matches, and every declared URL resolves — see [Preparing the repository](#preparing-the-repository) |
 | 3 | The publication path — **trusted publishing from `.github/workflows/publish.yml`**, started by hand, with PyPI as its only destination | The run authenticates with an OIDC identity and keeps no secret, and it uploads straight to the index, so the publisher has to be correct before the first attempt rather than during it | See [The publishing workflow](#the-publishing-workflow) |
-| 4 | The `Documentation` URL — **`https://docs.xyberos.com`, now serving this line's site**; the repository's `docs/` directory held until then | The domain was held by a **Cloudflare-hosted deployment of a stale 1.x build**, not by a GitHub Pages setting in either repository, so nothing in `xyberos/xyberos` had to change for it to move. It was deleted on **2026-10-12** and the domain was then attached to this line's own Cloudflare Worker, which is what `wrangler.jsonc` in this repository configures. The 1.x guides need no move: they already serve from `xyberos/xyberos` at `https://xyberos.github.io/xyberos/`, and that repository now points at that address rather than at the domain | `curl -sI https://docs.xyberos.com/` answers `200` from a Cloudflare Worker serving this site — tabs in the markup, snippet includes fenced and labelled with their file, the site's own `404.html` for an unknown path, and `/roadmap/` reporting 54 of 54 lessons. The declared value in `[project.urls]` names it ([the documentation site plan](../site/implementation.md) records the order: Pages preview, then the domain, then the metadata) |
+| 4 | The `Documentation` URL — **`https://docs.xyberos.com`, now serving this line's site**; the repository's `docs/` directory held until then | The domain was held by a **Cloudflare-hosted deployment of a stale 1.x build**, not by a GitHub Pages setting in either repository. It was deleted on **2026-10-12** and the domain was then attached to this line's own Cloudflare Worker, which is what `wrangler.jsonc` in this repository configures. The 1.x guides are maintained in [`xyberos/xyberosv1.0-deprecated`](https://github.com/xyberos/xyberosv1.0-deprecated) and their Pages URL follows that renamed repository | `curl -sI https://docs.xyberos.com/` answers `200` from a Cloudflare Worker serving this site — tabs in the markup, snippet includes fenced and labelled with their file, the site's own `404.html` for an unknown path, and `/roadmap/` reporting 54 of 54 lessons. The declared value in `[project.urls]` names it ([the documentation site plan](../site/implementation.md) records the order: Pages preview, then the domain, then the metadata) |
 
 ### Preparing the repository
 
-The URL the release declares is `https://github.com/xyberos/xyberos2.0`, and it began empty. The first
-plan was to overwrite the unrelated codebase that held that name; instead it was renamed to
-`https://github.com/xyberos/xyberos3.0`, where it is preserved, and the name was recreated empty. That
-is the better of the two: nothing is destroyed, the redirect from the old name still resolves, and this
-line's history contains only its own commits — which is what a provenance attestation describes.
+The repository used for the first releases was `https://github.com/xyberos/xyberos2.0` and began empty;
+it has since been renamed to `https://github.com/xyberos/xyberos`. The unrelated 1.x codebase was kept
+separate and is now archived as
+[`xyberos/xyberosv1.0-deprecated`](https://github.com/xyberos/xyberosv1.0-deprecated). The old URL
+redirects to the renamed repository, and this line's history contains only its own commits — which is
+what a provenance attestation describes.
 
 | | |
 | --- | --- |
-| Repository | `https://github.com/xyberos/xyberos2.0` |
+| Repository | `https://github.com/xyberos/xyberos` (renamed from `xyberos2.0`) |
 | Default branch | `master`, which is also the local branch and the one every declared link names |
 | First push | `5ebef0a`, a normal push into an empty repository rather than a force push |
-| Displaced codebase | `https://github.com/xyberos/xyberos3.0`, preserved |
+| Previous 1.x codebase | `https://github.com/xyberos/xyberosv1.0-deprecated`, preserved |
 
 Two properties of that arrangement are load-bearing, and both are easy to undo by accident:
 
@@ -189,8 +190,8 @@ readers see. The evidence is the wheel built in [Before the tag](#before-the-tag
 `tests/test_release_artefacts.py` is what holds the artefact to it.
 
 - **`Project-URL` headers, which the artefact did not have.** `pyproject.toml` declares them now:
-  `Repository` `https://github.com/xyberos/xyberos2.0`, and `Issues`
-  `https://github.com/xyberos/xyberos2.0/issues`. Without them the Documentation, Homepage,
+  `Repository` `https://github.com/xyberos/xyberos`, and `Issues`
+  `https://github.com/xyberos/xyberos/issues`. Without them the Documentation, Homepage,
   Repository, and Issues links that `1.0.3` supplies are not replaced by this release — a page carries
   the newest release's metadata, so they are dropped by it.
 - **`Documentation` is `https://docs.xyberos.com`.** It pointed at the repository's `docs/` directory
@@ -232,7 +233,7 @@ the last, which PyPI marks optional:
 | --- | --- |
 | PyPI project name | `xyberos` |
 | Owner | `xyberos` |
-| Repository | `xyberos2.0` |
+| Repository | `xyberos` |
 | Workflow | `publish.yml` |
 | Environment name | **left empty** |
 

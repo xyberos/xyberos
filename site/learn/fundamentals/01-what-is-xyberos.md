@@ -48,7 +48,7 @@ only thing it needs.
 
 <!-- output: fundamentals01_what_is_xyberos -->
 ```text
-xyberos 2.1.0
+xyberos 2.2.0
 scopes: app, request, transient
 before start: new
 running: ready

@@ -10,7 +10,7 @@ name: Publish
 #
 #   PyPI project   xyberos
 #   Owner          xyberos
-#   Repository     xyberos2.0
+#   Repository     xyberos
 #   Workflow       publish.yml
 #   Environment    (left empty)
 #
@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "The version being published, without a leading v (for example 2.0.0). The tag v<version> must already exist."
+        description: "The version being published, without a leading v (for example 2.2.0). The tag v<version> must already exist."
         required: true
         type: string
 

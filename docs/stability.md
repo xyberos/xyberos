@@ -3,7 +3,7 @@
 > Status: Phase 7. This page states what you may rely on, what may change, and how a change is
 > announced. The decision behind it is [ADR 0013](./adr/0013-stable-surface-and-versioning.md).
 
-Xyberos is at `2.1.0`, and the leading digit records lineage rather than maturity
+Xyberos is at `2.2.0`, and the leading digit records lineage rather than maturity
 ([ADR 0017](./adr/0017-release-identity-and-lineage.md)). The honest summary is: **the stable tier is
 declared and frozen, and from `2.0.0` a change to a documented stable name requires a major
 release.**

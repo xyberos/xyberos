@@ -648,12 +648,12 @@ precondition 4 records the same order.
 
 | # | Step | Where it happens |
 | --- | --- | --- |
-| 1 | **Publish the preview.** [`.github/workflows/site.yml`](../.github/workflows/site.yml) builds with the same command CI uses and deploys to `https://xyberos.github.io/xyberos2.0/` — **live**, 54 of 54 lessons. While phases 6 and 7 were unwritten the roadmap page reported two sections still `planned` | This repository, on a push that touches the site or by hand |
-| 2 | **Move the domain off the 1.x site.** Its guides already live in `xyberos/xyberos` and are already served at `https://xyberos.github.io/xyberos/`, so what moves is the domain, not the documentation — **done 2026-10-12**: the Cloudflare deployment that held `docs.xyberos.com` was deleted, and that repository now names its own address in the README, in `[project.urls]`, and in `site_url` | `xyberos/xyberos`, and the Cloudflare account that held the domain — out of scope here, and nothing in this repository can change them |
+| 1 | **Publish the preview.** [`.github/workflows/site.yml`](../.github/workflows/site.yml) builds with the same command CI uses and deploys to `https://xyberos.github.io/xyberos/` — **live**, 54 of 54 lessons. While phases 6 and 7 were unwritten the roadmap page reported two sections still `planned` | This repository, on a push that touches the site or by hand |
+| 2 | **Move the domain off the 1.x site.** Its guides were served from the 1.x repository, now renamed to `xyberos/xyberosv1.0-deprecated`, so what moved was the domain, not the documentation — **done 2026-10-12**: the Cloudflare deployment that held `docs.xyberos.com` was deleted | The 1.x repository and the Cloudflare account that held the domain — out of scope here, and nothing in this repository can change them |
 | 3 | **Point the domain at this site**, then move `[project.urls] Documentation` to it — **done 2026-10-12**: the domain is attached to this line's Cloudflare Worker (`wrangler.jsonc`), and `Documentation` is `https://docs.xyberos.com/` | The Cloudflare Workers project, and `pyproject.toml` |
 
 Step 2 is smaller than it looked, and the evidence is a lookup rather than an assumption: the 1.x line's
-guides serve at `https://xyberos.github.io/xyberos/` because that repository's `docs/` tree is its own
+guides serve at `https://xyberos.github.io/xyberosv1.0-deprecated/` because that repository's `docs/` tree is its own
 MkDocs site, deployed from its `gh-pages` branch, and its build now declares that address as `site_url`,
 so its next deploy carries a canonical link on every page. The domain was the part that needed looking
 up, and it was not what the first reading of it assumed: `docs.xyberos.com` was a
@@ -665,7 +665,7 @@ rather than a site.
 
 What remains is nothing on the site's side: the domain is attached to this line's Cloudflare Worker, so
 Cloudflare holds the DNS record and the certificate, and the GitHub Pages workflow keeps publishing the
-preview at `https://xyberos.github.io/xyberos2.0/`. The first reading of this step assumed a GitHub Pages
+preview at `https://xyberos.github.io/xyberos/`. The first reading of this step assumed a GitHub Pages
 custom domain and a `docs` CNAME, and the site turned out to be hosted by Cloudflare instead — the record
 is Cloudflare's to manage, and no change to it was needed from here.
 
@@ -695,7 +695,7 @@ the release default.
 | A lesson teaches a framework-shaped feature that is application code (templates, vector search, auth) | The reader blames the runtime for a gap it documented as a boundary | The four labels in section 5, plus `test_claimed_tier_matches_stability_guide` |
 | The AI path becomes untestable in CI (live model, network) | The suite loses its "no service needed" property | Fake provider and declared capabilities in every AI lesson; no output block for anything that cannot run offline |
 | Scope: three full application projects ship in one release (decision 5) | The release is gated on the slowest path, so a slip in phase 4 or 5 delays everything | Deliver in the decided order so each path is reviewable as it completes; keep paths independent, so no lesson links forward across paths except as a prerequisite; start the Smart Support Desk (phase 5) once the hybrid design is fixed rather than after the AI path is finished, because it is the critical path to the release |
-| The 1.x documentation keeps serving `docs.xyberos.com` | A reader at that URL gets the wrong line's documentation | **Resolved 2026-10-12.** Decision 1 splits the two: this site takes `docs.xyberos.com` and the 1.x site keeps serving from its own repository at `https://xyberos.github.io/xyberos/`, where its guides already are. What the domain actually was turned out to be neither repository's Pages site but a Cloudflare deployment of a stale 1.x build; it was deleted, the 1.x repository now names its own address, and the name resolves nowhere until this line's site claims it |
+| The 1.x documentation keeps serving `docs.xyberos.com` | A reader at that URL gets the wrong line's documentation | **Resolved 2026-10-12.** Decision 1 splits the two: this site takes `docs.xyberos.com` and the 1.x site keeps serving from its own repository, now named `xyberosv1.0-deprecated`. What the domain actually was turned out to be neither repository's Pages site but a Cloudflare deployment of a stale 1.x build; it was deleted, the 1.x repository now names its own address, and the name resolves nowhere until this line's site claims it |
 
 ## 13. Decisions taken
 
@@ -703,7 +703,7 @@ Settled by the owner. Each is mirrored in `site.md` §12, so the plan and this f
 
 | # | Question | Decision | Consequence for this plan |
 | --- | --- | --- | --- |
-| 1 | Host | This site replaces the content of `docs.xyberos.com`; the 1.x line's documentation is served from that line's own repository | **Done 2026-10-12.** The stale Cloudflare deployment that held the domain was deleted, the 1.x repository now names its own address (`xyberos/xyberos` `8c8a49f`), the domain is attached to this line's Cloudflare Worker (`wrangler.jsonc`), and `[project.urls] Documentation` is `https://docs.xyberos.com/` ([`docs/release.md`](../docs/release.md) precondition 4). The GitHub Pages workflow keeps publishing the preview |
+| 1 | Host | This site replaces the content of `docs.xyberos.com`; the 1.x line's documentation is served from that line's own repository | **Done 2026-10-12.** The stale Cloudflare deployment that held the domain was deleted, the 1.x repository (now `xyberos/xyberosv1.0-deprecated`) names its own address (`8c8a49f`), the domain is attached to this line's Cloudflare Worker (`wrangler.jsonc`), and `[project.urls] Documentation` is `https://docs.xyberos.com/` ([`docs/release.md`](../docs/release.md) precondition 4). The GitHub Pages workflow keeps publishing the preview |
 | 2 | Stack | MkDocs + Material: `mkdocs.yml` at the repository root, `docs_dir: site` | Section 10 is a decision rather than a recommendation, and no Node toolchain enters CI |
 | 3 | `docs/tutorial.md` | Retired into the Fundamentals path | The chapter modules and their output blocks move in one commit and the harness follows them; `site.md` §2 records the chapter-to-lesson map |
 | 4 | Reference sourcing | Generated from `docs/` from the first release | The `/reference/` copy step moves from phase 6 to phase 1, and the "one copy of each guide" rule is enforced from the start |
@@ -755,9 +755,10 @@ The site is done when all of the following hold:
    stay in `docs/tutorial.md` until the path that owns them exists, because deleting them now would
    leave that content with nowhere to live. The rule the migration follows is per chapter: exactly one
    home, exactly one suite.
-5. **Done.** The host handover is complete. `xyberos/xyberos` no longer points at `docs.xyberos.com`:
-   its README, its `[project.urls]`, and its `mkdocs.yml` `site_url` name
-   `https://xyberos.github.io/xyberos/`, committed as `8c8a49f`. The domain turned out to be a Cloudflare
+5. **Done.** The host handover is complete. At the time, the 1.x repository (`xyberos/xyberos`, now
+   `xyberos/xyberosv1.0-deprecated`) no longer pointed at `docs.xyberos.com`: its README, its `[project.urls]`,
+   and its `mkdocs.yml` `site_url` name
+   `https://xyberos.github.io/xyberosv1.0-deprecated/`, committed as `8c8a49f`. The domain turned out to be a Cloudflare
    deployment of a stale 1.x build rather than a Pages custom domain; it was deleted, and the domain was
    then attached to this line's Cloudflare Worker, which is what [`wrangler.jsonc`](../wrangler.jsonc)
    configures. [`docs/release.md`](../docs/release.md) precondition 4 and `[project.urls] Documentation`

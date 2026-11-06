@@ -4,18 +4,18 @@ Xyberos is an experimental, composable Python application runtime. Its planned s
 surface is application composition, typed dependencies, Starlette-backed HTTP, SQLite,
 and explicit in-process Workflow execution. Durable execution and AI adapters are optional.
 
-The project is at version **`2.1.0`**, the second release of this line.
+The project is at version **`2.2.0`**, the third release of this line.
 Phases 0–11 are complete: the architecture baseline, the application runtime, the Starlette HTTP
 adapter with the SQLite database provider, the trusted plugin/capability model, the in-process
 workflow engine, the provider-neutral AI facade with Ollama as the first adapter, the experimental
 durable executor, the release engineering, the boundary decisions that state who the framework is
 for, object storage and the MCP client, the introspection commands, and the distributions that live
 beside this line. The public surface and its versioning rules are frozen in
-[the stability guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/stability.md) and [ADR 0013](https://github.com/xyberos/xyberos2.0/blob/master/docs/adr/0013-stable-surface-and-versioning.md).
-This line publishes as **`2.x`** ([ADR 0017](https://github.com/xyberos/xyberos2.0/blob/master/docs/adr/0017-release-identity-and-lineage.md)): the
+[the stability guide](https://github.com/xyberos/xyberos/blob/master/docs/stability.md) and [ADR 0013](https://github.com/xyberos/xyberos/blob/master/docs/adr/0013-stable-surface-and-versioning.md).
+This line publishes as **`2.x`** ([ADR 0017](https://github.com/xyberos/xyberos/blob/master/docs/adr/0017-release-identity-and-lineage.md)): the
 `xyberos` name is held on the package index by the published 1.x line, which is a different codebase
 and cannot be installed alongside this one. The release procedure is in
-[the release guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/release.md).
+[the release guide](https://github.com/xyberos/xyberos/blob/master/docs/release.md).
 **Durable execution is experimental** and is never represented as exactly-once, multi-host, or highly
 available.
 
@@ -51,12 +51,12 @@ async def main() -> None:
         print(await service.list_users())
 ```
 
-See [the runtime guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/runtime.md) for scopes, lifecycle, configuration, and the error
-taxonomy, or start from [the tutorial](https://github.com/xyberos/xyberos2.0/blob/master/docs/tutorial.md) if you are new to this, or
-[the getting started guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/getting-started.md) and
-[the hello app example](https://github.com/xyberos/xyberos2.0/blob/master/examples/hello_app/README.md) if you would rather read reference material.
+See [the runtime guide](https://github.com/xyberos/xyberos/blob/master/docs/runtime.md) for scopes, lifecycle, configuration, and the error
+taxonomy, or start from [the tutorial](https://github.com/xyberos/xyberos/blob/master/docs/tutorial.md) if you are new to this, or
+[the getting started guide](https://github.com/xyberos/xyberos/blob/master/docs/getting-started.md) and
+[the hello app example](https://github.com/xyberos/xyberos/blob/master/examples/hello_app/README.md) if you would rather read reference material.
 If you are reviewing the design rather than using it, start with
-[the architecture review](https://github.com/xyberos/xyberos2.0/blob/master/docs/architecture.md).
+[the architecture review](https://github.com/xyberos/xyberos/blob/master/docs/architecture.md).
 
 ## HTTP and database
 
@@ -83,8 +83,8 @@ async def health(database: Annotated[DatabaseProvider, Inject()]) -> dict[str, s
 asgi_app = HttpAdapter(app).asgi_app
 ```
 
-See the [HTTP guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/http.md), the [database operations guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/database.md), and the
-[`sqlite_crud` example](https://github.com/xyberos/xyberos2.0/blob/master/examples/sqlite_crud/README.md).
+See the [HTTP guide](https://github.com/xyberos/xyberos/blob/master/docs/http.md), the [database operations guide](https://github.com/xyberos/xyberos/blob/master/docs/database.md), and the
+[`sqlite_crud` example](https://github.com/xyberos/xyberos/blob/master/examples/sqlite_crud/README.md).
 
 ## Plugins
 
@@ -108,7 +108,7 @@ app.add_plugin(GreetingPlugin())
 
 Plugins are ordinary Python code — there is no sandbox — and `app.diagnostics().render()` reports
 where every provider came from and in which order plugins start. See the
-[plugin guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/plugins.md) and the [`custom_plugin` example](https://github.com/xyberos/xyberos2.0/blob/master/examples/custom_plugin/README.md).
+[plugin guide](https://github.com/xyberos/xyberos/blob/master/docs/plugins.md) and the [`custom_plugin` example](https://github.com/xyberos/xyberos/blob/master/examples/custom_plugin/README.md).
 
 ## Workflows
 
@@ -139,8 +139,8 @@ result = await workflow.run(input="T-1", timeout=seconds(45))
 ```
 
 In-process execution keeps no state after the process exits and promises no recovery; durable
-execution is a separate, experimental phase. See the [workflow guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/workflow.md) and the
-[`workflow` example](https://github.com/xyberos/xyberos2.0/blob/master/examples/workflow/README.md).
+execution is a separate, experimental phase. See the [workflow guide](https://github.com/xyberos/xyberos/blob/master/docs/workflow.md) and the
+[`workflow` example](https://github.com/xyberos/xyberos/blob/master/examples/workflow/README.md).
 
 ## AI
 
@@ -176,8 +176,8 @@ async def ask(assistant: Annotated[AIFacade, Inject()]) -> str:
 Prompt, completion, and credential content stays out of logs by default; content capture is an
 explicit, redacted opt-in, and `Message` content never reaches an event payload. Ollama is never
 started, stopped, or downloaded by the framework: a missing model is a configuration error, not
-something the framework fixes. See the [AI guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/ai.md) and the
-[`ai_assistant` example](https://github.com/xyberos/xyberos2.0/blob/master/examples/ai_assistant/README.md).
+something the framework fixes. See the [AI guide](https://github.com/xyberos/xyberos/blob/master/docs/ai.md) and the
+[`ai_assistant` example](https://github.com/xyberos/xyberos/blob/master/examples/ai_assistant/README.md).
 
 ## Durable execution (experimental)
 
@@ -206,8 +206,8 @@ The limits are part of the contract, not a disclaimer: **single host, one journa
 effects**. A persisted step result proves a step completed, not that its external effect happened
 exactly once. An attempt whose outcome cannot be established is recorded as `outcome_unknown` and
 parked for a decision rather than retried on a guess. See the
-[durable execution guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/durable.md), [ADR 0011](https://github.com/xyberos/xyberos2.0/blob/master/docs/adr/0011-durable-executor-contract.md),
-and the [`durable_workflow` example](https://github.com/xyberos/xyberos2.0/blob/master/examples/durable_workflow/README.md).
+[durable execution guide](https://github.com/xyberos/xyberos/blob/master/docs/durable.md), [ADR 0011](https://github.com/xyberos/xyberos/blob/master/docs/adr/0011-durable-executor-contract.md),
+and the [`durable_workflow` example](https://github.com/xyberos/xyberos/blob/master/examples/durable_workflow/README.md).
 
 ## Command line
 
@@ -227,7 +227,7 @@ xyberos durable status --journal var/journal.db     # read-only view of the expe
 reloading and shutdown stay the server's business. `check --json`, `--why CONTRACT`, and `--schema`
 (which types each declared plugin's `[plugins.<name>]` section) are the machine-facing half;
 `durable status` opens its journal through SQLite's `mode=ro` and never migrates it. See the
-[command-line guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/cli.md).
+[command-line guide](https://github.com/xyberos/xyberos/blob/master/docs/cli.md).
 
 ## Development
 
@@ -252,7 +252,7 @@ python -m pip install -e ".[ollama]"
 python -m pip install -e ".[durable]"
 ```
 
-See [the architecture plan](https://github.com/xyberos/xyberos2.0/blob/master/docs/PLAN.md), [the phase-by-phase implementation plan](https://github.com/xyberos/xyberos2.0/blob/master/docs/implementation.md), [the getting started guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/getting-started.md), [the tutorial](https://github.com/xyberos/xyberos2.0/blob/master/docs/tutorial.md), [the architecture review](https://github.com/xyberos/xyberos2.0/blob/master/docs/architecture.md), [the positioning page](https://github.com/xyberos/xyberos2.0/blob/master/docs/positioning.md), [what is absent and what to do instead](https://github.com/xyberos/xyberos2.0/blob/master/docs/capabilities.md), [the command-line guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/cli.md), [the runtime guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/runtime.md), [the HTTP guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/http.md), [the database operations guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/database.md), [the provider author guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/database-providers.md), [the plugin guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/plugins.md), [the workflow guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/workflow.md), [the AI guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/ai.md), [the durable execution guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/durable.md), [the testing guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/testing.md), [the troubleshooting guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/troubleshooting.md), [the security guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/security.md), [the stability guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/stability.md), [the release guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/release.md), [the performance baselines](https://github.com/xyberos/xyberos2.0/blob/master/docs/performance.md), and [the architecture decisions](https://github.com/xyberos/xyberos2.0/tree/master/docs/adr/). Contributors should read [the changelog](https://github.com/xyberos/xyberos2.0/blob/master/CHANGELOG.md) and [the security policy](https://github.com/xyberos/xyberos2.0/blob/master/SECURITY.md).
+See [the architecture plan](https://github.com/xyberos/xyberos/blob/master/docs/PLAN.md), [the phase-by-phase implementation plan](https://github.com/xyberos/xyberos/blob/master/docs/implementation.md), [the getting started guide](https://github.com/xyberos/xyberos/blob/master/docs/getting-started.md), [the tutorial](https://github.com/xyberos/xyberos/blob/master/docs/tutorial.md), [the architecture review](https://github.com/xyberos/xyberos/blob/master/docs/architecture.md), [the positioning page](https://github.com/xyberos/xyberos/blob/master/docs/positioning.md), [what is absent and what to do instead](https://github.com/xyberos/xyberos/blob/master/docs/capabilities.md), [the command-line guide](https://github.com/xyberos/xyberos/blob/master/docs/cli.md), [the runtime guide](https://github.com/xyberos/xyberos/blob/master/docs/runtime.md), [the HTTP guide](https://github.com/xyberos/xyberos/blob/master/docs/http.md), [the database operations guide](https://github.com/xyberos/xyberos/blob/master/docs/database.md), [the provider author guide](https://github.com/xyberos/xyberos/blob/master/docs/database-providers.md), [the plugin guide](https://github.com/xyberos/xyberos/blob/master/docs/plugins.md), [the workflow guide](https://github.com/xyberos/xyberos/blob/master/docs/workflow.md), [the AI guide](https://github.com/xyberos/xyberos/blob/master/docs/ai.md), [the durable execution guide](https://github.com/xyberos/xyberos/blob/master/docs/durable.md), [the testing guide](https://github.com/xyberos/xyberos/blob/master/docs/testing.md), [the troubleshooting guide](https://github.com/xyberos/xyberos/blob/master/docs/troubleshooting.md), [the security guide](https://github.com/xyberos/xyberos/blob/master/docs/security.md), [the stability guide](https://github.com/xyberos/xyberos/blob/master/docs/stability.md), [the release guide](https://github.com/xyberos/xyberos/blob/master/docs/release.md), [the performance baselines](https://github.com/xyberos/xyberos/blob/master/docs/performance.md), and [the architecture decisions](https://github.com/xyberos/xyberos/tree/master/docs/adr/). Contributors should read [the changelog](https://github.com/xyberos/xyberos/blob/master/CHANGELOG.md) and [the security policy](https://github.com/xyberos/xyberos/blob/master/SECURITY.md).
 
 ## Status and compatibility
 
@@ -260,19 +260,19 @@ This line publishes as `2.x`, and `2.0.0` is the release that first promised the
 Workflow surfaces described in the implementation plan. The leading digit records lineage rather than
 maturity,
 because the `xyberos` name is already held on the package index by the published 1.x line
-([ADR 0017](https://github.com/xyberos/xyberos2.0/blob/master/docs/adr/0017-release-identity-and-lineage.md)).
+([ADR 0017](https://github.com/xyberos/xyberos/blob/master/docs/adr/0017-release-identity-and-lineage.md)).
 
-[The stability guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/stability.md) lists which surface is stable, preview, or experimental, and
-how each one changes; [ADR 0013](https://github.com/xyberos/xyberos2.0/blob/master/docs/adr/0013-stable-surface-and-versioning.md) records the rules
+[The stability guide](https://github.com/xyberos/xyberos/blob/master/docs/stability.md) lists which surface is stable, preview, or experimental, and
+how each one changes; [ADR 0013](https://github.com/xyberos/xyberos/blob/master/docs/adr/0013-stable-surface-and-versioning.md) records the rules
 behind it. From `2.0.0` — the release that first promised the stable tier — a breaking change to a
 stable name requires a major release, and a minor release may break only a preview name. A patch release
 breaks no documented name.
 
-The project is licensed under the [Apache License 2.0](https://github.com/xyberos/xyberos2.0/blob/master/LICENSE), including its express patent
-grant. See [ADR 0012](https://github.com/xyberos/xyberos2.0/blob/master/docs/adr/0012-project-licence.md) for why that licence was chosen, and
+The project is licensed under the [Apache License 2.0](https://github.com/xyberos/xyberos/blob/master/LICENSE), including its express patent
+grant. See [ADR 0012](https://github.com/xyberos/xyberos/blob/master/docs/adr/0012-project-licence.md) for why that licence was chosen, and
 `CONTRIBUTING.md` for the contributor terms that are still open.
 
-This line is at `2.1.0`, and [the release guide](https://github.com/xyberos/xyberos2.0/blob/master/docs/release.md) records the procedure. A project on the published 1.x line
+This line is at `2.2.0`, and [the release guide](https://github.com/xyberos/xyberos/blob/master/docs/release.md) records the procedure. A project on the published 1.x line
 should pin `xyberos<2`: that line stays installable, but it is a different codebase, the two cannot
 share an environment, and upgrading changes the API. Security reports go through
-[SECURITY.md](https://github.com/xyberos/xyberos2.0/blob/master/SECURITY.md), and changes are recorded in [the changelog](https://github.com/xyberos/xyberos2.0/blob/master/CHANGELOG.md).
+[SECURITY.md](https://github.com/xyberos/xyberos/blob/master/SECURITY.md), and changes are recorded in [the changelog](https://github.com/xyberos/xyberos/blob/master/CHANGELOG.md).

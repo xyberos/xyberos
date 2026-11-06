@@ -110,6 +110,14 @@ def test_the_wheel_declares_its_metadata(
     assert message["Version"] == project_version
     assert message["License-Expression"] == "Apache-2.0"
     assert message["Requires-Python"] == ">=3.10"
+    project_urls = dict(
+        value.split(", ", maxsplit=1) for value in message.get_all("Project-URL") or []
+    )
+    assert project_urls == {
+        "Documentation": "https://docs.xyberos.com/",
+        "Repository": "https://github.com/xyberos/xyberos",
+        "Issues": "https://github.com/xyberos/xyberos/issues",
+    }
     assert set(message.get_all("Provides-Extra") or []) == {
         "dev",
         "durable",

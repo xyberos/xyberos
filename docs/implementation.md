@@ -1,6 +1,6 @@
 # Xyberos implementation plan
 
-> Implementation status: Phases 0–11 are complete. The repository is at `2.1.0`, the second release of
+> Implementation status: Phases 0–11 are complete. The repository is at `2.2.0`, the third release of
 > this line ([ADR 0017](adr/0017-release-identity-and-lineage.md)): the app
 > runtime, the Starlette HTTP adapter with the SQLite provider, the trusted plugin/capability model,
 > the Workflow engine, the optional AI facade, the experimental durable executor, the frozen public

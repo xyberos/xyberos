@@ -50,7 +50,7 @@ lifecycle, routing, settings, and the error taxonomy; every capability that need
 lives behind an extra, and the import that needs it wraps the failure so a missing package comes back
 as *install this extra* rather than a bare `ModuleNotFoundError`
 [the extras
-module](https://github.com/xyberos/xyberos2.0/blob/master/src/xyberos/_extras.py) is the lookup table).
+module](https://github.com/xyberos/xyberos/blob/master/src/xyberos/_extras.py) is the lookup table).
 
 The security consequence is supply chain: a deployment that composes an application without the
 `database` extra does not merely *not use* a driver, it does not have one installed to be exploited,
@@ -84,7 +84,7 @@ choice in the handler, not an accident of what was raised.
 | ------- | ----------- | ------------------ |
 | TLS, CORS, header limits, body size, rate limits | the ASGI server and the proxy | [security reference](../reference/security.md) |
 | Authentication | your identity provider and proxy | [the identity lesson](../learn/traditional/08-identity.md) |
-| Session state and CSRF | `xyberos.http` middleware you pass, over a store you own | [the sessions example](https://github.com/xyberos/xyberos2.0/tree/master/examples/sessions) |
+| Session state and CSRF | `xyberos.http` middleware you pass, over a store you own | [the sessions example](https://github.com/xyberos/xyberos/tree/master/examples/sessions) |
 | Assertion-header hardening | the proxy must **strip** what a client sends | the same lesson, and it is the lesson's own warning |
 | Authorization | application code, at the edge, per request | [the hybrid path's principal lesson](../learn/hybrid/02-principal.md) |
 | Secret storage and rotation | a secret manager | [security reference](../reference/security.md#secrets) |

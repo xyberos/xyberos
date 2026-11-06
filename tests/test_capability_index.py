@@ -10,10 +10,15 @@ reader's discovery.
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 
 import ecosystem
-import tomllib
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:  # pragma: no cover - Python 3.10 uses the tomli fallback.
+    import tomli as tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
 PAGE = ROOT / "docs" / "capabilities.md"

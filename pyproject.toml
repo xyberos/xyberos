@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "xyberos"
-version = "2.1.0"
+version = "2.2.0"
 description = "Composable Python application runtime"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -41,8 +41,8 @@ xyberos = "xyberos.cli.main:main"
 
 [project.urls]
 Documentation = "https://docs.xyberos.com/"
-Repository = "https://github.com/xyberos/xyberos2.0"
-Issues = "https://github.com/xyberos/xyberos2.0/issues"
+Repository = "https://github.com/xyberos/xyberos"
+Issues = "https://github.com/xyberos/xyberos/issues"
 
 [project.optional-dependencies]
 dev = [

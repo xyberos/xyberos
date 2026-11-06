@@ -245,7 +245,7 @@ def render_region() -> str:
             ],
             "",
             "**Packages outside this repository.** Every name this line knows about, from "
-            "[`packages.toml`](https://github.com/xyberos/xyberos2.0/blob/master/packages.toml) — "
+            "[`packages.toml`](https://github.com/xyberos/xyberos/blob/master/packages.toml) — "
             "the manifest the compatibility job also reads. `planned` means decided and no "
             "distribution is written, `written` means the distribution exists and this line "
             "has no release of it, and `published` means a release exists that the job installs "

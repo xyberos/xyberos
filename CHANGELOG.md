@@ -6,6 +6,8 @@ leading digit means here — are in [the stability guide](docs/stability.md).
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-11-06
+
 ### Added
 
 - **`xyberos.http.SessionMiddleware`, `xyberos.http.CSRFMiddleware`, and a `SessionStore` contract**,

@@ -104,7 +104,7 @@ answers `403`, and the row it tried to create is not there.
 A real browser form needs one line more than this lesson shows, because a `POST` from a rendered page
 carries a genuine origin: render the token into the form with `get_csrf_token(request)` and the
 middleware compares it. That is exactly what
-[the sessions example](https://github.com/xyberos/xyberos2.0/tree/master/examples/sessions) does,
+[the sessions example](https://github.com/xyberos/xyberos/tree/master/examples/sessions) does,
 together with the session the form belongs to.
 
 ## What the lesson runs

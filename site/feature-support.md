@@ -49,7 +49,7 @@ _Generated when the site is built, and checked by `site/scripts/matrix.py --chec
 | `[http]` | `httpx>=0.27,<1`, `starlette>=0.40,<2` | `xyberos.http.adapter`, `xyberos.http.csrf`, `xyberos.http.metrics`, `xyberos.http.middleware`, `xyberos.http.requests`, `xyberos.http.routing`, `xyberos.http.sessions`, `xyberos.http.testing` | Routing an application's routes as an ASGI application |
 | `[ollama]` | `httpx>=0.27,<1` | `xyberos.ai.ollama` | The first AI provider: a local Ollama service |
 
-**Packages outside this repository.** Every name this line knows about, from [`packages.toml`](https://github.com/xyberos/xyberos2.0/blob/master/packages.toml) — the manifest the compatibility job also reads. `planned` means decided and no distribution is written, `written` means the distribution exists and this line has no release of it, and `published` means a release exists that the job installs and proves.
+**Packages outside this repository.** Every name this line knows about, from [`packages.toml`](https://github.com/xyberos/xyberos/blob/master/packages.toml) — the manifest the compatibility job also reads. `planned` means decided and no distribution is written, `written` means the distribution exists and this line has no release of it, and `published` means a release exists that the job installs and proves.
 
 | Package | Import root | Status | Declares | Subject |
 | ------- | ----------- | ------ | -------- | ------- |
@@ -81,7 +81,7 @@ Every distribution named in the last column is **released**, which is the status
 `pip install xyberos xyberos-templates`, for instance — and each release carries a check this repository's
 compatibility job runs against the published pair. What each one gives you, and the install line, is
 [the packages guide](extend/packages.md); the manifest that generates the inventory above is
-[`packages.toml`](https://github.com/xyberos/xyberos2.0/blob/master/packages.toml).
+[`packages.toml`](https://github.com/xyberos/xyberos/blob/master/packages.toml).
 
 | Capability | Where it lives | Tier | Ships with |
 | ---------- | -------------- | ---- | ---------- |
@@ -123,7 +123,7 @@ Three rows above are absences by decision rather than by omission, and each has 
   it wrong for most users and would own security it cannot verify. The sanctioned shape — verify an
   assertion upstream, pass the principal as an argument, scope queries by it — is in
   [ADR 0014](reference/adr/0014-no-identity-or-authorization-model.md) and is tested in
-  [the tenancy example](https://github.com/xyberos/xyberos2.0/tree/master/examples/tenancy).
+  [the tenancy example](https://github.com/xyberos/xyberos/tree/master/examples/tenancy).
 - **One database provider, and a documented extension point.** SQLite ships; the seam is any async
   SQLAlchemy dialect, and a third-party provider proves itself with `assert_provider_contract`
   ([ADR 0016](reference/adr/0016-database-providers-are-an-extension-point.md)).
@@ -135,7 +135,7 @@ is true for sessions and false for CSRF — Starlette ships no CSRF middleware, 
 reader an install. They now ship as `xyberos.http` middleware over a `SessionStore` contract, with the
 policy that belongs to the application — the store, the login, and the authorization model — left
 where it was ([ADR 0024](reference/adr/0024-sessions-and-csrf-are-middleware-in-the-http-module.md)).
-[The sessions example](https://github.com/xyberos/xyberos2.0/tree/master/examples/sessions) is the
+[The sessions example](https://github.com/xyberos/xyberos/tree/master/examples/sessions) is the
 recipe, and [what is absent, and what to do instead](reference/capabilities.md) is the index from every
 gap to its answer.
 
@@ -149,7 +149,7 @@ page and shows the code that supplies it.
 
 The inventory at the top of this page is generated, not maintained: `site/scripts/matrix.py` reads
 the modules from `src/xyberos/`, the extras from `pyproject.toml`, and the packages from
-[`packages.toml`](https://github.com/xyberos/xyberos2.0/blob/master/packages.toml) — the same manifest the
+[`packages.toml`](https://github.com/xyberos/xyberos/blob/master/packages.toml) — the same manifest the
 compatibility job reads — and every build regenerates it. `python site/scripts/build.py --check` fails when
 it has drifted, `tests/test_packages_manifest.py` checks that the catalogue and the release guide agree
 with the same manifest, and `tests/site/test_matrix.py` checks the generator itself. A package that does

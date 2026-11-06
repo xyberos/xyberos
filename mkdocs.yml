@@ -11,10 +11,10 @@
 site_name: Xyberos
 site_description: A composable Python application runtime — tutorials, guides, and reference
 # The release URL. A preview publishes under its own URL by setting `SITE_URL`, which is how the same
-# build serves `https://xyberos.github.io/xyberos2.0/` before the release moves it to this one.
+# build serves `https://xyberos.github.io/xyberos/` before the release moves it to this one.
 site_url: !ENV [SITE_URL, "https://docs.xyberos.com/"]
-repo_url: https://github.com/xyberos/xyberos2.0
-repo_name: xyberos/xyberos2.0
+repo_url: https://github.com/xyberos/xyberos
+repo_name: xyberos/xyberos
 edit_uri: edit/master/site/
 
 docs_dir: site
@@ -237,5 +237,5 @@ nav:
       # The plan documents are linked rather than copied in: their links are repository-relative,
       # which is what makes them correct on GitHub, and a documentation build resolves links against
       # its own source directory. Publishing a copy would mean maintaining a second set of links.
-      - The content plan (GitHub): "https://github.com/xyberos/xyberos2.0/blob/master/site/site.md"
-      - The implementation plan (GitHub): "https://github.com/xyberos/xyberos2.0/blob/master/site/implementation.md"
+      - The content plan (GitHub): "https://github.com/xyberos/xyberos/blob/master/site/site.md"
+      - The implementation plan (GitHub): "https://github.com/xyberos/xyberos/blob/master/site/implementation.md"

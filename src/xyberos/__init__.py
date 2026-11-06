@@ -93,7 +93,7 @@ from xyberos.runtime.context import (
 from xyberos.runtime.dependencies import Dependency, Inject, Provider, ProviderRegistry, Scope
 from xyberos.runtime.lifecycle import LifecycleState
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 
 __all__ = [
     "DIRECT_WORKFLOW",

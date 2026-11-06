@@ -528,7 +528,7 @@ These were open when this plan was written and are now settled. The execution de
 
 | Decision | Resolution | Consequence |
 | -------- | ---------- | ----------- |
-| Host | This site replaces the content of `docs.xyberos.com`, and the 1.x line's documentation is served from that line's own repository | **Done.** The stale Cloudflare deployment that held the domain was deleted, the 1.x repository now names `https://xyberos.github.io/xyberos/`, the domain is attached to this line's Cloudflare Worker, and `[project.urls] Documentation` is `https://docs.xyberos.com/` — release-guide precondition 4 |
+| Host | This site replaces the content of `docs.xyberos.com`, and the 1.x line's documentation is served from that line's own repository | **Done.** The stale Cloudflare deployment that held the domain was deleted, the 1.x repository was subsequently renamed to `xyberos/xyberosv1.0-deprecated`, the domain is attached to this line's Cloudflare Worker, and `[project.urls] Documentation` is `https://docs.xyberos.com/` — release-guide precondition 4 |
 | Site build | MkDocs with the Material theme: `mkdocs.yml` at the repository root, `docs_dir: site` | The content stays Markdown and the toolchain stays Python; nothing under `site/` becomes an importable package, because `site` is a standard-library module |
 | `docs/tutorial.md` | Retired into the Fundamentals path | Its chapter modules and `<!-- output: -->` blocks move with it, so the suite that already runs every chapter keeps working |
 | API reference | Generated from `docs/` from the first release | One copy of every guide is maintained; the build copies it into `/reference/` and CI asserts the copy is generated rather than committed |

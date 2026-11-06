@@ -9,7 +9,7 @@ a dependency core will not adopt, carries policy, or has its own release cadence
 left the identity of "there" to this record. The plans spelled it `xyberos/xyberos`, inferred from the
 repository URL the published 1.x core declares in its own metadata.
 
-The inference named the wrong repository, and the difference is not cosmetic:
+The inference named the wrong repository in the state this ADR records, and the difference is not cosmetic:
 
 | | `xyberos/xyberos` | `xyberos/xyberos-plugins` |
 | --- | --- | --- |
@@ -31,8 +31,9 @@ publication decision point the same way: keep it, update it, and do not build a 
 **The ecosystem repository is `xyberos/xyberos-plugins`, and it is updated in place rather than re-created.**
 
 - **Name, owner, and URL.** `xyberos/xyberos-plugins`, in the `xyberos` organisation that already owns the
-  `xyberos-*` names, at `https://github.com/xyberos/xyberos-plugins`, default branch `master`. `xyberos/xyberos`
-  is not the ecosystem repository, and it is not renamed, emptied, or replaced.
+  `xyberos-*` names, at `https://github.com/xyberos/xyberos-plugins`, default branch `master`. At the time
+  of this decision, `xyberos/xyberos` was the separate 1.x codebase, not the ecosystem repository; it has
+  since been renamed to `xyberos/xyberosv1.0-deprecated`.
 - **One repository, several distributions, grouped by subject.** One directory per subject and one directory per
   distribution inside it, each distribution with its own `pyproject.toml`, version, and changelog, sharing one CI
   matrix, one review path, one release procedure, and one drift job. That is the layout the placement rule

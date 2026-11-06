@@ -75,7 +75,7 @@ In your own project, `python -m pip install xyberos` is the only prerequisite; t
 
 <!-- output: fundamentals02_install -->
 ```text
-xyberos 2.1.0
+xyberos 2.2.0
 importing the AI facade pulled in an SDK: False
 an answer with no SDK installed: hello from the fake
 ```

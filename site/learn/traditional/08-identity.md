@@ -29,7 +29,7 @@ caller to name a user; after this lesson the caller cannot name one at all.
 
 Nothing new. The interesting part of this lesson is what it does *not* install: no auth library, no
 role model, and no *durable* session store. `xyberos.http.SessionMiddleware` ships, and
-[the sessions example](https://github.com/xyberos/xyberos2.0/tree/master/examples/sessions) is what it
+[the sessions example](https://github.com/xyberos/xyberos/tree/master/examples/sessions) is what it
 is for; deciding who the caller is stays outside it.
 
 ## The four rules

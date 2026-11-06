@@ -23,7 +23,7 @@ from frontmatter import REPOSITORY_ROOT, SITE_ROOT
 DOCS_ROOT = REPOSITORY_ROOT / "docs"
 REFERENCE_ROOT = SITE_ROOT / "reference"
 MARKER = ".generated"
-BLOB = "https://github.com/xyberos/xyberos2.0/blob/master"
+BLOB = "https://github.com/xyberos/xyberos/blob/master"
 
 _LINK = re.compile(r'\]\(([^)\s]+)(\s+"[^"]*")?\)')
 
