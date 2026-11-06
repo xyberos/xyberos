@@ -128,6 +128,24 @@ conformance = "import xyberos; from xyberos_crud import CrudSettings, Query, app
 rationale = "The filter operators and the pagination style are policy, which is why ADR 0023 places it beside this line rather than in core. It reached the first release of this line, so its floor is that release rather than a later one: the whole suite passes against core 2.0.0."
 
 [[package]]
+name = "xyberos-memory"
+import_root = "xyberos_memory"
+status = "written"
+summary = "Persistent conversation history and explicitly scoped facts over DatabaseProvider"
+dependencies = ["xyberos[database]>=2,<3"]
+conformance = "import sys; from xyberos_memory.conformance import main; sys.exit(main())"
+rationale = "Conversation persistence and fact semantics are application capabilities, while DatabaseProvider leaves the backend choice with the application."
+
+[[package]]
+name = "xyberos-knowledge"
+import_root = "xyberos_knowledge"
+status = "written"
+summary = "Document chunking, embedding, retrieval, and citations over an application-supplied vector store"
+dependencies = ["xyberos>=2,<3"]
+conformance = "import xyberos; from xyberos_knowledge import KnowledgeIndex, VectorStore; assert tuple(int(part) for part in xyberos.__version__.split('.')[:2]) >= (2, 0), xyberos.__version__; print('xyberos-knowledge: ok against', xyberos.__version__)"
+rationale = "Retrieval composes the core EmbeddingModel contract with a package-owned VectorStore protocol; storage adapters and prompt policy remain separate."
+
+[[package]]
 name = "xyberos-db"
 import_root = "xyberos_db"
 status = "retired"

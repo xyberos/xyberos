@@ -61,6 +61,8 @@ _Generated when the site is built, and checked by `site/scripts/matrix.py --chec
 | `xyberos-storage-s3` | `xyberos_storage_s3` | published | `xyberos>=2.1,<3`, `aioboto3>=13,<16` | A Storage provider for S3-compatible object stores, proved against the shipped conformance suite |
 | `xyberos-openai-compatible` | `xyberos_openai_compatible` | published | `xyberos>=2.1,<3`, `httpx>=0.27,<1` | A ModelProvider for OpenAI-compatible chat and embedding endpoints |
 | `xyberos-crud` | `xyberos_crud` | published | `xyberos[database]>=2,<3`, `sqlalchemy>=2.0,<2.1` | Query construction over the provider contract: filtering, sorting, and pagination as values rather than entities |
+| `xyberos-memory` | `xyberos_memory` | written | `xyberos[database]>=2,<3` | Persistent conversation history and explicitly scoped facts over DatabaseProvider |
+| `xyberos-knowledge` | `xyberos_knowledge` | written | `xyberos>=2,<3` | Document chunking, embedding, retrieval, and citations over an application-supplied vector store |
 | `xyberos-db` | `xyberos_db` | retired → `xyberos[database]` | — | Retired: the capability is xyberos[database] and the provider seam |
 | `xyberos-metrics` | `xyberos_metrics` | retired → `xyberos.http` | — | Retired: request metrics ship as xyberos.http.RequestMetricsMiddleware |
 
@@ -76,11 +78,11 @@ The inventory above is what exists. This table is what the framework *promises* 
 — which is a decision rather than a fact about the tree, so it is written by hand. Everything named
 here is either shipped, or explicitly not shipped.
 
-Every distribution named in the last column is **released**, which is the status the inventory above reports as
-`published`. What a reader installs is the framework plus the one package a capability needs —
-`pip install xyberos xyberos-templates`, for instance — and each release carries a check this repository's
-compatibility job runs against the published pair. What each one gives you, and the install line, is
-[the packages guide](extend/packages.md); the manifest that generates the inventory above is
+Packages named in the last column are either **released** (`published`) or written but not yet
+available to install (`written`). What a reader installs is the framework plus the one published
+package a capability needs — `pip install xyberos xyberos-templates`, for instance — and each
+release carries a check this repository's compatibility job runs against the published pair. What
+each one gives you, and the install line, is [the packages guide](extend/packages.md); the manifest that generates the inventory above is
 [`packages.toml`](https://github.com/xyberos/xyberos/blob/master/packages.toml).
 
 | Capability | Where it lives | Tier | Ships with |
@@ -111,9 +113,11 @@ compatibility job runs against the published pair. What each one gives you, and 
 | S3-compatible object storage | `xyberos-storage-s3`, proved by the storage conformance suite | Extension point | `xyberos-storage-s3` |
 | OpenAI-compatible chat and embedding endpoints | `xyberos-openai-compatible`, proved by the AI conformance suite | Extension point | `xyberos-openai-compatible` |
 | CRUD query construction: filtering, sorting, pagination | `xyberos-crud`, over the database provider contract | You add it | `xyberos-crud` |
+| Persistent conversation history and scoped facts | `xyberos-memory`, over `DatabaseProvider` | Written; not yet published | `xyberos-memory` |
+| Document chunking, embeddings, retrieval, and citations | `xyberos-knowledge`, over `EmbeddingModel` and an application-supplied `VectorStore` | Written; not yet published | `xyberos-knowledge` |
 | Redis | — | You add it | — |
 | Identity, roles, tenancy model | — | Not provided, and it will not be | `xyberos-auth` verifies an assertion and stops |
-| Vector store, embeddings index, memory, retrieval, intents, agents | — | You build it | — |
+| Vector-store backend, intent classification, agent coordination | — | You build it | — |
 
 ## The refusals are features
 

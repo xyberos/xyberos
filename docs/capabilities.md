@@ -109,7 +109,8 @@ app.provide(
 | An ORM, models, repository base classes | Refused ([positioning](./positioning.md)) | Use SQLAlchemy Core directly over the provider; `xyberos-crud` adds filtering, sorting, and pagination as **values** |
 | An admin UI | Refused | Build the screens; `xyberos-crud` and `xyberos-templates` are the pieces |
 | OpenAPI generation, an admin API explorer | Refused | Serialize `app.diagnostics()` and the route registry yourself ([ADR 0020](./adr/0020-introspection-documents.md)) |
-| RAG, a vector store, an embeddings index | Refused | `xyberos.ai` has structured output and tools; retrieval is your design |
+| Persistent conversation history and scoped facts | Package there, written but not yet published ([ADR 0025](./adr/0025-memory-and-knowledge-packages.md)) | `xyberos-memory` uses the application's `DatabaseProvider`; the application still owns scope authorization |
+| Document ingestion, embedding, retrieval, and citations | Package there, written but not yet published ([ADR 0025](./adr/0025-memory-and-knowledge-packages.md)) | `xyberos-knowledge` uses `xyberos.ai.EmbeddingModel` and an application-supplied `VectorStore`; prompt assembly and generation stay with the application |
 | Job queues, a scheduler | Refused | Durable execution is single-host ([ADR 0015](./adr/0015-durability-is-single-host.md)); use a queue as the delivery layer and keep the worker single-host per journal |
 | Rate limiting, request size limits, TLS | Refused | They belong to the ASGI server and the reverse proxy (`docs/security.md`) |
 | Feature flags | Refused | Configuration and plugins; nothing framework-owned |

@@ -51,3 +51,4 @@ backlog. Annotate anything newly satisfied, and give an owner to anything that h
 | [0022](0022-ecosystem-repository-and-satellite-names.md) | The ecosystem repository is `xyberos/xyberos-plugins`; two satellites are reused and two are retired | accepted |
 | [0023](0023-crud-package-and-the-dx-refusals.md) | A CRUD package beside this line, and the DX work that stays a refusal | accepted; the sessions/CSRF half is superseded by 0024 |
 | [0024](0024-sessions-and-csrf-are-middleware-in-the-http-module.md) | Sessions and CSRF are middleware in the HTTP module | accepted |
+| [0025](0025-memory-and-knowledge-packages.md) | Memory and knowledge capabilities live in separate ecosystem packages | accepted |

@@ -172,26 +172,29 @@ explicitly, and `xyberos` never looks for one ([ADR 0007](./adr/0007-trusted-plu
 supply-chain decision — entry-point loading means a dependency can change what your process does at
 import time — but it does not mean extensions are invisible. This section is the list.
 
-**Every name below is published.** The manifest records each as `published`, which means a release of
-*this* line's content exists rather than that a name answers on the index: three of these names also serve a
-1.x release, and that release is the other line's code. How to use them, with the install line for each, is
-[the packages guide](../site/extend/packages.md). The table is
-generated from [`packages.toml`](../packages.toml), and `tests/test_packages_manifest.py` checks this page
-against that file, so a package cannot be added to the manifest and quietly omitted here — and this page
-cannot invent one.
+**Every name below is tracked in the manifest.** `published` means a release of this line's content
+exists, `written` means the source exists but has not been released, and `retired` identifies a name
+this line no longer publishes. Three names also serve a 1.x release, which is the other line's code.
+Published packages are published by this project.
+How to use the published packages, with the install line for each, is in [the packages
+guide](../site/extend/packages.md). `tests/test_packages_manifest.py` checks this catalogue against
+[`packages.toml`](../packages.toml), so a package cannot be added to the manifest and quietly omitted
+here — and this page cannot invent one.
 
-| Package | What it will be | Proved by | Published by |
+| Package | What it provides | Proved by | Status |
 | --- | --- | --- | --- |
-| `xyberos-mcp` | the server direction: exposing an application's tools over MCP, and a stdio transport only with the owner's approval | its own suite against a stub server | this project |
-| `xyberos-templates` | an engine-neutral `Templates` contract with Jinja2 shipped, a static mount, and form reading | its own tests, including the escaping pair and a render that does not block the loop | this project |
-| `xyberos-observability` | one explicit call that configures a handler and spans, fed by the runtime's event sink | its own tests, including that a redacted field stays redacted | this project |
-| `xyberos-auth` | verification only: an assertion from a shared secret or a JWKS, and a `Principal` | its own tests refusing an unsigned, an expired, and a wrong-audience assertion | this project |
-| `xyberos-postgres` | a `DatabaseProvider` for PostgreSQL | `assert_provider_contract` | this project |
-| `xyberos-storage-s3` | a `Storage` provider for S3-compatible stores | `assert_storage_contract` | this project |
-| `xyberos-openai-compatible` | a `ModelProvider` for OpenAI-compatible endpoints | `assert_model_provider_contract` | this project |
-| `xyberos-crud` | filtering, sorting, and pagination over the database provider contract, as values rather than entities | its own tests, including that a field name is resolved only through the caller's allowlist | this project |
-| `xyberos-db` | retired: the capability is `xyberos[database]` and the provider seam | — | this project |
-| `xyberos-metrics` | retired: request metrics ship as `xyberos.http.RequestMetricsMiddleware` | — | this project |
+| `xyberos-mcp` | the server direction: exposing an application's tools over MCP, and a stdio transport only with the owner's approval | its own suite against a stub server | published |
+| `xyberos-templates` | an engine-neutral `Templates` contract with Jinja2 shipped, a static mount, and form reading | its own tests, including the escaping pair and a render that does not block the loop | published |
+| `xyberos-observability` | one explicit call that configures a handler and spans, fed by the runtime's event sink | its own tests, including that a redacted field stays redacted | published |
+| `xyberos-auth` | verification only: an assertion from a shared secret or a JWKS, and a `Principal` | its own tests refusing an unsigned, an expired, and a wrong-audience assertion | published |
+| `xyberos-postgres` | a `DatabaseProvider` for PostgreSQL | `assert_provider_contract` | published |
+| `xyberos-storage-s3` | a `Storage` provider for S3-compatible stores | `assert_storage_contract` | published |
+| `xyberos-openai-compatible` | a `ModelProvider` for OpenAI-compatible endpoints | `assert_model_provider_contract` | published |
+| `xyberos-crud` | filtering, sorting, and pagination over the database provider contract, as values rather than entities | its own tests, including that a field name is resolved only through the caller's allowlist | published |
+| `xyberos-memory` | persistent conversation history and explicitly scoped facts over `DatabaseProvider` | its own tests for history, scope isolation, facts, and forgetting | written |
+| `xyberos-knowledge` | document chunking, embeddings, retrieval, and citations over an application-supplied `VectorStore` | its own tests and `assert_vector_store_contract` for adapters | written |
+| `xyberos-db` | retired: the capability is `xyberos[database]` and the provider seam | — | retired |
+| `xyberos-metrics` | retired: request metrics ship as `xyberos.http.RequestMetricsMiddleware` | — | retired |
 
 **Every published name carries a check the job runs.** `packages.toml` records a `conformance` snippet for each
 one and refuses a published name without it, because a package that is installed and not checked is worse than
